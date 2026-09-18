@@ -1,20 +1,19 @@
-# Morphix 3D Backend — Dockerfile
+# Morphix 3D Backend — Production Dockerfile
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies
+# Install ALL deps (including devDeps for TypeScript build)
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci
 
-# Copy source
+# Copy source and build
 COPY . .
-
-# Generate Prisma client
 RUN npx prisma generate
-
-# Build TypeScript
 RUN npm run build
+
+# Remove devDependencies after build
+RUN npm prune --production
 
 # Expose port
 EXPOSE 4000
