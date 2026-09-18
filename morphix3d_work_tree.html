@@ -1,0 +1,404 @@
+
+<style>
+  h2.sr-only { position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0); }
+  .tree { padding: 1rem 0; }
+  .cat { margin-bottom: 1.25rem; }
+  .cat-header { display:flex; align-items:center; gap:10px; margin-bottom:6px; cursor:pointer; user-select:none; }
+  .cat-header:hover .cat-title { color: var(--text-accent); }
+  .cat-title { font-size:14px; font-weight:500; color:var(--text-primary); }
+  .cat-count { font-size:11px; color:var(--text-muted); background:var(--surface-1); border:0.5px solid var(--border); border-radius:10px; padding:1px 7px; }
+  .badge { font-size:10px; font-weight:500; padding:2px 7px; border-radius:var(--radius); }
+  .p0 { background:var(--bg-danger); color:var(--text-danger); }
+  .p1 { background:var(--bg-warning); color:var(--text-warning); }
+  .p2 { background:#faeeda; color:#854F0B; }
+  .p3 { background:var(--bg-success); color:var(--text-success); }
+  .tasks { border-left:1.5px solid var(--border); margin-left:8px; padding-left:14px; display:flex; flex-direction:column; gap:4px; }
+  .task { display:flex; align-items:flex-start; gap:8px; padding:5px 8px; border-radius:var(--radius); cursor:pointer; transition:background .12s; }
+  .task:hover { background:var(--surface-1); }
+  .task-dot { width:7px; height:7px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+  .done .task-dot { background:var(--text-success); }
+  .partial .task-dot { background:var(--text-warning); }
+  .missing .task-dot { background:var(--text-danger); }
+  .task-label { font-size:13px; color:var(--text-primary); line-height:1.5; }
+  .task-sub { font-size:11px; color:var(--text-muted); margin-top:1px; }
+  .effort { font-size:11px; color:var(--text-muted); background:var(--surface-1); border:0.5px solid var(--border); border-radius:10px; padding:1px 6px; margin-left:auto; flex-shrink:0; }
+  .cat-bar { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .prog-track { flex:1; height:4px; background:var(--surface-1); border-radius:2px; overflow:hidden; }
+  .prog-fill { height:100%; border-radius:2px; transition:width .4s; }
+  .collapse-icon { font-size:12px; color:var(--text-muted); transition:transform .2s; margin-left:auto; }
+  .collapsed .tasks { display:none; }
+  .collapsed .collapse-icon { transform:rotate(-90deg); }
+  .section-label { font-size:11px; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin:1.5rem 0 0.5rem; }
+  .top-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:1.5rem; }
+  .stat-card { background:var(--surface-1); border-radius:var(--radius); padding:10px 12px; }
+  .stat-label { font-size:11px; color:var(--text-muted); margin-bottom:3px; }
+  .stat-val { font-size:20px; font-weight:500; color:var(--text-primary); }
+</style>
+<h2 class="sr-only">Morphix 3D — remaining work tree by priority</h2>
+<div class="tree">
+  <div class="top-summary">
+    <div class="stat-card"><div class="stat-label">Overall</div><div class="stat-val" style="color:var(--text-accent)">~85%</div></div>
+    <div class="stat-card"><div class="stat-label">P0 tasks</div><div class="stat-val" style="color:var(--text-danger)">2</div></div>
+    <div class="stat-card"><div class="stat-label">P1 tasks</div><div class="stat-val" style="color:var(--text-warning)">5</div></div>
+    <div class="stat-card"><div class="stat-label">Est. to ship</div><div class="stat-val">~5 days</div></div>
+  </div>
+
+  <div class="section-label">🔴 P0 — blockers</div>
+
+  <div class="cat" id="c0a">
+    <div class="cat-header" onclick="toggle('c0a')">
+      <span class="badge p0">P0</span>
+      <span class="cat-title">Wire 4 remaining workspaces</span>
+      <span class="cat-count">4 tasks</span>
+      <div class="prog-track" style="width:80px"><div class="prog-fill" style="width:0%;background:var(--fill-danger)"></div></div>
+      <span class="collapse-icon">▾</span>
+    </div>
+    <div class="tasks">
+      <div class="task missing" onclick="sendPrompt('How do I wire the Image-to-3D workspace to the real backend API?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Image-to-3D workspace</div><div class="task-sub">Replace setInterval fake timer → call generate.imageTo3d() + poll status</div></div>
+        <div class="effort">~30min</div>
+      </div>
+      <div class="task missing" onclick="sendPrompt('How do I wire the AI Texture workspace to the real backend API?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">AI Texture workspace</div><div class="task-sub">Same pattern — fake setInterval → real API call</div></div>
+        <div class="effort">~30min</div>
+      </div>
+      <div class="task missing" onclick="sendPrompt('How do I wire the Smart Remesh workspace? Mesh stats are hardcoded.')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Smart Remesh workspace</div><div class="task-sub">Fake timer + hardcoded mesh stats → real API + dynamic stats</div></div>
+        <div class="effort">~30min</div>
+      </div>
+      <div class="task missing" onclick="sendPrompt('How do I wire the Auto Rigging workspace? Bone count is hardcoded.')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Auto Rigging workspace</div><div class="task-sub">Fake timer + hardcoded bone count → real rig API</div></div>
+        <div class="effort">~30min</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat" id="c0b">
+    <div class="cat-header" onclick="toggle('c0b')">
+      <span class="badge p0">P0</span>
+      <span class="cat-title">GPU server + AI models</span>
+      <span class="cat-count">10 tasks</span>
+      <div class="prog-track" style="width:80px"><div class="prog-fill" style="width:0%;background:var(--fill-danger)"></div></div>
+      <span class="collapse-icon">▾</span>
+    </div>
+    <div class="tasks">
+      <div class="task missing" onclick="sendPrompt('How do I set up a RunPod or Vast.ai GPU server for Morphix 3D?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">GPU server (RunPod / Vast.ai / Colab Pro)</div><div class="task-sub">24GB+ VRAM needed for full model suite</div></div>
+        <div class="effort">~2h</div>
+      </div>
+      <div class="task missing" onclick="sendPrompt('How do I download and run TripoSR model?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">TripoSR model</div><div class="task-sub">~2GB, needs 8GB VRAM — start here (smallest)</div></div>
+        <div class="effort">~30min</div>
+      </div>
+      <div class="task missing" onclick="sendPrompt('How do I download and run Shap-E model?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Shap-E model</div><div class="task-sub">~1GB, needs 6GB VRAM</div></div>
+        <div class="effort">~30min</div>
+      </div>
+      <div class="task missing" onclick="sendPrompt('How do I download and run TRELLIS 2 model for 3D generation?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">TRELLIS 2</div><div class="task-sub">~8GB, needs 16GB VRAM</div></div>
+        <div class="effort">~1h</div>
+      </div>
+      <div class="task missing" onclick="sendPrompt('How do I download and run Hunyuan3D 2.0?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Hunyuan3D 2.0</div><div class="task-sub">~15GB, needs 24GB VRAM</div></div>
+        <div class="effort">~1h</div>
+      </div>
+      <div class="task missing" onclick="sendPrompt('How do I install rembg for background removal in Python?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">rembg (background removal)</div><div class="task-sub">pip install, used in image-to-3d pipeline</div></div>
+        <div class="effort">~10min</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">UniRig (auto-rigging)</div><div class="task-sub">~3GB model download</div></div>
+        <div class="effort">~30min</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Zero123++ (multi-view)</div><div class="task-sub">Multi-view synthesis support</div></div>
+        <div class="effort">~30min</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">TEXTure / Text2Tex</div><div class="task-sub">AI texturing pipeline</div></div>
+        <div class="effort">~30min</div>
+      </div>
+      <div class="task missing" onclick="sendPrompt('How do I test and run colab_server.py for Morphix 3D?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Test colab_server.py end-to-end</div><div class="task-sub">Written but never run — validate on Colab</div></div>
+        <div class="effort">~2h</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">🟡 P1 — core wiring</div>
+
+  <div class="cat" id="c1a">
+    <div class="cat-header" onclick="toggle('c1a')">
+      <span class="badge p1">P1</span>
+      <span class="cat-title">Assets page</span>
+      <span class="cat-count">5 tasks</span>
+      <div class="prog-track" style="width:80px"><div class="prog-fill" style="width:20%;background:var(--fill-warning)"></div></div>
+      <span class="collapse-icon">▾</span>
+    </div>
+    <div class="tasks">
+      <div class="task missing" onclick="sendPrompt('How do I wire the Assets page to call assets.list() instead of generate.history()?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Switch data source to assets.list()</div><div class="task-sub">Currently reads from generate.history() — wrong endpoint</div></div>
+        <div class="effort">~20min</div>
+      </div>
+      <div class="task partial">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Wire Delete button</div><div class="task-sub">Calls assets.delete(id) API — currently only removes from React state</div></div>
+        <div class="effort">~20min</div>
+      </div>
+      <div class="task partial">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Wire Download button</div><div class="task-sub">Actually download file — currently shows fake toast</div></div>
+        <div class="effort">~20min</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Auto-create Asset records in DB after generation</div><div class="task-sub">Backend generates files but doesn't persist Asset rows</div></div>
+        <div class="effort">~1h</div>
+      </div>
+      <div class="task missing" onclick="sendPrompt('How do I set up Cloudflare R2 for 3D model file storage?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Set up S3 / Cloudflare R2 bucket</div><div class="task-sub">No cloud storage configured — files only saved locally</div></div>
+        <div class="effort">~4h</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat" id="c1b">
+    <div class="cat-header" onclick="toggle('c1b')">
+      <span class="badge p1">P1</span>
+      <span class="cat-title">Community page</span>
+      <span class="cat-count">4 tasks</span>
+      <div class="prog-track" style="width:80px"><div class="prog-fill" style="width:5%;background:var(--fill-warning)"></div></div>
+      <span class="collapse-icon">▾</span>
+    </div>
+    <div class="tasks">
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Wire gallery to assets.gallery() API</div><div class="task-sub">Currently static array of 9 hardcoded fake items</div></div>
+        <div class="effort">~1h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Wire like button to assets.like(id)</div><div class="task-sub">handleLike() only increments local state</div></div>
+        <div class="effort">~20min</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Add "share to community" flow</div><div class="task-sub">No UI or backend for making an asset public</div></div>
+        <div class="effort">~2h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Make category filter buttons work</div><div class="task-sub">Buttons exist but don't filter real data</div></div>
+        <div class="effort">~30min</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat" id="c1c">
+    <div class="cat-header" onclick="toggle('c1c')">
+      <span class="badge p1">P1</span>
+      <span class="cat-title">Settings page</span>
+      <span class="cat-count">6 tasks</span>
+      <div class="prog-track" style="width:80px"><div class="prog-fill" style="width:0%;background:var(--fill-warning)"></div></div>
+      <span class="collapse-icon">▾</span>
+    </div>
+    <div class="tasks">
+      <div class="task missing" onclick="sendPrompt('How do I wire the Settings profile page to call auth.me() to get real user data?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Load real user data (name, email) via auth.me()</div><div class="task-sub">Currently hardcoded "user@example.com"</div></div>
+        <div class="effort">~20min</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Add PATCH /api/auth/profile endpoint</div><div class="task-sub">No backend endpoint for profile updates at all</div></div>
+        <div class="effort">~1h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Wire Save button to profile update API</div><div class="task-sub">handleSave() fires toast only — no real save</div></div>
+        <div class="effort">~20min</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Avatar upload flow</div><div class="task-sub">Schema has avatarUrl but no upload UI</div></div>
+        <div class="effort">~2h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Password change endpoint + UI</div><div class="task-sub">Not implemented anywhere</div></div>
+        <div class="effort">~1h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Save notification preferences</div><div class="task-sub">Toggle switches exist but save nothing</div></div>
+        <div class="effort">~30min</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">🟠 P2 — monetization & deployment</div>
+
+  <div class="cat" id="c2a">
+    <div class="cat-header" onclick="toggle('c2a')">
+      <span class="badge p2">P2</span>
+      <span class="cat-title">Razorpay payments</span>
+      <span class="cat-count">5 tasks</span>
+      <div class="prog-track" style="width:80px"><div class="prog-fill" style="width:10%;background:#EF9F27"></div></div>
+      <span class="collapse-icon">▾</span>
+    </div>
+    <div class="tasks">
+      <div class="task missing" onclick="sendPrompt('How do I implement the Razorpay checkout modal in a Next.js app?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Razorpay checkout modal (frontend)</div><div class="task-sub">Backend creates orders — frontend checkout not built</div></div>
+        <div class="effort">~4h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Wire "Get Started" buttons on Pricing page</div><div class="task-sub">Currently links to /register — needs payment flow</div></div>
+        <div class="effort">~1h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Wire "Buy Credits" button on dashboard</div><div class="task-sub">Button exists but doesn't trigger purchase</div></div>
+        <div class="effort">~30min</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Subscription management (plan upgrade/downgrade)</div><div class="task-sub">No recurring billing logic</div></div>
+        <div class="effort">~1 day</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Invoice / receipt generation</div><div class="task-sub">No PDF invoices or email receipts</div></div>
+        <div class="effort">~4h</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat" id="c2b">
+    <div class="cat-header" onclick="toggle('c2b')">
+      <span class="badge p2">P2</span>
+      <span class="cat-title">Deployment</span>
+      <span class="cat-count">8 tasks</span>
+      <div class="prog-track" style="width:80px"><div class="prog-fill" style="width:0%;background:#EF9F27"></div></div>
+      <span class="collapse-icon">▾</span>
+    </div>
+    <div class="tasks">
+      <div class="task missing" onclick="sendPrompt('How do I deploy my Next.js frontend to Vercel?')">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Deploy frontend to Vercel</div><div class="task-sub">Builds successfully — just needs vercel deploy</div></div>
+        <div class="effort">~1h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Write backend Dockerfile + deploy</div><div class="task-sub">docker-compose.yml exists; Dockerfile needed</div></div>
+        <div class="effort">~4h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Switch SQLite → PostgreSQL</div><div class="task-sub">Just swap DATABASE_URL in .env — Prisma already supports it</div></div>
+        <div class="effort">~1h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Set up Redis for Celery job queue</div><div class="task-sub">Currently using in-memory FastAPI BackgroundTasks</div></div>
+        <div class="effort">~2h</div>
+      </div>
+      <div class="task partial">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Google OAuth on frontend</div><div class="task-sub">Backend route exists — frontend button missing</div></div>
+        <div class="effort">~2h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Domain + DNS setup</div><div class="task-sub">No domain purchased or configured yet</div></div>
+        <div class="effort">~1h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">SSL / HTTPS</div><div class="task-sub">Required for production</div></div>
+        <div class="effort">~30min</div>
+      </div>
+      <div class="task partial">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Update .env for production URLs</div><div class="task-sub">All localhost URLs — needs real domains</div></div>
+        <div class="effort">~30min</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">🟢 P3 — polish & extras</div>
+
+  <div class="cat" id="c3a">
+    <div class="cat-header" onclick="toggle('c3a')">
+      <span class="badge p3">P3</span>
+      <span class="cat-title">Polish & spec features</span>
+      <span class="cat-count">8 tasks</span>
+      <div class="prog-track" style="width:80px"><div class="prog-fill" style="width:10%;background:var(--fill-success)"></div></div>
+      <span class="collapse-icon">▾</span>
+    </div>
+    <div class="tasks">
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">WebSocket real-time progress</div><div class="task-sub">Socket.IO set up — frontend uses polling instead</div></div>
+        <div class="effort">~3h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">File format exports (FBX, STL, USDZ, 3MF)</div><div class="task-sub">Only GLB/OBJ work via trimesh currently</div></div>
+        <div class="effort">~3 days</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Thumbnail generation for 3D models</div><div class="task-sub">No auto-thumbnails on generation</div></div>
+        <div class="effort">~2h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Multilingual prompts (Hindi / Gujarati)</div><div class="task-sub">Original spec feature — not started</div></div>
+        <div class="effort">~4h</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">PBR texture maps (Normal, Roughness, Metallic)</div><div class="task-sub">Original spec — not implemented</div></div>
+        <div class="effort">~2 days</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">UV auto-mapping via xatlas</div><div class="task-sub">Not implemented</div></div>
+        <div class="effort">~1 day</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Animation library (walk, run, idle, attack)</div><div class="task-sub">1–2 weeks of work</div></div>
+        <div class="effort">~2 weeks</div>
+      </div>
+      <div class="task missing">
+        <div class="task-dot"></div>
+        <div><div class="task-label">Mobile responsive polish</div><div class="task-sub">Tailwind helps but not specifically tested</div></div>
+        <div class="effort">~1 day</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  function toggle(id) {
+    document.getElementById(id).classList.toggle('collapsed');
+  }
+</script>

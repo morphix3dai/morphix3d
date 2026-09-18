@@ -1,0 +1,27 @@
+# Morphix 3D - Minimal AI Server (runs on 4GB GPU / CPU fallback)
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+pydantic==2.11.3
+python-multipart>=0.0.9
+python-dotenv>=1.0.0
+httpx>=0.27.0
+aiofiles>=23.2.0
+
+# 3D Processing (pure CPU, no GPU needed)
+trimesh>=4.0.0
+numpy>=1.26.0
+Pillow>=10.0.0
+scipy>=1.12.0
+pygltflib>=1.16.0
+
+# PyTorch (CPU version - install GPU version separately if needed)
+# For GPU: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+torch>=2.1.0
+torchvision>=0.16.0
+
+# Shap-E (OpenAI's free 3D model — works on 4GB GPU)
+git+https://github.com/openai/shap-e.git
+
+# HuggingFace (for downloading models)
+huggingface-hub>=0.23.0
+transformers>=4.40.0
