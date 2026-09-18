@@ -2,14 +2,22 @@
  * AI Pipeline: Creative 3D
  * Primary  : Local AI server (http://localhost:8000) — trimesh + Shap-E
  * Secondary: Meshy API (if MESHY_API_KEY is set)
+ * Storage  : Cloudflare R2 (auto-uploads for permanent cloud storage)
  * Fallback : None — real files always produced by AI server
  */
 
 import { prisma } from "../../lib/prisma";
+import { uploadJobOutputs, R2_ENABLED } from "../storage/r2";
 
 const AI_SERVER = process.env.AI_SERVER_URL || "http://localhost:8000";
 const MESHY_API_KEY = process.env.MESHY_API_KEY || "";
 const MESHY_BASE = "https://api.meshy.ai/openapi/v2";
+
+if (R2_ENABLED) {
+  console.log("[Creative3D] R2 storage enabled — outputs will be uploaded to Cloudflare");
+} else {
+  console.log("[Creative3D] R2 not configured — using local AI server URLs");
+}
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -191,6 +199,8 @@ export async function runTextTo3D(
 
       await updateJob(generationId, { progress: 10 });
       outputUrls = await pollAIServer(generationId, aiJobId);
+      // Upload to R2 for permanent cloud storage
+      outputUrls = await uploadJobOutputs(generationId, AI_SERVER, outputUrls);
       console.log(`[Creative3D] AI server done: ${JSON.stringify(outputUrls)}`);
     }
 

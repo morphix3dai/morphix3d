@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+
+# Environment files (NEVER commit secrets)
+.env
+.env.local
+.env.production
+.env.*.local
+!.env.example
+
+# Database
+*.db
+*.db-journal
+prisma/dev.db
+
+# AI server outputs (generated files, can be large)
+ai-server/outputs/
+ai-server/model_cache/
+ai-server/__pycache__/
+ai-server/*.pyc
+ai-server/pytorch_install.log
+ai-server/test_out/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Vercel
+.vercel
+
+# Misc
+*.tmp
+coverage/
