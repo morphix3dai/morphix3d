@@ -51,7 +51,7 @@ async function callAIServer(
 async function pollAIServer(
   generationId: string,
   aiJobId: string,
-  maxWait = 300_000
+  maxWait = 900_000  // 15 min — first run downloads Shap-E weights (~1.8GB)
 ): Promise<Record<string, string>> {
   const start = Date.now();
 

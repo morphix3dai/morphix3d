@@ -1,4 +1,5 @@
 import express from "express";
+import path from "path";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
@@ -19,10 +20,16 @@ import assetsRoutes from "./routes/assets";
 const app = express();
 const httpServer = createServer(app);
 
+const allowedOrigins = [
+  config.frontendUrl,
+  'https://morphix3d.vercel.app',
+  'http://localhost:3000',
+].filter(Boolean);
+
 // Socket.IO for real-time generation progress
 const io = new SocketIOServer(httpServer, {
   cors: {
-    origin: config.frontendUrl,
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -34,13 +41,20 @@ const io = new SocketIOServer(httpServer, {
 app.use(helmet());
 app.use(
   cors({
-    origin: config.frontendUrl,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.some(o => origin.startsWith(o.replace(/\/$/, '')))) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all in development
+      }
+    },
     credentials: true,
   })
 );
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Rate limiting
 const apiLimiter = rateLimit({

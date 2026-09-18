@@ -141,14 +141,19 @@ _shap_e_xm    = None
 _shap_e_model = None
 _shap_e_diff  = None
 
-def _load_shap_e():
+def _load_shap_e(job_id: str = None):
     global _shap_e_xm, _shap_e_model, _shap_e_diff
     if _shap_e_xm is None:
-        print("[Shap-E] Loading models (first-time ~1-2 min download)...")
+        print("[Shap-E] Loading transmitter model (downloading ~900MB, first-time only)...")
+        if job_id: update_job(job_id, message="Downloading Shap-E model weights (~1.8GB, first time only)...")
         _shap_e_xm    = load_model("transmitter", device=DEVICE)
+        print("[Shap-E] Transmitter loaded! Loading text300M model...")
+        if job_id: update_job(job_id, progress=25, message="Loading text encoder model...")
         _shap_e_model = load_model("text300M",    device=DEVICE)
+        print("[Shap-E] text300M loaded! Loading diffusion config...")
+        if job_id: update_job(job_id, progress=30, message="Loading diffusion config...")
         _shap_e_diff  = diffusion_from_config(load_config("diffusion"))
-        print("[Shap-E] Models loaded!")
+        print("[Shap-E] All models loaded and ready on", DEVICE.upper())
     return _shap_e_xm, _shap_e_model, _shap_e_diff
 
 

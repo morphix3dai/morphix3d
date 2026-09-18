@@ -138,7 +138,7 @@ router.post("/image-to-3d", async (req: Request, res: Response): Promise<void> =
       },
     });
 
-    simulateGeneration(generation.id);
+    runImageTo3D(generation.id, body.imageUrl || '').catch(console.error);
 
     res.status(201).json({
       jobId: generation.id,
@@ -186,7 +186,7 @@ router.post("/texture", async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    simulateGeneration(generation.id);
+    runTexture(generation.id, body.modelUrl || '', body.prompt, body.style).catch(console.error);
 
     res.status(201).json({
       jobId: generation.id,
@@ -224,7 +224,7 @@ router.post("/remesh", async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    simulateGeneration(generation.id);
+    simulateGeneration(generation.id); // TODO: implement real remesh pipeline
 
     res.status(201).json({ jobId: generation.id, status: "QUEUED", creditsUsed: creditResult.creditsUsed });
   } catch (error) {
@@ -641,5 +641,41 @@ router.post("/architecture", async (req: Request, res: Response): Promise<void> 
   }
 });
 
-export default router;
+// ==========================================
+// POST /api/generate/upload
+// ==========================================
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
+const uploadDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: uploadDir,
+    filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+  }),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['.png', '.jpg', '.jpeg', '.webp', '.glb', '.obj', '.stl', '.fbx', '.step', '.iges'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, allowed.includes(ext));
+  },
+});
+
+router.post('/upload', upload.single('file'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: 'No file uploaded' });
+      return;
+    }
+    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    res.json({ url: fileUrl, filename: req.file.filename, size: req.file.size });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Upload failed' });
+  }
+});
+
+export default router;
