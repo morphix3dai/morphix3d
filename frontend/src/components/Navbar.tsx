@@ -14,10 +14,9 @@ import {
   ChevronDown,
   Plus,
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { auth as authApi, credits as creditsApi, getAccessToken } from "@/lib/api";
-import type { User as UserType } from "@/lib/api";
+import { useState } from "react";
 import RazorpayCheckout from "@/components/RazorpayCheckout";
+import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
   { href: "/workspace/text-to-3d", label: "Text to 3D" },
@@ -31,29 +30,11 @@ export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [user, setUser] = useState<UserType | null>(null);
-  const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const { user, credits: creditBalance, isLoggedIn, updateCredits, logout: handleLogout } = useAuth();
 
-  useEffect(() => {
-    const token = getAccessToken();
-    if (token) {
-      authApi.me().then((data) => {
-        setUser(data.user);
-        setCreditBalance(data.user.credits);
-      }).catch(() => {
-        setUser(null);
-      });
-    }
-  }, []);
-
-  const isLoggedIn = !!user;
   const displayName = user?.name || user?.email?.split("@")[0] || "U";
   const initial = displayName.charAt(0).toUpperCase();
-
-  const handleLogout = () => {
-    authApi.logout();
-  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-strong">
@@ -217,7 +198,7 @@ export default function Navbar() {
         isOpen={checkoutOpen}
         onClose={() => setCheckoutOpen(false)}
         onSuccess={(creditsAdded, newBalance) => {
-          setCreditBalance(newBalance);
+          updateCredits(newBalance);
         }}
         userEmail={user?.email}
         userName={user?.name || undefined}

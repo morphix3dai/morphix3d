@@ -59,15 +59,7 @@ export default function LoginPage() {
     if (!forgotEmail.trim()) return;
     setForgotLoading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api"}/auth/forgot-password`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: forgotEmail }),
-        }
-      );
-      // Always show success (security: don't reveal if email exists)
+      await auth.forgotPassword({ email: forgotEmail });
       setForgotSent(true);
     } catch {
       setForgotSent(true); // Still show success for security

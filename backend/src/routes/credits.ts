@@ -1,9 +1,19 @@
 import { Router, Request, Response } from "express";
+import crypto from "crypto";
+import Razorpay from "razorpay";
 import { prisma } from "../lib/prisma";
 import { authMiddleware } from "../middleware/auth";
 import { config } from "../config";
 
 const router = Router();
+
+const razorpayClient =
+  config.razorpay.keyId && config.razorpay.keySecret
+    ? new Razorpay({
+        key_id: config.razorpay.keyId,
+        key_secret: config.razorpay.keySecret,
+      })
+    : null;
 
 router.use(authMiddleware);
 
@@ -62,14 +72,13 @@ router.get("/history", async (req: Request, res: Response): Promise<void> => {
 });
 
 // ==========================================
-// POST /api/credits/purchase (Razorpay stub)
+// POST /api/credits/purchase (Razorpay Order Creation)
 // ==========================================
 router.post("/purchase", async (req: Request, res: Response): Promise<void> => {
   try {
     const { plan } = req.body;
+    const userId = req.user!.userId;
 
-    // Razorpay integration stub
-    // In production, this creates a Razorpay order and returns order_id
     const plans: Record<string, { amount: number; credits: number; name: string }> = {
       pro_monthly:  { amount: 99900,  credits: 2000, name: "Pro Monthly" },  // ₹999 in paise
       credits_100:  { amount: 9900,   credits: 100,  name: "100 Credits" },  // ₹99
@@ -78,7 +87,6 @@ router.post("/purchase", async (req: Request, res: Response): Promise<void> => {
       credits_2000: { amount: 79900,  credits: 2000, name: "2000 Credits" }, // ₹799
     };
 
-    // Accept any case (pro_monthly, PRO_MONTHLY, Pro_Monthly all work)
     const planKey = plan?.toLowerCase?.() ?? "";
     const selectedPlan = plans[planKey];
     if (!selectedPlan) {
@@ -86,8 +94,23 @@ router.post("/purchase", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Mock Razorpay order creation
-    const orderId = `order_mock_${Date.now()}`;
+    let orderId: string;
+
+    if (razorpayClient) {
+      const order = await razorpayClient.orders.create({
+        amount: selectedPlan.amount,
+        currency: "INR",
+        receipt: `rcpt_${userId.slice(0, 8)}_${Date.now()}`,
+        notes: {
+          userId,
+          plan: planKey,
+          credits: String(selectedPlan.credits),
+        },
+      });
+      orderId = order.id;
+    } else {
+      orderId = `order_mock_${Date.now()}`;
+    }
 
     res.json({
       orderId,
@@ -104,21 +127,42 @@ router.post("/purchase", async (req: Request, res: Response): Promise<void> => {
 });
 
 // ==========================================
-// POST /api/credits/verify (Razorpay verify stub)
+// POST /api/credits/verify (Razorpay Signature Verification)
 // ==========================================
 router.post("/verify", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { razorpayPaymentId, razorpayOrderId, credits } = req.body;
+    const { razorpayPaymentId, razorpayOrderId, razorpaySignature, credits, plan } = req.body;
     const userId = req.user!.userId;
 
-    // In production: verify Razorpay signature using crypto
-    // For now, just add credits
+    // Verify HMAC signature when Razorpay secret is set and real order ID is present
+    if (config.razorpay.keySecret && razorpayOrderId && !razorpayOrderId.startsWith("order_mock_")) {
+      if (!razorpaySignature) {
+        res.status(400).json({ error: "Missing payment signature" });
+        return;
+      }
+      const expectedSignature = crypto
+        .createHmac("sha256", config.razorpay.keySecret)
+        .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+        .digest("hex");
+
+      if (expectedSignature !== razorpaySignature) {
+        res.status(400).json({ error: "Invalid payment signature" });
+        return;
+      }
+    }
+
     const creditsToAdd = parseInt(credits) || 500;
+    const planKey = (plan || "").toLowerCase();
+
+    const isPro = planKey === "pro_monthly" || planKey === "pro";
 
     await prisma.$transaction([
       prisma.user.update({
         where: { id: userId },
-        data: { credits: { increment: creditsToAdd } },
+        data: {
+          credits: { increment: creditsToAdd },
+          ...(isPro ? { plan: "PRO" } : {}),
+        },
       }),
       prisma.creditTransaction.create({
         data: {
@@ -127,19 +171,20 @@ router.post("/verify", async (req: Request, res: Response): Promise<void> => {
           type: "PURCHASE",
           razorpayPaymentId: razorpayPaymentId || "mock",
           razorpayOrderId: razorpayOrderId || "mock",
-          description: `Purchased ${creditsToAdd} credits`,
+          description: isPro ? `Upgraded to Pro Plan (+${creditsToAdd} credits)` : `Purchased ${creditsToAdd} credits`,
         },
       }),
     ]);
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { credits: true },
+      select: { credits: true, plan: true },
     });
 
     res.json({
       success: true,
       newBalance: user?.credits,
+      plan: user?.plan,
       creditsAdded: creditsToAdd,
     });
   } catch (error) {

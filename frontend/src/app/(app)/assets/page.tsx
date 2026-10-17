@@ -10,6 +10,7 @@ import {
 import { assets as assetsApi, generate, getAccessToken } from "@/lib/api";
 import type { GenerationJob } from "@/lib/api";
 import toast from "react-hot-toast";
+import { convertGlbToFormat } from "@/lib/exporters";
 
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
@@ -59,6 +60,7 @@ export default function AssetsPage() {
   const [assets, setAssets] = useState<AssetItem[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<AssetItem | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [converting, setConverting] = useState<string | null>(null);
 
   // Fetch real assets from backend
   useEffect(() => {
@@ -141,6 +143,51 @@ export default function AssetsPage() {
       navigator.clipboard.writeText(`${window.location.origin}/community/${asset.id}`);
       toast.success("Share link copied!");
     }
+  };
+
+  const handleFormatExport = async (fmt: string) => {
+    if (!selectedAsset) return;
+    const lowerFmt = fmt.toLowerCase();
+    const url = selectedAsset.outputUrls?.[lowerFmt];
+    const glbUrl = selectedAsset.outputUrls?.glb || selectedAsset.outputUrls?.obj;
+
+    if (url) {
+      window.open(url, "_blank");
+      toast.success(`Downloading .${lowerFmt}`);
+      return;
+    }
+
+    if ((lowerFmt === "obj" || lowerFmt === "stl") && glbUrl) {
+      setConverting(fmt);
+      toast.loading(`Converting to .${lowerFmt}...`, { id: "export-convert" });
+      try {
+        const blob = await convertGlbToFormat(glbUrl, lowerFmt as "obj" | "stl");
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = `${selectedAsset.name.replace(/[^a-zA-Z0-9]/g, "_")}.${lowerFmt}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl);
+        toast.dismiss("export-convert");
+        toast.success(`Downloaded .${lowerFmt}`);
+      } catch (err) {
+        toast.dismiss("export-convert");
+        toast.error(`Export failed: ${err instanceof Error ? err.message : "Error"}`);
+      } finally {
+        setConverting(null);
+      }
+      return;
+    }
+
+    if (lowerFmt === "glb" && glbUrl) {
+      window.open(glbUrl, "_blank");
+      toast.success("Downloading .glb");
+      return;
+    }
+
+    toast.error(`${fmt} format not available for this model`);
   };
 
   if (loading) {
@@ -321,7 +368,7 @@ export default function AssetsPage() {
               <div className="flex h-[65vh]">
                 {/* 3D Viewer */}
                 <div className="flex-1 p-4">
-                  <ModelViewer className="w-full h-full" />
+                  <ModelViewer className="w-full h-full" modelUrl={selectedAsset.outputUrls?.glb || selectedAsset.outputUrls?.obj} />
                 </div>
 
                 {/* Details Sidebar */}
@@ -355,12 +402,32 @@ export default function AssetsPage() {
                   <div>
                     <h3 className="section-label mb-2">Export Formats</h3>
                     <div className="grid grid-cols-2 gap-1.5">
-                      {["GLB", "FBX", "OBJ", "STL", "USDZ", "3MF"].map((fmt) => (
-                        <button key={fmt} onClick={() => toast.success(`Downloading .${fmt.toLowerCase()}`)}
-                          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#0a0a12] border border-[rgba(148,163,184,0.06)] text-xs font-mono text-[#94a3b8] hover:border-[rgba(99,102,241,0.3)] hover:text-white transition-all">
-                          <Download className="w-3 h-3" />.{fmt.toLowerCase()}
-                        </button>
-                      ))}
+                      {["GLB", "FBX", "OBJ", "STL", "USDZ", "3MF"].map((fmt) => {
+                        const lowerFmt = fmt.toLowerCase();
+                        const url = selectedAsset.outputUrls?.[lowerFmt];
+                        const glbUrl = selectedAsset.outputUrls?.glb || selectedAsset.outputUrls?.obj;
+                        const isAvailable = !!url || ((lowerFmt === "obj" || lowerFmt === "stl" || lowerFmt === "glb") && !!glbUrl);
+
+                        return (
+                          <button
+                            key={fmt}
+                            disabled={converting === fmt}
+                            onClick={() => handleFormatExport(fmt)}
+                            className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#0a0a12] border text-xs font-mono transition-all ${
+                              isAvailable
+                                ? "border-[rgba(148,163,184,0.06)] text-[#94a3b8] hover:border-[rgba(99,102,241,0.3)] hover:text-white"
+                                : "border-transparent text-[#475569] cursor-not-allowed opacity-50"
+                            }`}
+                          >
+                            {converting === fmt ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Download className="w-3 h-3" />
+                            )}
+                            .{lowerFmt}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 

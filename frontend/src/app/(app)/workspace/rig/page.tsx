@@ -47,6 +47,21 @@ export default function RigPage() {
     setSelectedAnims((prev) => prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]);
   };
 
+  const uploadFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const token = getAccessToken();
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+    const res = await fetch(`${API_URL}/generate/upload`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    if (!res.ok) throw new Error("File upload failed");
+    const data = await res.json();
+    return data.url;
+  };
+
   const handleRig = useCallback(async () => {
     if (!modelFile) { toast.error("Upload a model first"); return; }
     const token = getAccessToken();
@@ -55,7 +70,11 @@ export default function RigPage() {
     setIsProcessing(true); setProgress(0); setIsDone(false);
 
     try {
-      const result = await generate.rig();
+      toast.loading("Uploading model...", { id: "upload" });
+      const modelUrl = await uploadFile(modelFile);
+      toast.dismiss("upload");
+
+      const result = await generate.rig({ modelUrl, charType, animations: selectedAnims });
       setJobId(result.jobId);
       toast.success(`Job queued! Used ${result.creditsUsed} credits`);
 
@@ -78,11 +97,12 @@ export default function RigPage() {
         } catch { /* keep polling */ }
       }, 2000);
     } catch (err: unknown) {
+      toast.dismiss("upload");
       setIsProcessing(false);
       const message = err instanceof Error ? err.message : "Rigging failed";
       toast.error(message);
     }
-  }, [modelFile]);
+  }, [modelFile, charType, selectedAnims]);
 
   return (
     <div className="h-[calc(100vh-64px)] flex">

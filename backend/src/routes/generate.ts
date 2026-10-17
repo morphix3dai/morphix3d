@@ -215,10 +215,14 @@ router.post("/remesh", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const { modelUrl, polyCount, topology, autoFix, printCheck } = req.body || {};
+
     const generation = await prisma.generation.create({
       data: {
         userId,
         type: "REMESH",
+        prompt: modelUrl ? `Remesh: ${polyCount || 50000} polys, ${topology || "triangle"} mesh` : "Remesh",
+        inputImageUrl: modelUrl || null,
         creditsUsed: creditResult.creditsUsed,
         status: "QUEUED",
       },
@@ -245,10 +249,15 @@ router.post("/rig", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const { modelUrl, charType, animations } = req.body || {};
+
     const generation = await prisma.generation.create({
       data: {
         userId,
         type: "RIG",
+        prompt: modelUrl ? `Auto-Rig: ${charType || "biped"}${animations?.length ? ` [${animations.join(", ")}]` : ""}` : "Auto-Rig",
+        inputImageUrl: modelUrl || null,
+        poseOption: charType || "biped",
         creditsUsed: creditResult.creditsUsed,
         status: "QUEUED",
       },

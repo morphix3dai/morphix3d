@@ -76,38 +76,24 @@ const pricingPlans = [
     name: "Free",
     price: "₹0",
     period: "forever",
-    features: ["5 free credits", "Basic 3D generation", "GLB & OBJ export", "Community gallery"],
+    features: ["200 one-time credits", "All 7 AI engines", "GLB & OBJ export", "Community gallery", "Basic support"],
     cta: "Get Started",
     popular: false,
   },
   {
-    name: "Starter",
-    price: "₹499",
+    name: "Pro",
+    price: "₹999",
     period: "/month",
     features: [
-      "200 credits/month",
-      "All 3 AI engines",
+      "2,000 credits/month",
       "All export formats",
       "Priority queue",
-      "Download history",
-    ],
-    cta: "Start Creating",
-    popular: true,
-  },
-  {
-    name: "Pro",
-    price: "₹1,999",
-    period: "/month",
-    features: [
-      "1000 credits/month",
-      "HD generation quality",
-      "Batch generation",
-      "API access",
-      "Priority support",
+      "No watermark",
       "Commercial license",
+      "Priority support",
     ],
-    cta: "Go Pro",
-    popular: false,
+    cta: "Upgrade to Pro",
+    popular: true,
   },
   {
     name: "Enterprise",
@@ -323,11 +309,11 @@ export default function LandingPage() {
               Start Free, Scale as You Grow
             </motion.h2>
             <motion.p variants={fadeUp} custom={2} className="text-[#94a3b8] max-w-lg mx-auto">
-              5 free credits to start. Upgrade when you need more power.
+              200 free credits to start. Upgrade when you need more power.
             </motion.p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
             {pricingPlans.map((plan, i) => (
               <motion.div
                 key={plan.name}
@@ -387,7 +373,7 @@ export default function LandingPage() {
             <MorphixLogo size="lg" showTagline className="justify-center mb-6" />
             <h2 className="text-3xl font-bold mb-3">Ready to Create?</h2>
             <p className="text-[#94a3b8] mb-6">
-              Start with 5 free credits. No credit card required.
+              Start with 200 free credits. No credit card required.
             </p>
             <Link
               href="/register"

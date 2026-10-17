@@ -78,7 +78,7 @@ app.use("/api/credits", apiLimiter, creditsRoutes);
 app.use("/api/assets", apiLimiter, assetsRoutes);
 
 // Health check
-app.get("/api/health", (_req, res) => {
+app.get(["/", "/health", "/api/health"], (_req, res) => {
   res.json({
     status: "ok",
     service: "forge3d-backend",

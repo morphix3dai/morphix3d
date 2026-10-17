@@ -7,9 +7,10 @@ import {
   Sparkles, Cog, Building2, Palette, ImageIcon, Paintbrush, Hexagon, Bone,
   Zap, FolderOpen, Clock, TrendingUp, ArrowRight, Loader2,
 } from "lucide-react";
-import { auth as authApi, generate, credits as creditsApi, getAccessToken } from "@/lib/api";
-import type { User, GenerationJob } from "@/lib/api";
+import { generate, getAccessToken } from "@/lib/api";
+import type { GenerationJob } from "@/lib/api";
 import CategorySelector from "@/components/CategorySelector";
+import { useAuth } from "@/context/AuthContext";
 
 const quickActions = [
   { icon: Cog, label: "Mechanical CAD", href: "/workspace/mechanical", color: "from-[#00F0FF] to-[#0EA5E9]", credits: 5, badge: "CAD" },
@@ -38,7 +39,7 @@ const statusColor: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, credits, plan } = useAuth();
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,15 +50,12 @@ export default function DashboardPage() {
       return;
     }
 
-    Promise.all([
-      authApi.me(),
-      generate.history(1, 10),
-    ]).then(([userData, historyData]) => {
-      setUser(userData.user);
-      setJobs(historyData.generations);
-    }).catch(() => {
-      window.location.href = "/login";
-    }).finally(() => setLoading(false));
+    generate.history(1, 10)
+      .then((historyData) => {
+        setJobs(historyData.generations || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
@@ -81,10 +79,10 @@ export default function DashboardPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { icon: Zap, label: "Credits Left", value: user?.credits ?? 0, color: "text-[#f59e0b]" },
+          { icon: Zap, label: "Credits Left", value: credits ?? user?.credits ?? 0, color: "text-[#f59e0b]" },
           { icon: Sparkles, label: "Generations", value: jobs.length, color: "text-[#6366f1]" },
           { icon: FolderOpen, label: "Models Saved", value: jobs.filter(j => j.status === "COMPLETED").length, color: "text-[#10b981]" },
-          { icon: TrendingUp, label: "Plan", value: user?.plan || "FREE", color: "text-[#06b6d4]" },
+          { icon: TrendingUp, label: "Plan", value: plan || user?.plan || "FREE", color: "text-[#06b6d4]" },
         ].map((stat) => (
           <div key={stat.label} className="p-4 rounded-xl bg-[#12121a] border border-[rgba(148,163,184,0.06)]">
             <stat.icon className={`w-5 h-5 ${stat.color} mb-2`} />

@@ -1,10 +1,16 @@
 "use client";
 
 import { useState, useRef } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, Sparkles, Download, Heart, Share2, ZoomIn, X, Loader2, ImageIcon, Wand2, Settings2, ChevronRight, Building2 } from "lucide-react";
+import { Upload, Sparkles, Download, Heart, Share2, ZoomIn, X, Loader2, ImageIcon, Wand2, Settings2, ChevronRight, Building2, Box, Layers } from "lucide-react";
 import toast from "react-hot-toast";
 import { generate } from "@/lib/api";
+
+const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-[#0a0a12] rounded-xl animate-pulse" />,
+});
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type BuildingType = { id: string; label: string };
@@ -51,6 +57,8 @@ export default function ArchitecturePage() {
   const [progress, setProgress]     = useState(0);
   const [result, setResult]         = useState<string | null>(null);
   const [previewSvg, setPreviewSvg] = useState<string | null>(null);
+  const [outputUrls, setOutputUrls] = useState<Record<string, string> | null>(null);
+  const [viewMode, setViewMode]     = useState<"2d" | "3d">("2d");
   const [resultLabel, setResultLabel] = useState("");
   const [likedItems, setLikedItems] = useState<Set<number>>(new Set());
   const [zoomItem, setZoomItem]     = useState<(typeof GALLERY_ITEMS)[0] | null>(null);
@@ -65,6 +73,20 @@ export default function ArchitecturePage() {
     reader.readAsDataURL(file);
   };
 
+  const handleDownload = (format: "svg" | "glb" | "pdf") => {
+    const url = outputUrls?.[format] || (format === "svg" ? previewSvg : null);
+    if (!url) {
+      toast.error(`${format.toUpperCase()} format not available for this design`);
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `architecture-${buildingType}-${style}.${format}`;
+    a.target = "_blank";
+    a.click();
+    toast.success(`Downloading .${format.toUpperCase()}`);
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim() && !baseImage) {
       toast.error("Add a prompt or upload a base image");
@@ -74,6 +96,7 @@ export default function ArchitecturePage() {
     setProgress(0);
     setResult(null);
     setPreviewSvg(null);
+    setOutputUrls(null);
     try {
       const bt = BUILDING_TYPES.find(b => b.id === buildingType)?.label || buildingType;
       const st = STYLES.find(s => s.id === style)?.label || style;
@@ -97,10 +120,10 @@ export default function ArchitecturePage() {
             const status = await generate.status(jobId);
             setProgress(status.progress || 0);
             if (status.status === "COMPLETED") {
-              // Use SVG preview if backend provided it
               const urls = status.outputUrls as Record<string, string> | undefined;
-              if (urls?.preview) {
-                setPreviewSvg(urls.preview);
+              if (urls) {
+                setOutputUrls(urls);
+                if (urls.preview) setPreviewSvg(urls.preview);
               }
               break;
             }
@@ -266,9 +289,13 @@ export default function ArchitecturePage() {
               {result ? (
                 <motion.div key="result" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                   className="w-full max-w-2xl">
-                  {/* Real floor plan preview */}
+                  {/* Real floor plan / 3D model preview */}
                   <div className="relative rounded-2xl overflow-hidden aspect-video bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl">
-                    {previewSvg ? (
+                    {viewMode === "3d" ? (
+                      <div className="w-full h-full min-h-[360px]">
+                        <ModelViewer modelUrl={outputUrls?.glb} className="w-full h-full" />
+                      </div>
+                    ) : previewSvg ? (
                       // Real SVG floor plan from backend
                       <img
                         src={previewSvg}
@@ -289,21 +316,48 @@ export default function ArchitecturePage() {
                       </div>
                     )}
                     {/* Overlay badge */}
-                    <div className="absolute top-4 left-4">
+                    <div className="absolute top-4 left-4 z-10">
                       <span className="px-2.5 py-1 bg-[#e040fb]/80 backdrop-blur-sm rounded-full text-xs font-semibold">
                         AI Generated
                       </span>
+                    </div>
+                    {/* 2D / 3D view mode toggle */}
+                    <div className="absolute top-4 right-4 z-10 flex gap-1 p-0.5 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
+                      <button
+                        onClick={() => setViewMode("2d")}
+                        className={`px-2.5 py-1 rounded text-xs font-medium transition-all flex items-center gap-1 ${
+                          viewMode === "2d" ? "bg-white/20 text-white shadow" : "text-white/50 hover:text-white"
+                        }`}
+                      >
+                        <Layers className="w-3 h-3" /> 2D Plan
+                      </button>
+                      <button
+                        onClick={() => setViewMode("3d")}
+                        className={`px-2.5 py-1 rounded text-xs font-medium transition-all flex items-center gap-1 ${
+                          viewMode === "3d" ? "bg-white/20 text-white shadow" : "text-white/50 hover:text-white"
+                        }`}
+                      >
+                        <Box className="w-3 h-3" /> 3D View
+                      </button>
                     </div>
                   </div>
                   {/* Action bar */}
                   <div className="flex items-center justify-between mt-4 px-1">
                     <p className="text-sm text-white/50 truncate max-w-xs">{prompt || `${BUILDING_TYPES.find(b=>b.id===buildingType)?.label} design`}</p>
-                    <div className="flex gap-2">
-                      <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"><Heart className="w-4 h-4 text-white/50" /></button>
-                      <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"><Share2 className="w-4 h-4 text-white/50" /></button>
-                      <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#e040fb] to-[#ff4081] text-xs font-semibold flex items-center gap-1.5">
-                        <Download className="w-3.5 h-3.5" /> Download
-                      </button>
+                    <div className="flex items-center gap-2">
+                      <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors" title="Like"><Heart className="w-4 h-4 text-white/50" /></button>
+                      <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors" title="Share"><Share2 className="w-4 h-4 text-white/50" /></button>
+                      <div className="flex gap-1.5 ml-1">
+                        <button onClick={() => handleDownload("svg")} className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono font-medium flex items-center gap-1 transition-all" title="Download SVG Floor Plan">
+                          <Download className="w-3 h-3" />.svg
+                        </button>
+                        <button onClick={() => handleDownload("glb")} className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono font-medium flex items-center gap-1 transition-all" title="Download 3D GLB">
+                          <Download className="w-3 h-3" />.glb
+                        </button>
+                        <button onClick={() => handleDownload("pdf")} className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono font-medium flex items-center gap-1 transition-all" title="Download PDF Blueprint">
+                          <Download className="w-3 h-3" />.pdf
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -442,7 +496,19 @@ export default function ArchitecturePage() {
                       <Heart className={`w-3.5 h-3.5 ${likedItems.has(zoomItem.id) ? "fill-current" : ""}`} />
                       {likedItems.has(zoomItem.id) ? "Liked" : "Like"}
                     </button>
-                    <button className="flex-1 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5 border border-white/10 text-white/50 hover:border-white/30 transition-all">
+                    <button
+                      onClick={() => {
+                        const blob = new Blob([JSON.stringify(zoomItem, null, 2)], { type: "application/json" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `${zoomItem.label.toLowerCase().replace(/\s+/g, "-")}-spec.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        toast.success(`Saved ${zoomItem.label} specs`);
+                      }}
+                      className="flex-1 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5 border border-white/10 text-white/50 hover:border-white/30 hover:text-white transition-all"
+                    >
                       <Download className="w-3.5 h-3.5" /> Save
                     </button>
                   </div>

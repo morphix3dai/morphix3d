@@ -137,6 +137,30 @@ export const auth = {
 
   me: () => apiFetch<{ user: User }>("/auth/me"),
 
+  updateProfile: (data: { name?: string; avatarUrl?: string }) =>
+    apiFetch<{ user: User }>("/auth/profile", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
+  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+    apiFetch<{ message: string }>("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  forgotPassword: (data: { email: string }) =>
+    apiFetch<{ message: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  resetPassword: (data: { token: string; password: string }) =>
+    apiFetch<{ message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
   logout: () => {
     const token = getRefreshToken();
     apiFetch("/auth/logout", {
@@ -177,16 +201,16 @@ export const generate = {
       { method: "POST", body: JSON.stringify(data) }
     ),
 
-  remesh: () =>
+  remesh: (data: { modelUrl: string; polyCount?: number; topology?: string; autoFix?: boolean; printCheck?: boolean }) =>
     apiFetch<{ jobId: string; status: string; creditsUsed: number }>(
       "/generate/remesh",
-      { method: "POST", body: JSON.stringify({}) }
+      { method: "POST", body: JSON.stringify(data) }
     ),
 
-  rig: () =>
+  rig: (data: { modelUrl: string; charType?: string; animations?: string[] }) =>
     apiFetch<{ jobId: string; status: string; creditsUsed: number }>(
       "/generate/rig",
-      { method: "POST", body: JSON.stringify({}) }
+      { method: "POST", body: JSON.stringify(data) }
     ),
 
   mechanical: (data: { prompt: string; partType?: string; material?: string; units?: string }) =>
@@ -204,10 +228,31 @@ export const generate = {
   status: (jobId: string) =>
     apiFetch<GenerationJob>(`/generate/status/${jobId}`),
 
+  upload: async (file: File): Promise<{ url: string; filename: string; size: number }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const token = getAccessToken();
+    const res = await fetch(`${API_BASE}/generate/upload`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new ApiError(res.status, err.error || "File upload failed");
+    }
+    return res.json();
+  },
+
   history: (page = 1, limit = 20) =>
     apiFetch<{ generations: GenerationJob[]; pagination: Pagination }>(
       `/generate/history?page=${page}&limit=${limit}`
     ),
+};
+
+export const uploadFile = async (file: File): Promise<string> => {
+  const result = await generate.upload(file);
+  return result.url;
 };
 
 // ==========================================
@@ -309,6 +354,7 @@ export interface Asset {
   fileUrl: string;
   fileSize: number | null;
   thumbnailUrl: string | null;
+  outputUrls?: Record<string, string>;
   isPublic: boolean;
   likes: number;
   downloads: number;

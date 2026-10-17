@@ -32,6 +32,21 @@ export default function RemeshPage() {
     maxFiles: 1,
   });
 
+  const uploadFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const token = getAccessToken();
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+    const res = await fetch(`${API_URL}/generate/upload`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    if (!res.ok) throw new Error("File upload failed");
+    const data = await res.json();
+    return data.url;
+  };
+
   const handleRemesh = useCallback(async () => {
     if (!modelFile) { toast.error("Upload a model first"); return; }
     const token = getAccessToken();
@@ -40,7 +55,11 @@ export default function RemeshPage() {
     setIsProcessing(true); setProgress(0); setIsDone(false);
 
     try {
-      const result = await generate.remesh();
+      toast.loading("Uploading model...", { id: "upload" });
+      const modelUrl = await uploadFile(modelFile);
+      toast.dismiss("upload");
+
+      const result = await generate.remesh({ modelUrl, polyCount, topology, autoFix, printCheck });
       setJobId(result.jobId);
       toast.success(`Job queued! Used ${result.creditsUsed} credits`);
 
@@ -63,11 +82,12 @@ export default function RemeshPage() {
         } catch { /* keep polling */ }
       }, 2000);
     } catch (err: unknown) {
+      toast.dismiss("upload");
       setIsProcessing(false);
       const message = err instanceof Error ? err.message : "Remesh failed";
       toast.error(message);
     }
-  }, [modelFile]);
+  }, [modelFile, polyCount, topology, autoFix, printCheck]);
 
   const formatPoly = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(0)}K` : n.toString();
 

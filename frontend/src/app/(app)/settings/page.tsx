@@ -55,17 +55,11 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api"}/auth/profile`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getAccessToken()}`,
-        },
-        body: JSON.stringify({ name }),
-      });
+      await auth.updateProfile({ name });
       toast.success("Profile updated!");
-    } catch {
-      toast.error("Failed to update profile");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to update profile";
+      toast.error(message);
     }
   };
 
@@ -74,16 +68,7 @@ export default function SettingsPage() {
     if (newPassword !== confirmPassword) { toast.error("Passwords don't match"); return; }
     if (newPassword.length < 6) { toast.error("Password must be at least 6 characters"); return; }
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api"}/auth/change-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getAccessToken()}`,
-        },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed");
+      await auth.changePassword({ currentPassword, newPassword });
       toast.success("Password changed!");
       setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
     } catch (err: unknown) {

@@ -110,8 +110,8 @@ export default function CommunityPage() {
                 <span className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-semibold bg-[rgba(99,102,241,0.15)] text-[#818cf8]">{item.fileFormat || "GLB"}</span>
                 {/* Hover */}
                 <div className="absolute inset-0 bg-[rgba(0,0,0,0.6)] flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="p-2.5 rounded-lg bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] text-white"><Eye className="w-5 h-5" /></button>
-                  <button className="p-2.5 rounded-lg bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] text-white"><Download className="w-5 h-5" /></button>
+                  <button onClick={() => { const url = item.fileUrl || item.outputUrls?.glb; if (url) window.open(url, "_blank"); }} className="p-2.5 rounded-lg bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] text-white" title="View model"><Eye className="w-5 h-5" /></button>
+                  <button onClick={() => { const url = item.fileUrl || item.outputUrls?.glb; if (url) { const a = document.createElement("a"); a.href = url; a.download = `${item.name || "model"}.${item.fileFormat?.toLowerCase() || "glb"}`; a.click(); } }} className="p-2.5 rounded-lg bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] text-white" title="Download model"><Download className="w-5 h-5" /></button>
                 </div>
               </div>
               <div className="p-3">

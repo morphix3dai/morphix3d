@@ -11,7 +11,7 @@ import {
   Center,
   useGLTF,
 } from "@react-three/drei";
-import { Suspense, useRef, useState, useCallback } from "react";
+import { Suspense, useRef, useState, useCallback, useEffect, useMemo } from "react";
 import {
   RotateCcw,
   Box,
@@ -64,30 +64,43 @@ function LoadedModel({
   onStats: (stats: { faces: number; vertices: number }) => void;
 }) {
   const { scene } = useGLTF(url);
-  const clonedScene = scene.clone();
+  const clonedScene = useMemo(() => scene.clone(), [scene]);
 
-  // Count faces and vertices
-  let totalFaces = 0;
-  let totalVertices = 0;
-  clonedScene.traverse((child) => {
-    if (child instanceof THREE.Mesh) {
-      const geometry = child.geometry;
-      totalFaces += geometry.index
-        ? geometry.index.count / 3
-        : geometry.attributes.position.count / 3;
-      totalVertices += geometry.attributes.position.count;
-
-      if (wireframe) {
-        child.material = new THREE.MeshStandardMaterial({
-          wireframe: true,
-          color: "#6366f1",
-        });
+  // Compute and report stats after mounting/updating
+  useEffect(() => {
+    let totalFaces = 0;
+    let totalVertices = 0;
+    clonedScene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const geometry = child.geometry;
+        if (geometry) {
+          totalFaces += geometry.index
+            ? geometry.index.count / 3
+            : (geometry.attributes?.position ? geometry.attributes.position.count / 3 : 0);
+          totalVertices += geometry.attributes?.position ? geometry.attributes.position.count : 0;
+        }
       }
-    }
-  });
+    });
 
-  // Report stats
-  onStats({ faces: Math.round(totalFaces), vertices: totalVertices });
+    onStats({ faces: Math.round(totalFaces), vertices: totalVertices });
+  }, [clonedScene, onStats]);
+
+  // Handle wireframe toggle without destroying original material properties
+  useEffect(() => {
+    clonedScene.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.material) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach((mat) => {
+            if ("wireframe" in mat) (mat as THREE.MeshStandardMaterial).wireframe = wireframe;
+          });
+        } else {
+          if ("wireframe" in child.material) {
+            (child.material as THREE.MeshStandardMaterial).wireframe = wireframe;
+          }
+        }
+      }
+    });
+  }, [clonedScene, wireframe]);
 
   return (
     <Center>

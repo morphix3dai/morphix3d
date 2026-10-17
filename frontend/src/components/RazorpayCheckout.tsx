@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CreditCard, Shield, Zap, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import { credits as creditsApi } from "@/lib/api";
+import { credits as creditsApi, getAccessToken } from "@/lib/api";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 
 // Declare Razorpay on window for TypeScript
 declare global {
@@ -104,13 +106,15 @@ export default function RazorpayCheckout({ isOpen, onClose, onSuccess, userEmail
         handler: async (response) => {
           // 4. Verify payment on backend
           try {
-            const verifyRes = await fetch("/api/credits/verify", {
+            const verifyRes = await fetch(`${API_URL}/credits/verify`, {
               method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("forge3d_access_token")}` },
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${getAccessToken()}` },
               body: JSON.stringify({
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpayOrderId: response.razorpay_order_id,
+                razorpaySignature: response.razorpay_signature,
                 credits: selectedPlan.credits,
+                plan: selectedPlan.id,
               }),
             });
             const data = await verifyRes.json();

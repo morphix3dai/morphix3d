@@ -19,8 +19,8 @@ import {
   Hexagon,
   Bone,
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { credits as creditsApi, getAccessToken } from "@/lib/api";
+import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 const menuItems = [
   {
@@ -69,16 +69,7 @@ const menuItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const [creditBalance, setCreditBalance] = useState<number | null>(null);
-
-  useEffect(() => {
-    const token = getAccessToken();
-    if (token) {
-      creditsApi.balance().then((data) => {
-        setCreditBalance(data.credits);
-      }).catch(() => {});
-    }
-  }, []);
+  const { credits: creditBalance } = useAuth();
 
   return (
     <aside
