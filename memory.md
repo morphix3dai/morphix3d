@@ -1,77 +1,108 @@
-# FORGE3D / Morphix 3D — Memory Log
+# Morphix 3D — Memory (Updated Oct 18, 2026)
 
-> **Last updated:** 2026-10-15 18:22 (UTC+5:30)
+## Live URLs
+- **Frontend**: https://morphix3d.vercel.app (Next.js 16, Vercel)
+- **GitHub**: https://github.com/morphix3dai/morphix3d.git
+- **Railway project**: https://railway.com/project/5c6f719e-270b-4e86-a8e9-959c370e1464
+- **Latest commit**: f0e6382
 
----
+## Stack
+- Frontend: Next.js 16 / React 19 / Tailwind / Three.js / @react-three/fiber
+- Backend: Node.js / Express / Prisma / PostgreSQL (Supabase)
+- AI Server: Python FastAPI / CadQuery / Trimesh / Shap-E (local)
+- Storage: Cloudflare R2 (code ready, env vars needed)
+- Email: Resend (installed, needs RESEND_API_KEY)
 
-## ✅ FIXES COMPLETED TO DATE
+## Environment (backend/.env)
+DATABASE_URL: ✅ Supabase PostgreSQL (live)
+JWT_SECRET / JWT_REFRESH_SECRET: ✅ Set (weak dev values — change in production)
+RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET: ❌ Empty
+MESHY_API_KEY: ❌ Empty
+OPENAI_API_KEY: ❌ Empty
+RESEND_API_KEY: ❌ Empty (needs to be added for real emails)
+GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET: ❌ Empty
 
-### Phase 1 — Critical Blockers ✅ DONE
-| # | Task | Status |
-|---|------|--------|
-| 1 | **Fix landing page pricing** — matches pricing page: Free (200 credits) / Pro ₹999 (2000 credits/mo) / Enterprise (Custom) | ✅ DONE |
-| 2 | **Fix "5 free credits"** → "200 free credits" across landing page & CTA | ✅ DONE |
-| 3 | **Create `frontend/.env.local`** with `NEXT_PUBLIC_API_URL=http://localhost:4000/api` | ✅ DONE |
-| 4 | **Fix RazorpayCheckout.tsx** — routes verify call to `${API_URL}/credits/verify` with auth token | ✅ DONE |
+## Railway Env Vars Needed
+```
+NODE_ENV=production
+PORT=4000
+FRONTEND_URL=https://morphix3d.vercel.app
+DATABASE_URL=<copy from backend/.env>
+JWT_SECRET=<64-char random - use: openssl rand -hex 32>
+JWT_REFRESH_SECRET=<64-char random>
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+RESEND_API_KEY=<from resend.com>
+```
 
-### Phase 2 — Quick Bug Fixes ✅ DONE
-| # | Task | Status |
-|---|------|--------|
-| 5 | **Fix Assets page ModelViewer** — passes `modelUrl={selectedAsset.outputUrls?.glb}` | ✅ DONE |
-| 6 | **Fix Assets export buttons** — downloads from `outputUrls` with fallback notifications | ✅ DONE |
-| 7 | **Fix Community page buttons** — Eye and Download buttons open/download models with `fileUrl` and `outputUrls` support | ✅ DONE |
+## Vercel Env Var Needed
+```
+NEXT_PUBLIC_API_URL=<Railway backend URL>/api
+```
 
-### Phase 3 — Feature Completeness ✅ DONE
-| # | Task | Status |
-|---|------|--------|
-| 8 | **Fix Remesh page** — uploads file first via `/generate/upload`, sends `polyCount`, `topology`, `autoFix`, `printCheck` | ✅ DONE |
-| 9 | **Fix Rig page & route** — uploads file, passes `charType` and `animations`, persisted in backend `/api/generate/rig` | ✅ DONE |
-| 10 | **Fix Architecture page** — integrated Three.js `ModelViewer` for 3D GLB preview, 2D/3D mode switch, and export buttons for SVG/GLB/PDF | ✅ DONE |
-| 11 | **Centralize API client (`api.ts`)** — added `generate.upload`, exported `uploadFile`, added `updateProfile`, `changePassword`, `forgotPassword`, `resetPassword` | ✅ DONE |
+## What's Done ✅ (tsc clean on all)
+1. All 7 workspace pages use real API (no fake setInterval)
+2. File upload endpoint (POST /api/generate/upload) with multer
+3. Image-to-3D and Texture pages upload file first, then generate
+4. All pages pass outputUrls.glb to ModelViewer on completion
+5. Mechanical page has ModelViewer + wired STEP/STL/GLB download buttons
+6. Backend: Prisma on PostgreSQL, CORS multi-origin
+7. Backend: real runImageTo3D/runTexture pipelines wired (not simulateGeneration)
+8. Resend email service (backend/src/lib/email.ts)
+   - sendPasswordResetEmail: wired in forgot-password route
+   - sendWelcomeEmail: fires after successful registration
+9. Mock simulation now serves REAL sample GLBs (/samples/dragon.glb etc.)
+10. SEO: full metadata (OG, Twitter, robots, sitemap, PWA manifest)
+11. sitemap.ts → /sitemap.xml auto-generated
+12. robots.ts → /robots.txt auto-generated
+13. site.webmanifest in public/
 
-### Phase 4 — Auth & Payments ✅ DONE
-| # | Task | Status |
-|---|------|--------|
-| 12 | **Create AuthContext/Provider** — central auth state management (`user`, `credits`, `plan`, `refreshUser`, `updateCredits`), wrapped in `RootLayout`, integrated in `Navbar`, `Sidebar`, and `Settings` | ✅ DONE |
-| 13 | **Google OAuth flow** — Google token verification endpoint in `/auth/google` with seamless dev fallback | ✅ DONE |
-| 14 | **Install `razorpay` & integrate** — installed `razorpay` SDK, real order generation in `/credits/purchase`, HMAC SHA-256 signature verification in `/credits/verify`, auto-upgrade to PRO plan | ✅ DONE |
+## What's Pending ⏳
 
----
+### USER ACTION NEEDED (blocking Railway deploy):
+1. Railway → morphix3d-backend → Settings → **Root Directory = `backend`**
+2. Add Railway env vars (see above)
+3. Redeploy, copy Railway URL
+4. Update Vercel: NEXT_PUBLIC_API_URL = <Railway URL>/api → Redeploy
 
-## ⚠️ REMAINING TASKS (Phase 5-7)
+### CODE WORK REMAINING:
+- [ ] Razorpay test keys (user needs to get from razorpay.com)
+- [ ] RESEND_API_KEY (user needs to get from resend.com — free 3k emails/month)
+- [ ] Cloudflare R2 bucket setup + env vars (code already written in r2.ts)
+- [ ] OG image (/public/og-image.png) — social sharing preview image
+- [ ] Favicon files (currently referenced but not in /public/)
+- [ ] Google OAuth: GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET env vars
 
-### Phase 5: API Keys & Credentials (User to Provide in `backend/.env`)
-| # | Task | What's Needed |
-|---|------|---------------|
-| 15 | `REPLICATE_API_TOKEN` → `backend/.env` | Replicate account API token |
-| 16 | `OPENAI_API_KEY` → `backend/.env` | OpenAI API key |
-| 17 | `RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET` | Live/Test Razorpay keys |
-| 18 | `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` | Google Cloud Console OAuth credentials |
-| 19 | `S3_ENDPOINT` + `S3_ACCESS_KEY` + `S3_SECRET_KEY` | Cloudflare R2 or AWS S3 credentials |
+### PHASE 3 (needs API keys first):
+- [ ] Wire Meshy API (creative3d.ts already has the code, needs MESHY_API_KEY)
+- [ ] Zoo.dev for Mechanical CAD (needs new code in mechanical.ts)
 
-### Phase 6: Real AI Pipelines Integration
-| # | Task | Depends On |
-|---|------|------------|
-| 20 | Wire Replicate into Text-to-3D pipeline (`creative3d.ts`) | #15 |
-| 21 | Wire Replicate into Image-to-3D pipeline (`creative3d.ts`) | #15 |
-| 22 | Wire Replicate into Texture pipeline (`creative3d.ts`) | #15 |
-| 23 | Add `/generate/mechanical` to AI server (`ai-server/main.py`) | — |
-| 24 | Implement real Remesh pipeline (PyMeshLab / Open3D) | — |
-| 25 | Implement real Rig pipeline (Blender Python bpy) | — |
+### PHASE 4 - Pre-launch (Oct 30-31):
+- [ ] Sentry error monitoring (npm install @sentry/nextjs @sentry/node)
+- [ ] UptimeRobot monitoring setup
+- [ ] Loading skeleton states on all pages
 
-### Phase 7: Polish & Deploy
-| # | Task |
-|---|------|
-| 26 | End-to-end testing with mock & live services |
-| 27 | CI/CD GitHub Actions setup |
-| 28 | Redeploy frontend to Vercel with production environment variables |
-| 29 | Deploy backend + AI server to GPU server / container host |
-| 30 | Cloudflare CDN setup for model delivery |
+### SECURITY AUDITS:
+- Nov 1: Auth & API audit
+- Nov 3: Payments & Credits audit
+- Nov 5: File Upload & Data audit
 
----
+### LAUNCH: Nov 8, 2026
 
-## Verification Evidence
-- `backend`: `npx tsc --noEmit` passed with 0 errors (Exit code: 0).
-- `frontend`: `npx tsc --noEmit` passed with 0 errors (Exit code: 0).
+## Key Architecture Notes
+- When AI server is unreachable → mockSimulation() → returns real GLBs from /samples/
+- Meshy API key present → uses Meshy for Text-to-3D/Image-to-3D
+- No Meshy key → calls local AI server (Shap-E) on port 8000
+- Razorpay order created backend, HMAC verified, upgrades user to PRO plan
+- Google OAuth: frontend button → POST /api/auth/google → creates/finds user
+- Remesh and Rig still use simulateGeneration (no real pipeline yet)
 
-*Updated under Gravitas execution protocol.*
+## Free Services Used
+| Service | Purpose | Limit |
+|---------|---------|-------|
+| Vercel | Frontend hosting | Free |
+| Railway | Backend hosting | $5/mo free credit |
+| Supabase | PostgreSQL DB | 500MB free |
+| Cloudflare R2 | Model storage | 10GB/month free |
+| Resend | Transactional email | 3,000/month free |
+| GitHub | Code repository | Free |
