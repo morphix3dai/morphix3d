@@ -489,6 +489,10 @@ async function simulateGeneration(generationId: string) {
 // Fallback mock simulation (used when AI server is not running)
 async function mockSimulation(generationId: string) {
   const steps = [10, 25, 45, 65, 80, 95, 100];
+  // Real sample GLBs from frontend/public/samples/ — these are actual AI-generated models
+  const SAMPLES = ["/samples/dragon.glb", "/samples/castle.glb", "/samples/sword.glb"];
+  const sampleGlb = SAMPLES[Math.floor(Math.random() * SAMPLES.length)];
+
   for (const progress of steps) {
     await new Promise((resolve) => setTimeout(resolve, 1500 + Math.random() * 500));
 
@@ -500,8 +504,8 @@ async function mockSimulation(generationId: string) {
           progress: 100,
           completedAt: new Date(),
           outputUrls: {
-            glb: `/mock/${generationId}/model.glb`,
-            obj: `/mock/${generationId}/model.obj`,
+            glb: sampleGlb,
+            obj: sampleGlb.replace(".glb", ".obj"),
           },
         },
       });
@@ -518,7 +522,7 @@ async function mockSimulation(generationId: string) {
             generationId,
             name: gen.prompt?.slice(0, 50) || `${gen.type} Model`,
             fileFormat: "GLB",
-            fileUrl: `/mock/${generationId}/model.glb`,
+            fileUrl: sampleGlb,
             fileSize: Math.floor(Math.random() * 10000000) + 1000000,
           },
         });

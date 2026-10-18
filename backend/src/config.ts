@@ -41,6 +41,10 @@ export const config = {
     region: process.env.S3_REGION || "auto",
   },
 
+  // Email (Resend)
+  resendApiKey: process.env.RESEND_API_KEY || "",
+  emailFrom: process.env.EMAIL_FROM || "Morphix 3D <noreply@morphix3d.ai>",
+
   // AI Server
   aiServerUrl: process.env.AI_SERVER_URL || "http://localhost:8000",
 

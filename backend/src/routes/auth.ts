@@ -9,6 +9,7 @@ import {
 } from "../lib/jwt";
 import { authMiddleware } from "../middleware/auth";
 import { config } from "../config";
+import { sendPasswordResetEmail, sendWelcomeEmail } from "../lib/email";
 
 const router = Router();
 
@@ -87,6 +88,9 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
       accessToken,
       refreshToken,
     });
+
+    // Send welcome email (fire-and-forget — don't block response)
+    sendWelcomeEmail(user.email, user.name || "there").catch(console.error);
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.errors[0].message });
@@ -275,16 +279,8 @@ router.post("/forgot-password", async (req: Request, res: Response): Promise<voi
 
       const resetUrl = `${config.frontendUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
-      // In production: send email via Resend/Nodemailer
-      // In development: log the link to console
-      if (config.nodeEnv === "development") {
-        console.log("\n╔══════════════════════════════════════════════");
-        console.log("║  PASSWORD RESET LINK (dev mode):");
-        console.log(`║  ${resetUrl}`);
-        console.log("╚══════════════════════════════════════════════\n");
-      }
-      // TODO: Send email via Resend API in production
-      // await sendResetEmail(email, resetUrl);
+      // Send email via Resend (falls back to console.log in dev when key is absent)
+      await sendPasswordResetEmail(email, resetUrl);
     }
 
     res.json({ message: "If that email is registered, a reset link has been sent." });
