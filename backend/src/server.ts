@@ -22,6 +22,8 @@ const httpServer = createServer(app);
 
 const allowedOrigins = [
   config.frontendUrl,
+  'https://3dmorphix.com',
+  'https://www.3dmorphix.com',
   'https://morphix3d.vercel.app',
   'http://localhost:3000',
 ].filter(Boolean);

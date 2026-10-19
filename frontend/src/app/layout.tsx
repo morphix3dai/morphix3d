@@ -9,7 +9,7 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-const SITE_URL = "https://morphix3d.vercel.app";
+const SITE_URL = "https://3dmorphix.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

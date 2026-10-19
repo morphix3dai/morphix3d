@@ -14,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: "https://morphix3d.vercel.app/sitemap.xml",
-    host: "https://morphix3d.vercel.app",
+    sitemap: "https://3dmorphix.com/sitemap.xml",
+    host: "https://3dmorphix.com",
   };
 }
