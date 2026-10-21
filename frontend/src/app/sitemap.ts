@@ -8,6 +8,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/login`, changeFrequency: "monthly" as const, priority: 0.5 },
     { url: `${baseUrl}/register`, changeFrequency: "monthly" as const, priority: 0.7 },
     { url: `${baseUrl}/pricing`, changeFrequency: "weekly" as const, priority: 0.9 },
+    { url: `${baseUrl}/terms`, changeFrequency: "yearly" as const, priority: 0.4 },
+    { url: `${baseUrl}/privacy`, changeFrequency: "yearly" as const, priority: 0.4 },
+    { url: `${baseUrl}/refund-policy`, changeFrequency: "yearly" as const, priority: 0.4 },
+    { url: `${baseUrl}/contact`, changeFrequency: "yearly" as const, priority: 0.5 },
   ];
 
   const workspacePages = [

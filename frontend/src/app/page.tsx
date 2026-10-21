@@ -390,9 +390,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <MorphixLogo size="sm" />
           <p className="text-xs text-[#64748b]">© 2026 Morphix. All rights reserved.</p>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap justify-center gap-4">
             <Link href="/pricing" className="text-xs text-[#64748b] hover:text-white transition-colors">Pricing</Link>
             <Link href="/community" className="text-xs text-[#64748b] hover:text-white transition-colors">Gallery</Link>
+            <Link href="/terms" className="text-xs text-[#64748b] hover:text-white transition-colors">Terms &amp; Conditions</Link>
+            <Link href="/privacy" className="text-xs text-[#64748b] hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/refund-policy" className="text-xs text-[#64748b] hover:text-white transition-colors">Refund Policy</Link>
+            <Link href="/contact" className="text-xs text-[#64748b] hover:text-white transition-colors">Contact Us</Link>
             <Link href="/login" className="text-xs text-[#64748b] hover:text-white transition-colors">Sign In</Link>
           </div>
         </div>
