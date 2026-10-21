@@ -39,4 +39,4 @@ COPY --from=builder /app/prisma ./prisma
 EXPOSE 4000
 
 # Push DB schema to Supabase, then start Express server
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/server.js"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate || echo DB_PUSH_FAILED; node dist/server.js"]
