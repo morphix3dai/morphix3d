@@ -143,7 +143,7 @@ app.use(
 // ==========================================
 // Start Server
 // ==========================================
-httpServer.listen(config.port, () => {
+httpServer.listen(config.port, "0.0.0.0", () => {
   console.log(`
   ╔══════════════════════════════════════╗
   ║     FORGE3D Backend API Server       ║
