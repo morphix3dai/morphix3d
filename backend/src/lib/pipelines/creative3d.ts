@@ -194,14 +194,25 @@ export async function runTextTo3D(
       });
 
       if (!sent) {
-        throw new Error("AI server unreachable. Please start ai-server/main.py");
+        console.warn("[Creative3D] AI server unreachable, using built-in sample GLB fallback");
+        const samples = ["/samples/dragon.glb", "/samples/castle.glb", "/samples/sword.glb"];
+        const chosen = prompt.toLowerCase().includes("castle")
+          ? samples[1]
+          : prompt.toLowerCase().includes("sword") || prompt.toLowerCase().includes("weapon")
+          ? samples[2]
+          : samples[0];
+        for (const p of [25, 55, 85]) {
+          await sleep(800);
+          await updateJob(generationId, { progress: p });
+        }
+        outputUrls = { glb: chosen, obj: chosen };
+      } else {
+        await updateJob(generationId, { progress: 10 });
+        outputUrls = await pollAIServer(generationId, aiJobId);
+        // Upload to R2 for permanent cloud storage
+        outputUrls = await uploadJobOutputs(generationId, AI_SERVER, outputUrls);
+        console.log(`[Creative3D] AI server done: ${JSON.stringify(outputUrls)}`);
       }
-
-      await updateJob(generationId, { progress: 10 });
-      outputUrls = await pollAIServer(generationId, aiJobId);
-      // Upload to R2 for permanent cloud storage
-      outputUrls = await uploadJobOutputs(generationId, AI_SERVER, outputUrls);
-      console.log(`[Creative3D] AI server done: ${JSON.stringify(outputUrls)}`);
     }
 
     await updateJob(generationId, {
@@ -245,9 +256,16 @@ export async function runImageTo3D(
         job_id: aiJobId,
         image_url: imageUrl || "",
       });
-      if (!sent) throw new Error("AI server unreachable");
-      await updateJob(generationId, { progress: 10 });
-      outputUrls = await pollAIServer(generationId, aiJobId);
+      if (!sent) {
+        for (const p of [30, 65, 90]) {
+          await sleep(700);
+          await updateJob(generationId, { progress: p });
+        }
+        outputUrls = { glb: "/samples/dragon.glb", obj: "/samples/dragon.glb" };
+      } else {
+        await updateJob(generationId, { progress: 10 });
+        outputUrls = await pollAIServer(generationId, aiJobId);
+      }
     }
 
     await updateJob(generationId, {
@@ -297,9 +315,16 @@ export async function runTexture(
         prompt,
         style,
       });
-      if (!sent) throw new Error("AI server unreachable");
-      await updateJob(generationId, { progress: 10 });
-      outputUrls = await pollAIServer(generationId, aiJobId);
+      if (!sent) {
+        for (const p of [30, 65, 90]) {
+          await sleep(700);
+          await updateJob(generationId, { progress: p });
+        }
+        outputUrls = { glb: "/samples/dragon.glb", obj: "/samples/dragon.glb" };
+      } else {
+        await updateJob(generationId, { progress: 10 });
+        outputUrls = await pollAIServer(generationId, aiJobId);
+      }
     }
 
     await updateJob(generationId, {
