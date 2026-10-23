@@ -16,7 +16,7 @@ import {
   Layers,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { generate, getAccessToken } from "@/lib/api";
+import { generate, getAccessToken, API_BASE } from "@/lib/api";
 
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
@@ -33,7 +33,7 @@ const uploadFile = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append('file', file);
   const token = getAccessToken();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://morphix3d-backend-production-508e.up.railway.app/api'}/generate/upload`, {
+  const res = await fetch(`${API_BASE}/generate/upload`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: formData,

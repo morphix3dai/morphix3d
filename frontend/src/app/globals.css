@@ -187,6 +187,12 @@ body {
   width: 100%;
   outline: none;
 }
+.input-field.pl-10 {
+  padding-left: 2.5rem;
+}
+.input-field.pr-10 {
+  padding-right: 2.5rem;
+}
 .input-field:focus {
   border-color: var(--color-accent-blue);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);

@@ -1,6 +1,8 @@
+const RAW_ENV_API = process.env.NEXT_PUBLIC_API_URL || "";
 export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://morphix3d-backend-production-508e.up.railway.app/api";
+  RAW_ENV_API && !RAW_ENV_API.includes("onrender.com")
+    ? RAW_ENV_API
+    : "https://morphix3d-backend-production-508e.up.railway.app/api";
 
 // ==========================================
 // Token Management
