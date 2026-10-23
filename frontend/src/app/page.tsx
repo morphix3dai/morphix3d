@@ -22,6 +22,7 @@ import {
 import Navbar from "@/components/Navbar";
 import CategorySelector from "@/components/CategorySelector";
 import MorphixLogo from "@/components/MorphixLogo";
+import Hero3DStage from "@/components/Hero3DStage";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -191,11 +192,20 @@ export default function LandingPage() {
             ))}
           </motion.div>
 
+          {/* Interactive 3D Hero Stage (landing.love inspired) */}
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, delay: 0.35 }}
+          >
+            <Hero3DStage />
+          </motion.div>
+
           {/* Category Cards */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
+            transition={{ duration: 0.7, delay: 0.45 }}
           >
             <h2 className="text-lg font-semibold text-[#f1f5f9] mb-6">What do you want to create?</h2>
             <CategorySelector size="lg" className="max-w-5xl mx-auto" />
