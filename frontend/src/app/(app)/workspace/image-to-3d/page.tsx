@@ -33,7 +33,7 @@ const uploadFile = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append('file', file);
   const token = getAccessToken();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/generate/upload`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://morphix3d-backend-production-508e.up.railway.app/api'}/generate/upload`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: formData,

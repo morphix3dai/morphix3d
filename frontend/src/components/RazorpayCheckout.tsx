@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, CreditCard, Shield, Zap, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { credits as creditsApi, getAccessToken } from "@/lib/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://morphix3d-backend-production-508e.up.railway.app/api";
 
 // Declare Razorpay on window for TypeScript
 declare global {

@@ -1,4 +1,6 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+export const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://morphix3d-backend-production-508e.up.railway.app/api";
 
 // ==========================================
 // Token Management

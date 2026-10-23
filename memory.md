@@ -1,24 +1,25 @@
-# Morphix 3D — Memory (Updated Oct 18, 2026)
+# Morphix 3D — Memory (Updated Oct 21, 2026)
 
 ## Live URLs
-- **Frontend**: https://morphix3d.vercel.app (Next.js 16, Vercel)
+- **Frontend**: https://3dmorphix.com (Custom domain on Hostinger + Vercel, live)
 - **GitHub**: https://github.com/morphix3dai/morphix3d.git
 - **Railway project**: https://railway.com/project/5c6f719e-270b-4e86-a8e9-959c370e1464
-- **Latest commit**: f0e6382
+- **Latest commit**: 201c911
 
 ## Stack
 - Frontend: Next.js 16 / React 19 / Tailwind / Three.js / @react-three/fiber
-- Backend: Node.js / Express / Prisma / PostgreSQL (Supabase)
+- Backend: Node.js / Express / Prisma / PostgreSQL (Supabase synced)
 - AI Server: Python FastAPI / CadQuery / Trimesh / Shap-E (local)
 - Storage: Cloudflare R2 (code ready, env vars needed)
 - Email: Resend (installed, needs RESEND_API_KEY)
 
 ## Environment (backend/.env)
-DATABASE_URL: ✅ Supabase PostgreSQL (live)
-JWT_SECRET / JWT_REFRESH_SECRET: ✅ Set (weak dev values — change in production)
-RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET: ❌ Empty
+DATABASE_URL: ✅ Supabase PostgreSQL (live & schema synced, password rotated)
+JWT_SECRET / JWT_REFRESH_SECRET: ✅ Set (rotated 64-char hex)
+RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET: ✅ Set (rzp_test_TqdEbXtMykhpV9)
+GEMINI_API_KEY: ✅ Set (verified live with gemini-2.5-flash)
 MESHY_API_KEY: ❌ Empty
-OPENAI_API_KEY: ❌ Empty
+OPENAI_API_KEY: ❌ Empty (optional since GEMINI_API_KEY is active)
 RESEND_API_KEY: ❌ Empty (needs to be added for real emails)
 GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET: ❌ Empty
 
