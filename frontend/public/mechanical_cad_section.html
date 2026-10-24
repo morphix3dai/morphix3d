@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Morphix 3D — 2. Mechanical CAD Section ("Precision parts from a prompt.")</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EDEFF2;
+    --panel: rgba(255, 255, 255, 0.84);
+    --graphite: #1E2126;
+    --muted: #5C626E;
+    --orange: #FF6A1A;
+    --orange-soft: rgba(255, 106, 26, 0.12);
+    --line: #CFD4DC;
+    --line-strong: #1E2126;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: var(--bg);
+    color: var(--graphite);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    padding: 40px 20px 72px;
+    /* Subtle frosted blueprint grid that never hides the part */
+    background-image:
+      linear-gradient(rgba(30, 33, 38, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30, 33, 38, 0.045) 1px, transparent 1px),
+      linear-gradient(rgba(30, 33, 38, 0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30, 33, 38, 0.022) 1px, transparent 1px);
+    background-size: 96px 96px, 96px 96px, 16px 16px, 16px 16px;
+  }
+
+  .mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1.5px solid var(--line-strong);
+  }
+  .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--orange);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .kicker::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    background: var(--orange);
+    display: inline-block;
+  }
+  .section-head h1 {
+    font-size: clamp(30px, 4.2vw, 48px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--graphite);
+  }
+  .cnc-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 800;
+    padding: 8px 14px;
+    background: var(--orange-soft);
+    border: 1.5px solid var(--orange);
+    color: var(--graphite);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cnc-badge .dot {
+    width: 8px;
+    height: 8px;
+    background: var(--orange);
+  }
+
+  /* Main Industrial Catalog Frame (3. Left Panel Sliders + 1. Center Orthographic Part) */
+  .catalog-frame {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    background: var(--panel);
+    backdrop-filter: blur(12px);
+    border: 1.5px solid var(--line-strong);
+    box-shadow: 0 18px 45px rgba(30, 33, 38, 0.06);
+  }
+  @media (max-width: 960px) {
+    .catalog-frame { grid-template-columns: 1fr; }
+  }
+
+  /* 3. LEFT PANEL: Sliders for teeth count, hole diameter and thickness */
+  .left-panel {
+    border-right: 1.5px solid var(--line-strong);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.92);
+  }
+  @media (max-width: 960px) {
+    .left-panel { border-right: none; border-bottom: 1.5px solid var(--line-strong); }
+  }
+
+  .panel-block {
+    padding: 20px 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  .block-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Part Type Selector (Gear or Bracket) */
+  .part-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--line-strong);
+    margin-bottom: 6px;
+  }
+  .part-btn {
+    border: none;
+    background: #fff;
+    padding: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .part-btn.active {
+    background: var(--graphite);
+    color: #fff;
+  }
+
+  .slider-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .slider-item {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .slider-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+  .slider-readout {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--orange);
+    background: var(--orange-soft);
+    border: 1px solid var(--orange);
+    padding: 2px 7px;
+  }
+  input[type="range"].cad-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #D8DDE5;
+    border: 1px solid #B6BECB;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"].cad-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 20px;
+    background: var(--graphite);
+    border: 2px solid var(--orange);
+    cursor: ew-resize;
+  }
+
+  /* 5. Export Chips: STEP, STL, DXF */
+  .export-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .exp-chip {
+    background: #fff;
+    border: 1.5px solid var(--line-strong);
+    padding: 9px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--graphite);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.15s;
+  }
+  .exp-chip:hover {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: #fff;
+  }
+
+  /* 1 & 2. CENTER ORTHOGRAPHIC VIEWPORT + VIEW TOGGLE */
+  .ortho-stage {
+    position: relative;
+    min-height: 510px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #F4F5F7;
+    background-image:
+      linear-gradient(rgba(30, 33, 38, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30, 33, 38, 0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .stage-topbar {
+    position: relative;
+    z-index: 5;
+    padding: 16px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255,255,255,0.75);
+  }
+  .dwg-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--graphite);
+  }
+  .dwg-tag span {
+    color: var(--orange);
+  }
+
+  .view-toggle {
+    display: inline-flex;
+    border: 1.5px solid var(--line-strong);
+    background: #fff;
+  }
+  .v-btn {
+    border: none;
+    border-right: 1px solid var(--line);
+    background: transparent;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 7px 14px;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .v-btn:last-child { border-right: none; }
+  .v-btn.active {
+    background: var(--orange);
+    color: #fff;
+  }
+
+  #orthoCanvas {
+    width: 100%;
+    height: 410px;
+    display: block;
+    cursor: grab;
+  }
+  #orthoCanvas:active { cursor: grabbing; }
+
+  .stage-bottombar {
+    padding: 10px 20px;
+    border-top: 1px solid var(--line);
+    background: rgba(255,255,255,0.85);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* 6. THREE CARDS BELOW: Parametric Parts, Feature Tree Editing, Precision Export */
+  .cards-row {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 820px) {
+    .cards-row { grid-template-columns: 1fr; }
+  }
+  .cat-card {
+    background: rgba(255,255,255,0.9);
+    border: 1.5px solid var(--line-strong);
+    padding: 20px 22px;
+  }
+  .cat-card .idx {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 800;
+    color: var(--orange);
+    margin-bottom: 6px;
+  }
+  .cat-card h3 {
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    color: var(--graphite);
+  }
+  .cat-card p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(30,33,38,0.12);font-family:'JetBrains Mono',monospace;font-size:11.5px;">
+    <a href="/" onclick="if(window.location.protocol==='file:'){window.location.href='orbital_3d_cards_demo.html';return false;}" style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:#1E2126;color:#EDEFF2;text-decoration:none;font-weight:700;">
+      <span>← Back to Main Hero</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span style="padding:6px 12px;border-radius:999px;background:#FF6A1A;color:#fff;font-weight:700;">⚙️ Mechanical CAD (Active)</span>
+      <a href="architecture_studio_section.html" style="padding:6px 12px;border-radius:999px;border:1px solid rgba(30,33,38,0.22);color:#1E2126;text-decoration:none;">🏛️ Architecture</a>
+      <a href="creative_3d_darkroom.html" style="padding:6px 12px;border-radius:999px;border:1px solid rgba(30,33,38,0.22);color:#1E2126;text-decoration:none;">🎨 Creative 3D</a>
+    </div>
+  </nav>
+
+  <header class="section-head">
+    <div>
+      <div class="kicker">01 · MECHANICAL CAD // INDUSTRIAL CATALOG</div>
+      <h1>Precision parts from a prompt.</h1>
+    </div>
+    <div class="cnc-badge">
+      <span class="dot"></span>
+      <span>CNC-READY · ISO 2768-fH (±0.02 mm)</span>
+    </div>
+  </header>
+
+  <div class="catalog-frame">
+    <!-- 3. LEFT PANEL: LIVE SLIDERS -->
+    <aside class="left-panel">
+      <div>
+        <div class="panel-block">
+          <div class="block-label">
+            <span>// COMPONENT ARCHETYPE</span>
+            <span>ORTHO 1:1</span>
+          </div>
+          <div class="part-selector">
+            <button class="part-btn active" id="partGear" onclick="setPartType('gear')">SPUR GEAR</button>
+            <button class="part-btn" id="partBracket" onclick="setPartType('bracket')">CNC L-BRACKET</button>
+          </div>
+        </div>
+
+        <div class="panel-block slider-stack">
+          <div class="block-label" style="margin-bottom:2px;">
+            <span>// PARAMETRIC DIMENSIONS</span>
+            <span>LIVE B-REP</span>
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-top">
+              <span id="lblTeeth">Teeth Count</span>
+              <span class="slider-readout" id="outTeeth">20 Z</span>
+            </div>
+            <input type="range" class="cad-slider" id="sTeeth" min="10" max="34" value="20" oninput="onSlide()" />
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-top">
+              <span>Hole Diameter</span>
+              <span class="slider-readout" id="outHole">Ø 12.00 mm +0.05</span>
+            </div>
+            <input type="range" class="cad-slider" id="sHole" min="8" max="32" value="12" oninput="onSlide()" />
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-top">
+              <span>Thickness</span>
+              <span class="slider-readout" id="outThick">18.00 mm</span>
+            </div>
+            <input type="range" class="cad-slider" id="sThick" min="8" max="36" value="18" oninput="onSlide()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. EXPORT CHIPS: STEP, STL, DXF -->
+      <div class="panel-block" style="border-bottom:none;">
+        <div class="block-label">
+          <span>// DIRECT CAD EXPORT</span>
+          <span>MANIFOLD</span>
+        </div>
+        <div class="export-grid">
+          <button class="exp-chip" onclick="exportFile('step')"><span>STEP</span><span>↓</span></button>
+          <button class="exp-chip" onclick="exportFile('stl')"><span>STL</span><span>↓</span></button>
+          <button class="exp-chip" onclick="exportFile('dxf')"><span>DXF</span><span>↓</span></button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 1 & 2. CENTER: ORTHOGRAPHIC 3D PART + VIEW TOGGLE -->
+    <div class="ortho-stage" id="stageBox">
+      <div class="stage-topbar">
+        <div class="dwg-tag">
+          DWG NO. <span>MPX-CAD-042</span> // PROJECTION: ORTHOGRAPHIC
+        </div>
+
+        <div class="view-toggle">
+          <button class="v-btn active" data-v="shaded" onclick="setView('shaded')">Shaded</button>
+          <button class="v-btn" data-v="wireframe" onclick="setView('wireframe')">Wireframe</button>
+          <button class="v-btn" data-v="exploded" onclick="setView('exploded')">Exploded</button>
+        </div>
+      </div>
+
+      <canvas id="orthoCanvas"></canvas>
+
+      <div class="stage-bottombar">
+        <span>MATERIAL: AL-6061-T6 · SURFACE Ra 0.8µm</span>
+        <span>DRAG TO ORBIT ORTHOGRAPHIC CAMERA</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. THREE CARDS: Parametric Parts, Feature Tree Editing, Precision Export -->
+  <div class="cards-row">
+    <div class="cat-card">
+      <div class="idx">01 // PARAMETER DRIVEN</div>
+      <h3>Parametric Parts</h3>
+      <p>Every tooth profile, bore diameter, fillet, and mounting hole is driven by exact mathematical constraints you can tweak live.</p>
+    </div>
+    <div class="cat-card">
+      <div class="idx">02 // NON-DESTRUCTIVE</div>
+      <h3>Feature Tree Editing</h3>
+      <p>Inspect and modify individual extrusions, chamfers, and counterbores without regenerating the entire assembly from scratch.</p>
+    </div>
+    <div class="cat-card">
+      <div class="idx">03 // MANUFACTURING GRADE</div>
+      <h3>Precision Export</h3>
+      <p>Download native ISO-10303 STEP solids, watertight STL meshes for 3D printing, and 1:1 AutoCAD DXF profiles ready for CNC.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const state = {
+    part: 'gear', // 'gear' | 'bracket'
+    teeth: 20,
+    hole: 12,
+    thick: 18,
+    view: 'shaded', // 'shaded' | 'wireframe' | 'exploded'
+    rotY: 0.56,
+    rotX: 0.42,
+    explode: 0
+  };
+
+  function setPartType(p) {
+    state.part = p;
+    document.getElementById('partGear').classList.toggle('active', p === 'gear');
+    document.getElementById('partBracket').classList.toggle('active', p === 'bracket');
+    document.getElementById('lblTeeth').textContent = p === 'gear' ? 'Teeth Count' : 'Flange Length';
+    onSlide();
+  }
+
+  function setView(v) {
+    state.view = v;
+    document.querySelectorAll('.v-btn').forEach(b => b.classList.toggle('active', b.dataset.v === v));
+  }
+
+  function onSlide() {
+    state.teeth = Number(document.getElementById('sTeeth').value);
+    state.hole  = Number(document.getElementById('sHole').value);
+    state.thick = Number(document.getElementById('sThick').value);
+
+    document.getElementById('outTeeth').textContent = state.part === 'gear' ? `${state.teeth} Z` : `${state.teeth * 4}.0 mm`;
+    document.getElementById('outHole').textContent  = `Ø ${state.hole.toFixed(2)} mm +0.05`;
+    document.getElementById('outThick').textContent = `${state.thick.toFixed(2)} mm`;
+  }
+
+  function exportFile(ext) {
+    const blob = new Blob([`Morphix CAD Export (${ext.toUpperCase()}) - Hole Ø${state.hole}mm, Thickness ${state.thick}mm`], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `morphix-part.${ext}`;
+    a.click();
+  }
+
+  const canvas = document.getElementById('orthoCanvas');
+  const ctx = canvas.getContext('2d');
+  function resize() {
+    const r = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = r.width * dpr;
+    canvas.height = r.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  let dragging = false, lx = 0, ly = 0;
+  canvas.addEventListener('pointerdown', e => { dragging = true; lx = e.clientX; ly = e.clientY; });
+  window.addEventListener('pointerup', () => dragging = false);
+  window.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    state.rotY += (e.clientX - lx) * 0.01;
+    state.rotX = Math.max(-1.1, Math.min(1.1, state.rotX + (e.clientY - ly) * 0.01));
+    lx = e.clientX; ly = e.clientY;
+  });
+
+  function ortho(x, y, z, w, h) {
+    const cy = Math.cos(state.rotY), sy = Math.sin(state.rotY);
+    const cx = Math.cos(state.rotX), sx = Math.sin(state.rotX);
+    const x1 = x * cy - z * sy;
+    const z1 = x * sy + z * cy;
+    const y2 = y * cx - z1 * sx;
+    const z2 = y * sx + z1 * cx;
+    const scale = 1.95;
+    return { x: w / 2 + x1 * scale, y: h / 2 - y2 * scale, z: z2 };
+  }
+
+  function drawCallout(p0, p1, text, isOrange) {
+    ctx.save();
+    ctx.strokeStyle = isOrange ? '#FF6A1A' : '#1E2126';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(p0.x, p0.y);
+    ctx.lineTo(p1.x, p1.y);
+    const dir = p1.x >= p0.x ? 1 : -1;
+    ctx.lineTo(p1.x + dir * 20, p1.y);
+    ctx.stroke();
+
+    ctx.fillStyle = isOrange ? '#FF6A1A' : '#1E2126';
+    ctx.beginPath(); ctx.arc(p0.x, p0.y, 2.8, 0, Math.PI * 2); ctx.fill();
+
+    ctx.font = '700 10.5px "JetBrains Mono", monospace';
+    const tw = ctx.measureText(text).width + 14;
+    const bx = dir > 0 ? p1.x + 20 : p1.x - 20 - tw;
+    const by = p1.y - 11;
+    ctx.fillStyle = isOrange ? '#FF6A1A' : '#FFFFFF';
+    ctx.fillRect(bx, by, tw, 22);
+    ctx.strokeRect(bx, by, tw, 22);
+    ctx.fillStyle = isOrange ? '#FFFFFF' : '#1E2126';
+    ctx.fillText(text, bx + 7, by + 15);
+    ctx.restore();
+  }
+
+  function render() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.width / dpr, h = canvas.height / dpr;
+    ctx.clearRect(0, 0, w, h);
+
+    if (!dragging) state.rotY += 0.0035;
+    state.explode += ((state.view === 'exploded' ? 1 : 0) - state.explode) * 0.1;
+
+    const isWire = state.view === 'wireframe';
+    const rHole = state.hole * 1.1;
+    const halfT = state.thick * 0.65;
+    const exp = state.explode * 52;
+
+    function extrudeLoop(pts2D, z1, z2, stroke, sideFill, faceFill) {
+      const front = pts2D.map(p => ortho(p.x, p.y, z1, w, h));
+      const back  = pts2D.map(p => ortho(p.x, p.y, z2, w, h));
+      const quads = pts2D.map((_, i) => {
+        const n = (i + 1) % pts2D.length;
+        return { i, n, avgZ: (front[i].z + front[n].z + back[n].z + back[i].z) * 0.25 };
+      }).sort((a, b) => a.avgZ - b.avgZ);
+
+      ctx.beginPath();
+      back.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+      ctx.closePath();
+      if (!isWire) { ctx.fillStyle = faceFill; ctx.fill(); }
+      ctx.strokeStyle = stroke; ctx.lineWidth = 0.9; ctx.stroke();
+
+      quads.forEach(({ i, n }) => {
+        ctx.beginPath();
+        ctx.moveTo(front[i].x, front[i].y);
+        ctx.lineTo(front[n].x, front[n].y);
+        ctx.lineTo(back[n].x, back[n].y);
+        ctx.lineTo(back[i].x, back[i].y);
+        ctx.closePath();
+        if (!isWire) { ctx.fillStyle = sideFill; ctx.fill(); }
+        ctx.strokeStyle = stroke; ctx.lineWidth = 0.9; ctx.stroke();
+      });
+
+      ctx.beginPath();
+      front.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+      ctx.closePath();
+      if (!isWire) { ctx.fillStyle = faceFill; ctx.fill(); }
+      ctx.strokeStyle = stroke; ctx.lineWidth = 1.35; ctx.stroke();
+      return { front, back };
+    }
+
+    const holeCircle = [];
+    for (let i = 0; i < 28; i++) {
+      const a = (i / 28) * Math.PI * 2;
+      holeCircle.push({ x: Math.cos(a) * rHole, y: Math.sin(a) * rHole });
+    }
+
+    if (state.part === 'gear') {
+      const rOuter = 48 + state.teeth * 0.65;
+      const rRoot  = rOuter - 9;
+      const gearPts = [];
+      const step = (Math.PI * 2) / state.teeth;
+      for (let i = 0; i < state.teeth; i++) {
+        const b = i * step;
+        gearPts.push({ x: Math.cos(b + step*0.08)*rRoot,  y: Math.sin(b + step*0.08)*rRoot });
+        gearPts.push({ x: Math.cos(b + step*0.24)*rOuter, y: Math.sin(b + step*0.24)*rOuter });
+        gearPts.push({ x: Math.cos(b + step*0.46)*rOuter, y: Math.sin(b + step*0.46)*rOuter });
+        gearPts.push({ x: Math.cos(b + step*0.62)*rRoot,  y: Math.sin(b + step*0.62)*rRoot });
+      }
+
+      if (exp > 2) {
+        extrudeLoop(holeCircle, -halfT - exp*0.3, -halfT - exp*1.1, '#5C626E', 'rgba(205,212,222,0.8)', 'rgba(230,234,240,0.9)');
+      }
+      const gMesh = extrudeLoop(gearPts, halfT, -halfT, '#1E2126', 'rgba(210,216,224,0.88)', 'rgba(238,240,244,0.95)');
+      const hMesh = extrudeLoop(holeCircle, halfT + 0.5, -halfT - 0.5, '#FF6A1A', 'rgba(255,106,26,0.15)', '#F4F5F7');
+      if (exp > 2) {
+        extrudeLoop(holeCircle, halfT + exp*0.9, halfT + exp*0.4, '#FF6A1A', 'rgba(255,106,26,0.22)', '#FFFFFF');
+      }
+
+      drawCallout(hMesh.front[6], { x: hMesh.front[6].x - 58, y: hMesh.front[6].y + 42 }, `Ø ${state.hole.toFixed(2)} mm +0.05`, true);
+      drawCallout(gMesh.front[1], { x: gMesh.front[1].x + 54, y: gMesh.front[1].y - 34 }, `Z = ${state.teeth} TEETH · B = ${state.thick}mm`, false);
+    } else {
+      // L-Bracket profile
+      const L = 32 + state.teeth * 1.4;
+      const T = state.thick * 0.7;
+      const lPts = [
+        { x: -L, y: -L }, { x: L, y: -L }, { x: L, y: -L + T },
+        { x: -L + T, y: -L + T }, { x: -L + T, y: L }, { x: -L, y: L }
+      ];
+      const bMesh = extrudeLoop(lPts, halfT * 1.4, -halfT * 1.4, '#1E2126', 'rgba(210,216,224,0.88)', 'rgba(238,240,244,0.95)');
+      const hMesh = extrudeLoop(holeCircle, halfT * 1.4 + 0.5, -halfT * 1.4 - 0.5, '#FF6A1A', 'rgba(255,106,26,0.15)', '#F4F5F7');
+      drawCallout(hMesh.front[4], { x: hMesh.front[4].x + 56, y: hMesh.front[4].y - 36 }, `BORE Ø ${state.hole.toFixed(2)} mm +0.05`, true);
+      drawCallout(bMesh.front[1], { x: bMesh.front[1].x + 48, y: bMesh.front[1].y + 32 }, `FLANGE ${state.teeth * 4}.0 mm`, false);
+    }
+
+    requestAnimationFrame(render);
+  }
+  render();
+</script>
+</body>
+</html>

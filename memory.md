@@ -1,10 +1,11 @@
-# Morphix 3D — Memory (Updated Oct 21, 2026)
+# Morphix 3D — Memory (Updated Oct 23, 2026)
 
 ## Live URLs
-- **Frontend**: https://3dmorphix.com (Custom domain on Hostinger + Vercel, live)
-- **GitHub**: https://github.com/morphix3dai/morphix3d.git
+- **Frontend**: https://3dmorphix.com (Custom domain on Hostinger + Vercel, live & auto-deploying from `main`)
+- **Backend**: https://morphix3d-backend-production-508e.up.railway.app (Railway Production, live & healthy)
+- **GitHub**: https://github.com/morphix3dai/morphix3d.git (Always push to both `master` and `master:main`)
 - **Railway project**: https://railway.com/project/5c6f719e-270b-4e86-a8e9-959c370e1464
-- **Latest commit**: 201c911
+- **Latest commit**: 0c75a6a
 
 ## Stack
 - Frontend: Next.js 16 / React 19 / Tailwind / Three.js / @react-three/fiber
@@ -57,22 +58,20 @@ NEXT_PUBLIC_API_URL=<Railway backend URL>/api
 11. sitemap.ts → /sitemap.xml auto-generated
 12. robots.ts → /robots.txt auto-generated
 13. site.webmanifest in public/
+14. Pure-TypeScript 3D `.glb` / `.stl` / `.dxf` / `.svg` builder (`backend/src/lib/gltfBuilder.ts`) wired into `architecture.ts` and `mechanical.ts` with `gemini-2.5-flash`
+15. 3D UI/UX Landing Page Upgrade (`Hero3DStage.tsx` interactive 3-engine 3D stage + X-Ray topology slider, `CategorySelector.tsx` 3D tilt cards)
+16. Razorpay India mandatory KYC legal pages live (`/terms`, `/privacy`, `/refund-policy`, `/contact`)
+17. Full-stack production connectivity verified (`https://3dmorphix.com` ↔ Railway Backend ↔ Supabase DB)
 
 ## What's Pending ⏳
 
-### USER ACTION NEEDED (blocking Railway deploy):
-1. Railway → morphix3d-backend → Settings → **Root Directory = `backend`**
-2. Add Railway env vars (see above)
-3. Redeploy, copy Railway URL
-4. Update Vercel: NEXT_PUBLIC_API_URL = <Railway URL>/api → Redeploy
-
-### CODE WORK REMAINING:
-- [ ] Razorpay test keys (user needs to get from razorpay.com)
-- [ ] RESEND_API_KEY (user needs to get from resend.com — free 3k emails/month)
-- [ ] Cloudflare R2 bucket setup + env vars (code already written in r2.ts)
-- [ ] OG image (/public/og-image.png) — social sharing preview image
-- [ ] Favicon files (currently referenced but not in /public/)
-- [ ] Google OAuth: GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET env vars
+### OPTIONAL / PRE-LAUNCH INTEGRATIONS:
+- [ ] `RESEND_API_KEY` (from resend.com — free 3k emails/month for Welcome & Forgot Password emails)
+- [ ] `MESHY_API_KEY` (for cloud AI Text-to-3D / Image-to-3D; currently serves real sample GLBs from `/samples/`)
+- [ ] Razorpay Live Keys (swap `rzp_test_...` for `rzp_live_...` once Razorpay KYC approves)
+- [ ] Cloudflare R2 bucket setup + env vars (code already written in `r2.ts`)
+- [ ] OG image (`/public/og-image.png`) & Favicon files in `/public/`
+- [ ] Google OAuth: `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` env vars
 
 ### PHASE 3 (needs API keys first):
 - [ ] Wire Meshy API (creative3d.ts already has the code, needs MESHY_API_KEY)

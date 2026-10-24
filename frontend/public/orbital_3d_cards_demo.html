@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Morphix 3D — 3D Orbital Carousel + Unique 3D Spatial Footer Demo</title>
+<style>
+  :root {
+    --bg: #06060b;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #FF2FD4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* ==========================================
+     SECTION 1: 3D ORBITAL CAROUSEL
+     ========================================== */
+  .stage-section {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px 48px;
+    overflow: hidden;
+  }
+
+  .ambient-glow {
+    position: absolute;
+    width: 820px;
+    height: 820px;
+    border-radius: 50%;
+    filter: blur(150px);
+    opacity: 0.28;
+    pointer-events: none;
+    transition: background 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 0;
+  }
+
+  .header-box {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #cbd5e1;
+    margin-bottom: 10px;
+  }
+  .header-box h2 {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  .header-box p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .swipe-bar {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(15, 15, 24, 0.85);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px;
+    border-radius: 999px;
+    margin-bottom: 22px;
+    backdrop-filter: blur(12px);
+  }
+  .swipe-pill {
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .swipe-pill.active[data-idx="0"] {
+    background: linear-gradient(135deg, #00F0FF, #0EA5E9);
+    color: #041019;
+    box-shadow: 0 0 24px rgba(0, 240, 255, 0.45);
+  }
+  .swipe-pill.active[data-idx="1"] {
+    background: linear-gradient(135deg, #F15534, #A855F7);
+    color: #ffffff;
+    box-shadow: 0 0 24px rgba(241, 85, 52, 0.45);
+  }
+  .swipe-pill.active[data-idx="2"] {
+    background: linear-gradient(135deg, #FF2FD4, #8052FF);
+    color: #ffffff;
+    box-shadow: 0 0 24px rgba(255, 47, 212, 0.45);
+  }
+
+  .carousel-viewport {
+    position: relative;
+    width: 100%;
+    max-width: 1360px;
+    height: 600px;
+    perspective: 1600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    user-select: none;
+    cursor: grab;
+  }
+  .carousel-viewport:active { cursor: grabbing; }
+
+  .orbital-floor-ring {
+    position: absolute;
+    width: 1020px;
+    height: 1020px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(255,255,255,0.16);
+    transform: translateY(250px) rotateX(78deg);
+    pointer-events: none;
+    box-shadow: inset 0 0 110px rgba(255,255,255,0.04);
+    transition: border-color 0.6s ease, box-shadow 0.6s ease;
+  }
+
+  .carousel-stage {
+    position: relative;
+    width: 490px;
+    height: 565px;
+    transform-style: preserve-3d;
+  }
+
+  .orbital-card {
+    position: absolute;
+    inset: 0;
+    border-radius: 28px;
+    padding: 26px;
+    background: rgba(12, 13, 22, 0.94);
+    backdrop-filter: blur(22px);
+    border: 1.5px solid rgba(255,255,255,0.14);
+    transform-style: preserve-3d;
+    transition:
+      transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.85s ease,
+      border-color 0.6s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    will-change: transform, filter, opacity;
+  }
+
+  .orbital-card.pos-front {
+    transform: translate3d(0px, 0px, 120px) rotateY(0deg) scale(1.04);
+    filter: blur(0px) brightness(1.05) saturate(1.08);
+    opacity: 1;
+    z-index: 30;
+  }
+  .orbital-card.pos-right {
+    transform: translate3d(410px, -16px, -160px) rotateY(-28deg) rotateZ(1.5deg) scale(0.84);
+    filter: blur(5.5px) brightness(0.58) saturate(0.82);
+    opacity: 0.68;
+    z-index: 15;
+    cursor: pointer;
+  }
+  .orbital-card.pos-left {
+    transform: translate3d(-410px, -16px, -160px) rotateY(28deg) rotateZ(-1.5deg) scale(0.84);
+    filter: blur(5.5px) brightness(0.58) saturate(0.82);
+    opacity: 0.68;
+    z-index: 15;
+    cursor: pointer;
+  }
+  .orbital-card.pos-right:hover,
+  .orbital-card.pos-left:hover {
+    filter: blur(2.5px) brightness(0.78);
+    opacity: 0.86;
+  }
+
+  @media (max-width: 960px) {
+    .carousel-stage { width: 380px; height: 540px; }
+    .orbital-card.pos-right {
+      transform: translate3d(210px, -14px, -160px) rotateY(-26deg) scale(0.78);
+    }
+    .orbital-card.pos-left {
+      transform: translate3d(-210px, -14px, -160px) rotateY(26deg) scale(0.78);
+    }
+  }
+
+  .back-focus-hint {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 15, 24, 0.92);
+    border: 1px solid rgba(255,255,255,0.22);
+    color: #e2e8f0;
+    font-family: monospace;
+    font-size: 10px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .orbital-card.pos-left:hover .back-focus-hint,
+  .orbital-card.pos-right:hover .back-focus-hint {
+    opacity: 1;
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transform: translateZ(26px);
+  }
+  .icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  }
+  .badge-tag {
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 5px 12px;
+    border-radius: 8px;
+    color: #fff;
+  }
+
+  .mini-3d-stage {
+    position: relative;
+    width: 100%;
+    height: 245px;
+    margin: 14px 0;
+    border-radius: 18px;
+    background:
+      radial-gradient(circle at 50% 45%, rgba(255,255,255,0.08), rgba(4,4,10,0.92)),
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 24px 24px, 24px 24px;
+    border: 1px solid rgba(255,255,255,0.12);
+    overflow: hidden;
+    transform: translateZ(38px);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.65);
+  }
+  .mini-3d-stage canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .mini-hud-top {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    font-family: monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+    pointer-events: none;
+  }
+  .mini-hud {
+    position: absolute;
+    bottom: 10px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    font-family: monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.88);
+    pointer-events: none;
+    background: rgba(8, 8, 14, 0.72);
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .card-body { transform: translateZ(22px); }
+  .card-title { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 3px; }
+  .card-sub {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 8px;
+  }
+  .card-desc { font-size: 13.5px; color: #94a3b8; line-height: 1.5; margin-bottom: 14px; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .tag-chip {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #cbd5e1;
+  }
+  .cta-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.09);
+    border: 1px solid rgba(255,255,255,0.16);
+    transition: all 0.2s;
+  }
+  .cta-link:hover {
+    background: rgba(255,255,255,0.18);
+    transform: translateX(4px);
+  }
+
+  .controls-footer {
+    position: relative;
+    z-index: 10;
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .nav-arrow {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(15,15,24,0.85);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .nav-arrow:hover {
+    background: rgba(255,255,255,0.14);
+    transform: scale(1.06);
+  }
+  .scroll-hint { font-family: monospace; font-size: 12px; color: #94a3b8; }
+
+  /* ==============================================================
+     SECTION 2: UNIQUE 3D SPATIAL COMMAND DECK & HOLOGRAPHIC FOOTER
+     ============================================================== */
+  .spatial-footer {
+    position: relative;
+    width: 100%;
+    margin-top: 40px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    background: linear-gradient(180deg, rgba(8,8,14,0.92) 0%, #030307 100%);
+    overflow: hidden;
+    padding: 72px 24px 36px;
+    perspective: 1200px;
+  }
+
+  /* Interactive 3D Gravity-Wave Wireframe Floor Canvas in background */
+  #footerWaveCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.75;
+  }
+
+  /* Top Laser Horizon Beam */
+  .footer-horizon-beam {
+    position: absolute;
+    top: -1px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00F0FF, #F15534, #FF2FD4, transparent);
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.6);
+    z-index: 2;
+  }
+
+  .footer-inner {
+    position: relative;
+    z-index: 5;
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+
+  /* 1. FLOATING 3D PROMPT LAUNCHER DOCK */
+  .prompt-dock {
+    background: rgba(14, 15, 26, 0.82);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 24px;
+    padding: 28px 32px;
+    display: grid;
+    grid-template-columns: 1.1fr 1.4fr;
+    gap: 24px;
+    align-items: center;
+    box-shadow: 0 25px 70px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.1);
+    margin-bottom: 56px;
+    transform-style: preserve-3d;
+    transition: transform 0.25s ease, border-color 0.4s ease;
+  }
+  @media (max-width: 900px) {
+    .prompt-dock { grid-template-columns: 1fr; padding: 22px; }
+  }
+  .dock-left .dock-tag {
+    font-family: monospace;
+    font-size: 11px;
+    color: #00F0FF;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dock-left h3 {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+  .dock-left p {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 4px;
+  }
+
+  .dock-terminal {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .terminal-input-wrap {
+    display: flex;
+    align-items: center;
+    background: rgba(6, 7, 12, 0.9);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 14px;
+    padding: 6px 6px 6px 16px;
+    gap: 10px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .terminal-input-wrap:focus-within {
+    border-color: #00F0FF;
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.22);
+  }
+  .terminal-prefix {
+    font-family: monospace;
+    color: #00F0FF;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .terminal-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-family: monospace;
+    font-size: 13px;
+  }
+  .terminal-btn {
+    background: linear-gradient(135deg, #00F0FF, #7B2FFF, #FF2FD4);
+    background-size: 200% 200%;
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    font-size: 12.5px;
+    padding: 11px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+  }
+  .terminal-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(123, 47, 255, 0.45);
+  }
+  .preset-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .preset-chip {
+    font-family: monospace;
+    font-size: 11px;
+    padding: 5px 11px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .preset-chip:hover {
+    background: rgba(0, 240, 255, 0.14);
+    border-color: rgba(0, 240, 255, 0.45);
+    color: #fff;
+  }
+
+  /* 2. BENTO ARCHITECTURAL GRID + ROTATING 3D CORE CUBE */
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr 1fr;
+    gap: 28px;
+    padding-bottom: 48px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  @media (max-width: 900px) {
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 560px) {
+    .footer-grid { grid-template-columns: 1fr; }
+  }
+
+  .brand-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+  }
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  /* Mini rotating CSS 3D Wireframe Cube badge */
+  .cube-wrap {
+    width: 36px;
+    height: 36px;
+    perspective: 200px;
+  }
+  .cube-3d {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: spinCube 9s infinite linear;
+  }
+  .cube-face {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    border: 1.5px solid #00F0FF;
+    background: rgba(0, 240, 255, 0.12);
+  }
+  .cube-face.f-front  { transform: translateZ(18px); }
+  .cube-face.f-back   { transform: rotateY(180deg) translateZ(18px); border-color: #FF2FD4; }
+  .cube-face.f-right  { transform: rotateY(90deg) translateZ(18px); border-color: #F15534; }
+  .cube-face.f-left   { transform: rotateY(-90deg) translateZ(18px); }
+  .cube-face.f-top    { transform: rotateX(90deg) translateZ(18px); }
+  .cube-face.f-bottom { transform: rotateX(-90deg) translateZ(18px); }
+  @keyframes spinCube {
+    0%   { transform: rotateX(22deg) rotateY(0deg); }
+    100% { transform: rotateX(22deg) rotateY(360deg); }
+  }
+
+  .brand-name {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .brand-bio {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.6;
+    max-width: 310px;
+  }
+
+  /* Industrial Telemetry Readout Box (Teenage Engineering × Heron AI) */
+  .telemetry-box {
+    background: rgba(12, 13, 20, 0.85);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-family: monospace;
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .tel-row {
+    display: flex;
+    justify-content: space-between;
+    color: #cbd5e1;
+  }
+  .tel-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    margin-right: 6px;
+  }
+
+  .nav-col h4 {
+    font-family: monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 16px;
+  }
+  .nav-col ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+  }
+  .nav-col a {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 13.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s, transform 0.2s;
+  }
+  .nav-col a:hover {
+    color: #00F0FF;
+    transform: translateX(4px);
+  }
+  .nav-badge {
+    font-family: monospace;
+    font-size: 9.5px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.08);
+    color: #e2e8f0;
+  }
+
+  /* 3. GIANT 3D EXTRUDED PARALLAX MONUMENT WATERMARK */
+  .monument-stage {
+    position: relative;
+    padding: 36px 0 22px;
+    text-align: center;
+    perspective: 900px;
+    user-select: none;
+    overflow: hidden;
+  }
+  .monument-text {
+    font-size: clamp(48px, 11.5vw, 148px);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 0.92;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.05);
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.18);
+    transform-style: preserve-3d;
+    transition: transform 0.15s ease-out, text-shadow 0.15s ease-out, -webkit-text-stroke-color 0.5s ease;
+    text-shadow:
+      0 2px 0 rgba(0, 240, 255, 0.16),
+      0 4px 0 rgba(123, 47, 255, 0.14),
+      0 8px 0 rgba(241, 85, 52, 0.12),
+      0 16px 40px rgba(0, 0, 0, 0.9);
+  }
+
+  /* 4. BOTTOM LEGAL & FORMATS BAR */
+  .footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    font-family: monospace;
+    font-size: 11.5px;
+    color: #64748b;
+  }
+  .format-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .fmt-pill {
+    padding: 3px 9px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #94a3b8;
+  }
+<style>
+  .top-hero-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    background: rgba(6, 6, 11, 0.82);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .top-nav-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+  }
+  .top-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .top-nav-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 15px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.2s ease;
+  }
+  .top-nav-chip:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+    color: #ffffff;
+  }
+  .hero-mega-slogan {
+    font-size: clamp(32px, 5.2vw, 66px);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1.06;
+    margin-bottom: 10px;
+    color: #ffffff;
+    text-shadow: 0 12px 42px rgba(0, 0, 0, 0.65);
+  }
+  .hero-mega-slogan .slogan-slash {
+    color: #00F0FF;
+    font-weight: 400;
+    margin: 0 4px;
+  }
+  .hero-mega-slogan .slogan-highlight {
+    background: linear-gradient(90deg, #00F0FF 0%, #9E7BFF 48%, #FF2FD4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP NAVIGATION BAR -->
+<nav class="top-hero-navbar">
+  <a href="orbital_3d_cards_demo.html" class="top-nav-brand">
+    <span style="display:inline-flex;width:28px;height:28px;border-radius:8px;align-items:center;justify-content:center;background:linear-gradient(135deg,#00F0FF,#7B2FFF,#FF2FD4);font-size:14px;">◆</span>
+    <span>Morphix 3D</span>
+  </a>
+  <div class="top-nav-links">
+    <a href="mechanical_cad_section.html" class="top-nav-chip" style="border-color:rgba(0,240,255,0.35);">
+      <span>⚙️ Mechanical CAD</span>
+    </a>
+    <a href="architecture_studio_section.html" class="top-nav-chip" style="border-color:rgba(241,85,52,0.35);">
+      <span>🏛️ Architecture</span>
+    </a>
+    <a href="creative_3d_darkroom.html" class="top-nav-chip" style="border-color:rgba(255,47,212,0.35);">
+      <span>🎨 Creative 3D</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ==========================================
+     SECTION 1: 3D ORBITAL CAROUSEL (MAIN HERO)
+     ========================================== -->
+<section class="stage-section">
+  <div class="ambient-glow" id="ambientGlow" style="background: radial-gradient(circle, #00F0FF, transparent 70%);"></div>
+
+  <div class="header-box">
+    <div class="eyebrow">✨ Unified AI 3D Engine · Mechanical CAD · Architecture · Creative 3D</div>
+    <h1 class="hero-mega-slogan">
+      Type it <span class="slogan-slash">/</span> See it — <span class="slogan-highlight">Just Morphix it</span>
+    </h1>
+    <p>Scroll or swipe to orbit the 3D engines — click any engine card to launch its dedicated 3D Studio!</p>
+  </div>
+
+  <div class="swipe-bar">
+    <button class="swipe-pill active" data-idx="0" onclick="goToCard(0)" ondblclick="openEngineSection(0)">
+      <span>1st Swipe · ⚙️ Mechanical CAD</span>
+    </button>
+    <button class="swipe-pill" data-idx="1" onclick="goToCard(1)" ondblclick="openEngineSection(1)">
+      <span>2nd Swipe · 🏛️ Architecture (Heron AI)</span>
+    </button>
+    <button class="swipe-pill" data-idx="2" onclick="goToCard(2)" ondblclick="openEngineSection(2)">
+      <span>3rd Swipe · 🎨 Creative 3D</span>
+    </button>
+  </div>
+
+  <div class="carousel-viewport" id="viewport">
+    <div class="orbital-floor-ring" id="floorRing"></div>
+
+    <div class="carousel-stage">
+      <!-- CARD 0: MECHANICAL CAD -->
+      <div class="orbital-card pos-front" data-idx="0" onclick="handleCardClick(0)"
+           style="border-color: rgba(0,240,255,0.55); cursor: pointer;">
+        <div class="back-focus-hint">Click to Focus · Click Front Card to Open</div>
+        <div class="card-top">
+          <div class="icon-box" style="background: linear-gradient(135deg, #00F0FF, #0EA5E9);">⚙️</div>
+          <span class="badge-tag" style="background: linear-gradient(90deg, #00F0FF, #0EA5E9); color:#03121a;">CAD · SWIPE 1</span>
+        </div>
+
+        <div class="mini-3d-stage">
+          <div class="mini-hud-top">
+            <span>PLANETARY TURBINE ASSY</span>
+            <span style="color:#ff5900">GD&amp;T ±0.01mm</span>
+          </div>
+          <canvas id="canvasMech"></canvas>
+          <div class="mini-hud">
+            <span style="color:#00F0FF">● ISO 2768-m MANIFOLD</span>
+            <span>Ø120mm · STEP / STL / GLB</span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="card-title">Mechanical CAD</div>
+          <div class="card-sub">Engineering &amp; Manufacturing</div>
+          <p class="card-desc">Design precision-engineered parts, planetary gears, housings, brackets, and CNC assemblies with parametric AI.</p>
+          <div class="tag-row">
+            <span class="tag-chip">STEP Export</span>
+            <span class="tag-chip">Parametric</span>
+            <span class="tag-chip">CNC Ready</span>
+          </div>
+          <a href="mechanical_cad_section.html" onclick="event.stopPropagation();" class="cta-link" style="border-color: rgba(0,240,255,0.45);">
+            <span>Open Mechanical CAD</span> <span>→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- CARD 1: ARCHITECTURE HERON AI -->
+      <div class="orbital-card pos-right" data-idx="1" onclick="handleCardClick(1)"
+           style="border-color: rgba(241,85,52,0.55); cursor: pointer;">
+        <div class="back-focus-hint">Click to Focus · Click Front Card to Open</div>
+        <div class="card-top">
+          <div class="icon-box" style="background: linear-gradient(135deg, #F15534, #7B2FFF);">🏛️</div>
+          <span class="badge-tag" style="background: linear-gradient(90deg, #F15534, #7B2FFF);">ARCH · SWIPE 2</span>
+        </div>
+
+        <div class="mini-3d-stage">
+          <div class="mini-hud-top">
+            <span>G+2 BIM MASSING + MEP</span>
+            <span style="color:#00E5FF">WET-WALL: ALIGNED</span>
+          </div>
+          <canvas id="canvasArch"></canvas>
+          <div class="mini-hud">
+            <span style="color:#F15534">● HERON CODE CHECK: PASS</span>
+            <span>2,400 SQ.FT · DXF + 3D GLB</span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="card-title">Architecture</div>
+          <div class="card-sub">Buildings, BIM &amp; MEP Interiors</div>
+          <p class="card-desc">Generate collision-free floor plans, 3D extruded villas, MEP plumbing stacks, and code-checked layouts.</p>
+          <div class="tag-row">
+            <span class="tag-chip">Floor Plans</span>
+            <span class="tag-chip">MEP Stack</span>
+            <span class="tag-chip">DXF/GLB Export</span>
+          </div>
+          <a href="architecture_studio_section.html" onclick="event.stopPropagation();" class="cta-link" style="border-color: rgba(241,85,52,0.45);">
+            <span>Open Architecture Studio</span> <span>→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- CARD 2: CREATIVE 3D -->
+      <div class="orbital-card pos-left" data-idx="2" onclick="handleCardClick(2)"
+           style="border-color: rgba(255,47,212,0.55); cursor: pointer;">
+        <div class="back-focus-hint">Click to Focus · Click Front Card to Open</div>
+        <div class="card-top">
+          <div class="icon-box" style="background: linear-gradient(135deg, #FF2FD4, #8052FF);">🎨</div>
+          <span class="badge-tag" style="background: linear-gradient(90deg, #FF2FD4, #8052FF);">3D · SWIPE 3</span>
+        </div>
+
+        <div class="mini-3d-stage">
+          <div class="mini-hud-top">
+            <span>PBR SCULPTURE + LASER SCAN</span>
+            <span style="color:#FF2FD4">WATERTIGHT MESH</span>
+          </div>
+          <canvas id="canvasGen"></canvas>
+          <div class="mini-hud">
+            <span style="color:#00FFD5">● SHADED QUAD TOPOLOGY</span>
+            <span>48.2K QUADS · 4K PBR MAPS</span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="card-title">Creative 3D</div>
+          <div class="card-sub">Assets &amp; Characters</div>
+          <p class="card-desc">Create game assets, characters, props, and shaded 3D sculptures from text prompts or reference images.</p>
+          <div class="tag-row">
+            <span class="tag-chip">Text to 3D</span>
+            <span class="tag-chip">Image to 3D</span>
+            <span class="tag-chip">AI Texture</span>
+          </div>
+          <a href="creative_3d_darkroom.html" onclick="event.stopPropagation();" class="cta-link" style="border-color: rgba(255,47,212,0.45);">
+            <span>Open Creative 3D</span> <span>→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls-footer">
+    <button class="nav-arrow" onclick="stepCarousel(-1)" title="Previous Swipe">←</button>
+    <div class="scroll-hint">
+      <span>🖱️ Scroll inside carousel to Orbit 3D · Click active card to open its Studio · Scroll down for Footer ↓</span>
+    </div>
+    <button class="nav-arrow" onclick="stepCarousel(1)" title="Next Swipe">→</button>
+  </div>
+</section>
+
+<!-- ==============================================================
+     SECTION 2: PHYLO-STYLE EDITORIAL + TECHNICAL SKETCH + 3D FOOTER
+     ============================================================== -->
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  .phylo-footer-section {
+    padding: 40px 24px 64px;
+    background: linear-gradient(180deg, #04050a 0%, #0d0e14 25%, #EAE6DA 25.1%, #EAE6DA 100%);
+  }
+  .phylo-footer-shell {
+    max-width: 1340px;
+    margin: 0 auto;
+    background: #F6F4EC;
+    color: #141413;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(20, 20, 19, 0.08);
+    border: 1px solid rgba(20, 20, 19, 0.12);
+  }
+  .phylo-cta-banner {
+    position: relative;
+    background: #F4F1E6;
+    min-height: 252px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 58px 24px 62px;
+    border-bottom: 1px solid #2B2B29;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .phylo-cta-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(20, 20, 19, 0.045) 1px, transparent 0);
+    background-size: 20px 20px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .phylo-sketch-left {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 370px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .phylo-sketch-right {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 390px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  #iridescentSculptureCanvas {
+    position: absolute;
+    top: -28px;
+    right: -18px;
+    width: 250px;
+    height: 230px;
+    z-index: 2;
+    cursor: grab;
+  }
+  .phylo-cta-center {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    max-width: 680px;
+  }
+  .phylo-serif-headline {
+    font-family: 'Instrument Serif', 'Newsreader', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(2.25rem, 4vw, 3.15rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: #141413;
+    margin-bottom: 28px;
+  }
+  .phylo-pill-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .phylo-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 48px;
+    padding: 0 26px;
+    border-radius: 999px;
+    font-family: 'Newsreader', Georgia, serif;
+    font-size: 16.5px;
+    font-weight: 400;
+    text-decoration: none;
+    transition: all 0.22s ease;
+  }
+  .phylo-pill-outline {
+    background: rgba(246, 244, 236, 0.78);
+    color: #141413;
+    border: 1.25px solid #141413;
+  }
+  .phylo-pill-outline:hover {
+    background: rgba(20, 20, 19, 0.06);
+    transform: translateY(-1px);
+  }
+  .phylo-pill-solid {
+    background: #0F0F0E;
+    color: #F6F4EC;
+    border: 1.25px solid #0F0F0E;
+    box-shadow: 0 6px 18px rgba(15, 15, 14, 0.16);
+  }
+  .phylo-pill-solid:hover {
+    background: #232321;
+    transform: translateY(-1px);
+  }
+  .phylo-main-body {
+    padding: 64px 64px 76px;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 48px;
+    background: #F6F4EC;
+  }
+  .phylo-brand-col {
+    max-width: 390px;
+  }
+  .phylo-logo-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: #141413;
+    margin-bottom: 22px;
+  }
+  .phylo-wordmark {
+    font-family: 'Newsreader', 'Instrument Serif', Georgia, serif;
+    font-size: 31px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: #141413;
+    line-height: 1;
+  }
+  .phylo-tagline {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: #575652;
+    margin-bottom: 22px;
+  }
+  .phylo-copyright {
+    font-size: 13px;
+    color: #86847E;
+  }
+  .phylo-links-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 36px;
+  }
+  .phylo-nav-col h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #141413;
+    margin-bottom: 20px;
+  }
+  .phylo-nav-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .phylo-nav-list a {
+    font-size: 14.5px;
+    color: #454440;
+    text-decoration: none;
+    transition: color 0.16s ease;
+  }
+  .phylo-nav-list a:hover {
+    color: #141413;
+  }
+  @media (max-width: 960px) {
+    .phylo-sketch-left, .phylo-sketch-right { opacity: 0.35; }
+    .phylo-main-body { grid-template-columns: 1fr; padding: 48px 28px; }
+  }
+</style>
+
+<section class="phylo-footer-section" id="footerDock">
+  <footer class="phylo-footer-shell">
+    <!-- 1. TOP BANNER (Circled in Yellow in Reference) -->
+    <div class="phylo-cta-banner">
+      <!-- Left Technical CAD & Architectural Sketch -->
+      <svg class="phylo-sketch-left" viewBox="0 0 370 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(98, 28)">
+          <path d="M 55 -18 L 72 -18 L 72 68 L 58 68" stroke="#D96B27" stroke-width="0.9" opacity="0.7" />
+          <text x="76" y="-8" fill="#8C583A" font-family="JetBrains Mono" font-size="8">b0</text>
+          <circle cx="0" cy="0" r="46" stroke="#D96B27" stroke-width="1.2" stroke-dasharray="3 2" fill="rgba(217, 107, 39, 0.06)" />
+          <circle cx="0" cy="0" r="38" stroke="#D96B27" stroke-width="1.4" fill="rgba(245, 222, 198, 0.45)" />
+          <circle cx="0" cy="0" r="14" stroke="#D96B27" stroke-width="1.1" stroke-dasharray="2 2" />
+          <g stroke="#D96B27" stroke-width="1.4" opacity="0.85">
+            <line x1="0" y1="-38" x2="0" y2="-52" /><line x1="19" y1="-33" x2="26" y2="-45" />
+            <line x1="33" y1="-19" x2="45" y2="-26" /><line x1="38" y1="0" x2="52" y2="0" />
+            <line x1="33" y1="19" x2="45" y2="26" /><line x1="19" y1="33" x2="26" y2="45" />
+            <line x1="0" y1="38" x2="0" y2="52" /><line x1="-19" y1="33" x2="-26" y2="45" />
+            <line x1="-33" y1="19" x2="-45" y2="26" /><line x1="-38" y1="0" x2="-52" y2="0" />
+            <line x1="-33" y1="-19" x2="-45" y2="-26" /><line x1="-19" y1="-33" x2="-26" y2="-45" />
+          </g>
+        </g>
+        <g stroke="#4A4945" stroke-width="0.75" opacity="0.65">
+          <path d="M 14 95 C 28 118, 42 145, 52 178" />
+          <path d="M 14 95 C 35 120, 32 152, 24 185" />
+          <circle cx="14" cy="95" r="2.5" fill="#141413" />
+          <circle cx="52" cy="178" r="2.2" fill="#D96B27" />
+        </g>
+        <path d="M 146 132 C 166 134, 178 158, 198 162" stroke="#3A3935" stroke-width="0.85" fill="none" />
+        <text x="135" y="134" fill="#575652" font-family="JetBrains Mono" font-size="8.5">13</text>
+        <text x="195" y="156" fill="#2E7D8C" font-family="JetBrains Mono" font-size="9" font-weight="600">5</text>
+        <path d="M -10 218 C 18 214, 48 218, 66 235 L 66 255 L -10 255 Z" fill="rgba(216, 92, 148, 0.22)" stroke="#C84B82" stroke-width="1" stroke-dasharray="2 1.5" />
+        <path d="M 188 252 C 186 218, 224 202, 245 232 C 254 244, 248 254, 240 256" stroke="#2E7D8C" stroke-width="2.2" fill="rgba(46, 125, 140, 0.06)" />
+      </svg>
+
+      <!-- Center Headline + Dual Pill Buttons -->
+      <div class="phylo-cta-center">
+        <h2 class="phylo-serif-headline">The New Way Creators Build in 3D</h2>
+        <div class="phylo-pill-actions">
+          <a href="/community" class="phylo-pill-btn phylo-pill-outline">
+            <span>Explore showcase</span>
+            <span>→</span>
+          </a>
+          <a href="/workspace/text-to-3d" class="phylo-pill-btn phylo-pill-solid">
+            <span>Try Morphix Studio</span>
+            <span>→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Technical Ribbon + Live 3D Iridescent Sculpture -->
+      <svg class="phylo-sketch-right" viewBox="0 0 390 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#575652" stroke-width="0.75" opacity="0.65">
+          <line x1="158" y1="138" x2="265" y2="138" />
+          <line x1="212" y1="102" x2="212" y2="174" />
+        </g>
+        <g transform="translate(70, 172)">
+          <path d="M 10 78 C 52 72, 82 14, 132 14 C 182 14, 212 72, 264 72 C 296 72, 315 45, 330 28" stroke="#2B2B29" stroke-width="3.5" stroke-opacity="0.35" fill="none" />
+          <path d="M 10 78 C 52 72, 82 14, 132 14 C 182 14, 212 72, 264 72 C 296 72, 315 45, 330 28" stroke="#141413" stroke-width="1.2" stroke-dasharray="5 4" fill="none" />
+        </g>
+      </svg>
+      <canvas id="iridescentSculptureCanvas" width="500" height="460"></canvas>
+    </div>
+
+    <!-- 2. BOTTOM BODY (Circled in Black on Left + 3 Clean Columns on Right) -->
+    <div class="phylo-main-body">
+      <div class="phylo-brand-col">
+        <a href="/" class="phylo-logo-row">
+          <svg width="38" height="38" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="18" stroke="#141413" stroke-width="2.3" />
+            <path d="M13 28C11.5 24.5 11.5 17 15.5 13.5C19.5 10 26.5 11 28.5 16C30.5 21 27.5 27.5 23 29.5" stroke="#141413" stroke-width="2.1" stroke-linecap="round"/>
+            <path d="M16.2 26C15 23 15.2 18 18 15.8C20.8 13.6 24.8 14.8 25.5 18.2C26.2 21.6 23.5 25 20.5 26.2" stroke="#141413" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="20.2" cy="20.2" r="2.6" fill="#141413" />
+            <path d="M19.5 26.5V37" stroke="#141413" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+          <span class="phylo-wordmark">Morphix</span>
+        </a>
+        <p class="phylo-tagline">
+          Collaborative AI engines designed for engineers, architects, and creators to build production 3D faster.
+        </p>
+        <p class="phylo-copyright">
+          © 2026 Morphix 3D, Inc. All rights reserved.
+        </p>
+      </div>
+
+      <div class="phylo-links-grid">
+        <div class="phylo-nav-col">
+          <h4>About</h4>
+          <ul class="phylo-nav-list">
+            <li><a href="mechanical_cad_section.html">Mechanical CAD</a></li>
+            <li><a href="architecture_studio_section.html">Architecture 3D</a></li>
+            <li><a href="creative_3d_darkroom.html">Creative Studio</a></li>
+            <li><a href="/pricing">Enterprise &amp; Pricing</a></li>
+            <li><a href="/community">Community Showcase</a></li>
+            <li><a href="#careers">Careers</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="phylo-nav-col">
+          <h4>Legal</h4>
+          <ul class="phylo-nav-list">
+            <li><a href="/terms">Terms of Service</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/refund-policy">Trust Center</a></li>
+            <li><a href="#cookies">Cookie Settings</a></li>
+          </ul>
+        </div>
+        <div class="phylo-nav-col">
+          <h4>Connect</h4>
+          <ul class="phylo-nav-list">
+            <li><a href="https://x.com" target="_blank" rel="noopener">X</a></li>
+            <li><a href="https://linkedin.com" target="_blank" rel="noopener">LinkedIn</a></li>
+            <li><a href="mailto:hello@3dmorphix.com">Email</a></li>
+            <li><a href="#discord">Discord</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+</section>
+
+<script>
+  const ENGINE_SECTION_URLS = [
+    'mechanical_cad_section.html',
+    'architecture_studio_section.html',
+    'creative_3d_darkroom.html'
+  ];
+
+  function openEngineSection(idx) {
+    const targetUrl = ENGINE_SECTION_URLS[idx];
+    if (targetUrl) {
+      window.location.href = targetUrl;
+    }
+  }
+
+  let activeIndex = 2; // Start on Creative 3D
+  const cards = document.querySelectorAll('.orbital-card');
+  const pills = document.querySelectorAll('.swipe-pill');
+  const glow = document.getElementById('ambientGlow');
+  const floorRing = document.getElementById('floorRing');
+
+  const THEMES = [
+    { glow: 'radial-gradient(circle, #00F0FF, transparent 70%)', border: 'rgba(0,240,255,0.55)', shadow: '0 30px 75px rgba(0,240,255,0.25)', stroke: 'rgba(0,240,255,0.32)' },
+    { glow: 'radial-gradient(circle, #F15534, transparent 70%)', border: 'rgba(241,85,52,0.55)', shadow: '0 30px 75px rgba(241,85,52,0.25)', stroke: 'rgba(241,85,52,0.32)' },
+    { glow: 'radial-gradient(circle, #FF2FD4, transparent 70%)', border: 'rgba(255,47,212,0.55)', shadow: '0 30px 75px rgba(255,47,212,0.25)', stroke: 'rgba(255,47,212,0.32)' }
+  ];
+
+  function updateCarousel() {
+    const mod = ((activeIndex % 3) + 3) % 3;
+    const rightIdx = (mod + 1) % 3;
+    const leftIdx = (mod + 2) % 3;
+
+    glow.style.background = THEMES[mod].glow;
+    floorRing.style.borderColor = THEMES[mod].border;
+
+    cards.forEach((card, idx) => {
+      card.classList.remove('pos-front', 'pos-right', 'pos-left');
+      if (idx === mod) {
+        card.classList.add('pos-front');
+        card.style.boxShadow = THEMES[idx].shadow;
+      } else if (idx === rightIdx) {
+        card.classList.add('pos-right');
+        card.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
+      } else if (idx === leftIdx) {
+        card.classList.add('pos-left');
+        card.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
+      }
+    });
+
+    pills.forEach((pill, idx) => {
+      pill.classList.toggle('active', idx === mod);
+    });
+  }
+
+  function stepCarousel(dir) {
+    activeIndex = (activeIndex + dir + 3) % 3;
+    updateCarousel();
+  }
+
+  function goToCard(targetIdx) {
+    activeIndex = targetIdx;
+    updateCarousel();
+  }
+
+  function handleCardClick(idx) {
+    const mod = ((activeIndex % 3) + 3) % 3;
+    if (idx !== mod) {
+      goToCard(idx);
+    } else {
+      openEngineSection(idx);
+    }
+  }
+
+  // Wheel Scroll inside the Carousel Viewport rotates the 3 cards; outside scrolls the page normally!
+  const viewport = document.getElementById('viewport');
+  let wheelCooldown = false;
+  viewport.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) < 15 && Math.abs(e.deltaX) < 15) return;
+    e.preventDefault();
+    if (wheelCooldown) return;
+    wheelCooldown = true;
+    const dir = (e.deltaY > 0 || e.deltaX > 0) ? 1 : -1;
+    stepCarousel(dir);
+    setTimeout(() => { wheelCooldown = false; }, 600);
+  }, { passive: false });
+
+  let startX = null;
+  viewport.addEventListener('pointerdown', (e) => { startX = e.clientX; });
+  window.addEventListener('pointerup', (e) => {
+    if (startX === null) return;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 40) stepCarousel(dx < 0 ? 1 : -1);
+    startX = null;
+  });
+
+  // ========================================================
+  // LARGE, SOLID-SHADED 3D VIEWPORTS FOR ALL 3 ENGINES
+  // ========================================================
+  function setupMiniCanvas(id, drawFn) {
+    const c = document.getElementById(id);
+    const ctx = c.getContext('2d');
+    function resize() {
+      const r = c.parentElement.getBoundingClientRect();
+      c.width = r.width * window.devicePixelRatio;
+      c.height = r.height * window.devicePixelRatio;
+      ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    return { c, ctx, drawFn };
+  }
+
+  function proj3D(x, y, z, w, h, ry, rx = 0.42) {
+    const cy = Math.cos(ry), sy = Math.sin(ry);
+    const cx = Math.cos(rx), sx = Math.sin(rx);
+    const x1 = x * cy - z * sy;
+    const z1 = x * sy + z * cy;
+    const y2 = y * cx - z1 * sx;
+    const z2 = y * sx + z1 * cx;
+    const s = 340 / (340 + z2 + 110);
+    return { x: w / 2 + x1 * s, y: h / 2 - y2 * s, z: z2, s };
+  }
+
+  const mMech = setupMiniCanvas('canvasMech', (ctx, w, h, t) => {
+    ctx.clearRect(0, 0, w, h);
+    const spread = 34 + Math.sin(t * 2.2) * 18;
+    const layers = [
+      { z: -spread, rOut: 62, rIn: 48, depth: 12, teeth: 14, stroke: '#ff5900', fill: 'rgba(255, 89, 0, 0.24)' },
+      { z: 0,       rOut: 98, rIn: 76, depth: 20, teeth: 20, stroke: '#00F0FF', fill: 'rgba(0, 240, 255, 0.22)' },
+      { z: spread,  rOut: 58, rIn: 44, depth: 12, teeth: 12, stroke: '#38bdf8', fill: 'rgba(56, 189, 248, 0.25)' }
+    ];
+    layers.forEach((L) => {
+      const steps = L.teeth * 2;
+      const front = [], back = [];
+      for (let i = 0; i < steps; i++) {
+        const a = (i / steps) * Math.PI * 2 + (L.z === 0 ? t : -t * 1.2);
+        const r = i % 2 === 0 ? L.rOut : L.rIn;
+        front.push(proj3D(Math.cos(a) * r, Math.sin(a) * r, L.z + L.depth / 2, w, h, t * 0.7, 0.45));
+        back.push(proj3D(Math.cos(a) * r, Math.sin(a) * r, L.z - L.depth / 2, w, h, t * 0.7, 0.45));
+      }
+      for (let i = 0; i < steps; i++) {
+        const next = (i + 1) % steps;
+        ctx.beginPath();
+        ctx.moveTo(front[i].x, front[i].y);
+        ctx.lineTo(front[next].x, front[next].y);
+        ctx.lineTo(back[next].x, back[next].y);
+        ctx.lineTo(back[i].x, back[i].y);
+        ctx.closePath();
+        ctx.fillStyle = L.fill; ctx.fill();
+        ctx.strokeStyle = L.stroke; ctx.lineWidth = 1; ctx.stroke();
+      }
+      ctx.beginPath();
+      front.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+      ctx.closePath();
+      ctx.fillStyle = L.fill; ctx.fill();
+      ctx.strokeStyle = L.stroke; ctx.lineWidth = 1.6; ctx.stroke();
+    });
+  });
+
+  const mArch = setupMiniCanvas('canvasArch', (ctx, w, h, t) => {
+    ctx.clearRect(0, 0, w, h);
+    const ry = t * 0.55, rx = 0.48;
+    function drawSolidBox(x0, y0, z0, dx, dy, dz, stroke, fill) {
+      const v = [
+        [x0, y0, z0], [x0+dx, y0, z0], [x0+dx, y0, z0+dz], [x0, y0, z0+dz],
+        [x0, y0+dy, z0], [x0+dx, y0+dy, z0], [x0+dx, y0+dy, z0+dz], [x0, y0+dy, z0+dz]
+      ].map(p => proj3D(p[0], p[1], p[2], w, h, ry, rx));
+      const faces = [[0,1,2,3],[4,5,6,7],[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7]];
+      faces.forEach(f => {
+        ctx.beginPath();
+        ctx.moveTo(v[f[0]].x, v[f[0]].y);
+        for (let i = 1; i < 4; i++) ctx.lineTo(v[f[i]].x, v[f[i]].y);
+        ctx.closePath();
+        ctx.fillStyle = fill; ctx.fill();
+        ctx.strokeStyle = stroke; ctx.lineWidth = 1.2; ctx.stroke();
+      });
+      return v[5];
+    }
+    const lift = 18 + Math.sin(t * 2) * 12;
+    drawSolidBox(-85, -65, -70, 170, 8, 140, '#F15534', 'rgba(241, 85, 52, 0.25)');
+    drawSolidBox(-80, -57, -65, 82, 36, 75, '#F15534', 'rgba(241, 85, 52, 0.22)');
+    drawSolidBox(6, -57, -65, 74, 36, 130, '#fb923c', 'rgba(251, 146, 60, 0.18)');
+    const y1 = -18 + lift;
+    drawSolidBox(-88, y1, -72, 176, 7, 144, '#00E5FF', 'rgba(0, 229, 255, 0.25)');
+    const topPin = drawSolidBox(-82, y1 + 7, -65, 95, 38, 130, '#00E5FF', 'rgba(0, 229, 255, 0.18)');
+    drawSolidBox(18, y1 + 7, -65, 64, 38, 85, '#a855f7', 'rgba(168, 85, 247, 0.24)');
+    ctx.fillStyle = '#F15534';
+    ctx.beginPath(); ctx.arc(topPin.x, topPin.y, 4, 0, Math.PI * 2); ctx.fill();
+  });
+
+  const mGen = setupMiniCanvas('canvasGen', (ctx, w, h, t) => {
+    ctx.clearRect(0, 0, w, h);
+    const ry = t * 0.75, rx = 0.35 + Math.sin(t * 0.8) * 0.15;
+    const rings = 10, segs = 16, grid = [];
+    for (let r = 0; r <= rings; r++) {
+      const phi = (r / rings - 0.5) * Math.PI;
+      const row = [];
+      for (let s = 0; s < segs; s++) {
+        const theta = (s / segs) * Math.PI * 2;
+        const rad = 88 * (1 + 0.28 * Math.sin(theta * 3 + t * 2) * Math.cos(phi * 2));
+        row.push(proj3D(Math.cos(phi)*Math.cos(theta)*rad, Math.sin(phi)*rad*1.12, Math.cos(phi)*Math.sin(theta)*rad, w, h, ry, rx));
+      }
+      grid.push(row);
+    }
+    const quads = [];
+    for (let r = 0; r < rings; r++) {
+      for (let s = 0; s < segs; s++) {
+        const ns = (s + 1) % segs;
+        const p0 = grid[r][s], p1 = grid[r][ns], p2 = grid[r+1][ns], p3 = grid[r+1][s];
+        quads.push({ p0, p1, p2, p3, avgZ: (p0.z+p1.z+p2.z+p3.z)*0.25, r, s });
+      }
+    }
+    quads.sort((a, b) => b.avgZ - a.avgZ);
+    const scanY = h / 2 + Math.sin(t * 2.2) * 75;
+    quads.forEach(q => {
+      const cy = (q.p0.y + q.p2.y) * 0.5;
+      const nearScan = Math.abs(cy - scanY) < 18;
+      const hue = (q.s / segs) * 90 + (q.r / rings) * 60 + 265;
+      ctx.beginPath();
+      ctx.moveTo(q.p0.x, q.p0.y); ctx.lineTo(q.p1.x, q.p1.y); ctx.lineTo(q.p2.x, q.p2.y); ctx.lineTo(q.p3.x, q.p3.y);
+      ctx.closePath();
+      ctx.fillStyle = nearScan ? 'rgba(0, 255, 213, 0.52)' : `hsla(${hue}, 88%, 56%, 0.26)`;
+      ctx.fill();
+      ctx.strokeStyle = nearScan ? '#00FFD5' : `hsla(${hue}, 95%, 70%, 0.72)`;
+      ctx.lineWidth = nearScan ? 1.8 : 0.95;
+      ctx.stroke();
+    });
+  });
+
+  // ========================================================
+  // PHYLO-STYLE 3D IRIDESCENT ORGANIC SCULPTURE IN FOOTER
+  // ========================================================
+  const sCanvas = document.getElementById('iridescentSculptureCanvas');
+  const sCtx = sCanvas.getContext('2d');
+
+  function drawIridescentSculpture(t) {
+    const W = sCanvas.width, H = sCanvas.height;
+    sCtx.clearRect(0, 0, W, H);
+    const rotY = -0.35 + Math.sin(t * 0.6) * 0.16;
+    const rotX = 0.45 + Math.cos(t * 0.45) * 0.1;
+    const cy = Math.cos(rotY), sy = Math.sin(rotY);
+    const cx = Math.cos(rotX), sx = Math.sin(rotX);
+
+    const uSteps = 16, vSteps = 64, grid = [];
+    for (let i = 0; i <= uSteps; i++) {
+      const u = i / uSteps;
+      const row = [];
+      for (let j = 0; j <= vSteps; j++) {
+        const v = (j / vSteps) * Math.PI * 2;
+        const rBase = 42 + 88 * Math.pow(u, 0.88);
+        const wave1 = 24 * Math.pow(u, 1.35) * Math.sin(6 * v + t * 1.1);
+        const wave2 = 12 * Math.pow(u, 1.8) * Math.cos(12 * v - t * 0.8);
+        const r = rBase + wave1 * 0.55;
+        const x = r * Math.cos(v), y = r * Math.sin(v), z = wave1 + wave2 - 22 * u * u;
+        const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+        const y1 = y * cx - z1 * sx, z2 = y * sx + z1 * cx;
+        const scale = 340 / (340 + z2);
+        row.push({ sx: W * 0.58 + x1 * scale, sy: H * 0.44 + y1 * scale, z: z2, u, v });
+      }
+      grid.push(row);
+    }
+
+    const quads = [];
+    for (let i = 0; i < uSteps; i++) {
+      for (let j = 0; j < vSteps; j++) {
+        const p0 = grid[i][j], p1 = grid[i + 1][j], p2 = grid[i + 1][j + 1], p3 = grid[i][j + 1];
+        const nz = (p1.sx - p0.sx) * (p3.sy - p0.sy) - (p1.sy - p0.sy) * (p3.sx - p0.sx);
+        quads.push({ p0, p1, p2, p3, avgZ: (p0.z + p1.z + p2.z + p3.z) * 0.25, nz, u: (i + 0.5) / uSteps, v: (j + 0.5) / vSteps });
+      }
+    }
+    quads.sort((a, b) => b.avgZ - a.avgZ);
+
+    for (const q of quads) {
+      const light = Math.max(0, Math.min(1, 0.55 + (q.nz / 180) + Math.sin(q.v * 6 + t) * 0.22));
+      const r = Math.round(118 + light * 122 + q.u * 25);
+      const g = Math.round(54 + Math.pow(light, 2.2) * 145);
+      const b = Math.round(145 + light * 95);
+      sCtx.beginPath();
+      sCtx.moveTo(q.p0.sx, q.p0.sy); sCtx.lineTo(q.p1.sx, q.p1.sy); sCtx.lineTo(q.p2.sx, q.p2.sy); sCtx.lineTo(q.p3.sx, q.p3.sy);
+      sCtx.closePath();
+      sCtx.fillStyle = `rgb(${r},${g},${b})`; sCtx.fill();
+    }
+
+    sCtx.beginPath();
+    const outerRow = grid[uSteps];
+    for (let j = 0; j <= vSteps; j++) {
+      j === 0 ? sCtx.moveTo(outerRow[j].sx, outerRow[j].sy) : sCtx.lineTo(outerRow[j].sx, outerRow[j].sy);
+    }
+    sCtx.closePath();
+    sCtx.strokeStyle = '#D8DF38';
+    sCtx.lineWidth = 3.2;
+    sCtx.stroke();
+  }
+
+  function animateAll() {
+    const t = performance.now() * 0.0012;
+    [mMech, mArch, mGen].forEach(m => {
+      const w = m.c.width / window.devicePixelRatio;
+      const h = m.c.height / window.devicePixelRatio;
+      m.drawFn(m.ctx, w, h, t);
+    });
+    drawIridescentSculpture(t);
+    requestAnimationFrame(animateAll);
+  }
+  updateCarousel();
+  animateAll();
+</script>
+</body>
+</html>

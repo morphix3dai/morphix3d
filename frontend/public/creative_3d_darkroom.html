@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Morphix 3D — Creative 3D // Bioluminescent Darkroom & 4-Step Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Refero "ORYZO AI - Darkroom product editorial" + "Integrated Biosciences - Bioluminescent laboratory" tokens */
+    --void-bg: #050608;
+    --darkroom-card: rgba(12, 15, 18, 0.78);
+    --darkroom-border: rgba(206, 247, 158, 0.14);
+    --cream-text: #ffedd7;
+    --bone-white: #f7f7f5;
+    --muted-ash: #8b9596;
+    --biolume-lime: #cef79e;
+    --biolume-cyan: #00ffd5;
+    --electric-iris: #8052ff;
+    --ember-accent: #dc5000;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--void-bg);
+    color: var(--bone-white);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* 21st.dev Aurora + Liquid-Metal Shader Backdrop Canvas */
+  #auroraShaderCanvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.72;
+  }
+
+  .page-wrap {
+    position: relative;
+    z-index: 2;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+
+  /* Top Darkroom Editorial Header */
+  .darkroom-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    background: rgba(8, 10, 14, 0.72);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 237, 215, 0.1);
+    border-radius: 16px;
+    margin-bottom: 24px;
+  }
+  .brand-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--biolume-lime);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pulse-orb {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--biolume-lime);
+    box-shadow: 0 0 12px var(--biolume-lime);
+  }
+  .shader-pills {
+    display: flex;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+  }
+  .shader-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--muted-ash);
+    padding: 5px 11px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .shader-btn.active {
+    background: rgba(206, 247, 158, 0.14);
+    border-color: var(--biolume-lime);
+    color: var(--biolume-lime);
+  }
+
+  /* ==========================================
+     HERO: DARKROOM TURNTABLE + 4-STEP PIPELINE
+     ========================================== */
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    align-items: stretch;
+  }
+  @media (max-width: 1024px) {
+    .hero-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Left Editorial Column (ORYZO Warm Cream Typography + Prompt Remix + Pipeline Steps) */
+  .editorial-card {
+    background: var(--darkroom-card);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 237, 215, 0.12);
+    border-radius: 24px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 22px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65);
+  }
+
+  .eyebrow-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--biolume-cyan);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .editorial-title {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: var(--cream-text);
+    margin-bottom: 10px;
+  }
+  .editorial-sub {
+    font-size: 13.5px;
+    color: var(--muted-ash);
+    line-height: 1.55;
+  }
+
+  /* Prompt Box + "Remix This Prompt" Button */
+  .prompt-laboratory {
+    background: rgba(5, 7, 10, 0.85);
+    border: 1px solid rgba(206, 247, 158, 0.22);
+    border-radius: 16px;
+    padding: 14px 16px;
+  }
+  .prompt-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--biolume-lime);
+  }
+  .prompt-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--cream-text);
+    line-height: 1.5;
+    min-height: 38px;
+  }
+  .remix-btn {
+    margin-top: 12px;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(206,247,158,0.16), rgba(0,255,213,0.14));
+    border: 1px solid var(--biolume-lime);
+    color: var(--biolume-lime);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .remix-btn:hover {
+    background: var(--biolume-lime);
+    color: #050806;
+    box-shadow: 0 0 24px rgba(206, 247, 158, 0.45);
+  }
+
+  /* 4-Step Pipeline Progression (01 PROMPT -> 02 IMAGE -> 03 MESH -> 04 TEXTURE) */
+  .pipeline-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pipeline-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--muted-ash);
+    margin-bottom: 4px;
+  }
+  .auto-cycle-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: var(--cream-text);
+    font-family: inherit;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .step-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .step-card:hover {
+    background: rgba(255,255,255,0.06);
+  }
+  .step-card.active {
+    background: rgba(0, 255, 213, 0.11);
+    border-color: var(--biolume-cyan);
+    box-shadow: 0 0 24px rgba(0, 255, 213, 0.16);
+  }
+  .step-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted-ash);
+  }
+  .step-card.active .step-num {
+    background: var(--biolume-cyan);
+    color: #041210;
+  }
+  .step-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--bone-white);
+  }
+  .step-desc {
+    font-size: 11px;
+    color: var(--muted-ash);
+  }
+  .step-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--biolume-lime);
+  }
+
+  /* Right Darkroom Turntable 3D Stage */
+  .turntable-stage {
+    position: relative;
+    background: radial-gradient(circle at 50% 56%, rgba(16, 38, 36, 0.48) 0%, rgba(7, 8, 12, 0.92) 72%);
+    border: 1px solid rgba(255, 237, 215, 0.14);
+    border-radius: 24px;
+    min-height: 580px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.75);
+  }
+
+  .stage-topbar {
+    position: relative;
+    z-index: 5;
+    padding: 18px 22px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .telemetry-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    background: rgba(6, 8, 12, 0.82);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--cream-text);
+    backdrop-filter: blur(12px);
+  }
+
+  /* Pose & Rigging Toggle Bar */
+  .pose-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    background: rgba(6, 8, 12, 0.85);
+    padding: 5px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  .pose-btn {
+    border: none;
+    background: transparent;
+    color: var(--muted-ash);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 11px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pose-btn.active {
+    background: rgba(128, 82, 255, 0.28);
+    color: #fff;
+    border: 1px solid var(--electric-iris);
+  }
+  .pose-btn.rig-toggle.active {
+    background: rgba(206, 247, 158, 0.2);
+    color: var(--biolume-lime);
+    border: 1px solid var(--biolume-lime);
+  }
+
+  #turntableCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+    z-index: 1;
+  }
+  #turntableCanvas:active { cursor: grabbing; }
+
+  .stage-bottombar {
+    position: relative;
+    z-index: 5;
+    margin: 18px 22px;
+    padding: 12px 18px;
+    background: rgba(8, 10, 14, 0.84);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+  .morph-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 240px;
+  }
+  .morph-slider {
+    flex: 1;
+    accent-color: var(--biolume-cyan);
+    cursor: pointer;
+  }
+
+  /* ==============================================================
+     BELOW THE HERO: 21st.dev 3D CIRCULAR COMMUNITY GALLERY
+     ============================================================== */
+  .gallery-section {
+    margin-top: 64px;
+    padding-top: 48px;
+    border-top: 1px solid rgba(255, 237, 215, 0.1);
+    text-align: center;
+  }
+  .gallery-header h3 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--cream-text);
+    letter-spacing: -0.02em;
+  }
+  .gallery-header p {
+    font-size: 13.5px;
+    color: var(--muted-ash);
+    margin-top: 6px;
+  }
+
+  .circular-gallery-viewport {
+    position: relative;
+    width: 100%;
+    height: 360px;
+    perspective: 1400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 24px;
+    overflow: hidden;
+  }
+  .gallery-ring {
+    position: relative;
+    width: 260px;
+    height: 290px;
+    transform-style: preserve-3d;
+    transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .gallery-card {
+    position: absolute;
+    inset: 0;
+    background: rgba(14, 17, 22, 0.92);
+    border: 1px solid rgba(206, 247, 158, 0.22);
+    border-radius: 20px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: left;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.65);
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .gallery-card:hover {
+    border-color: var(--biolume-cyan);
+    box-shadow: 0 0 35px rgba(0, 255, 213, 0.25);
+  }
+  .g-preview {
+    width: 100%;
+    height: 140px;
+    border-radius: 12px;
+    background: radial-gradient(circle at 50% 45%, rgba(128,82,255,0.22), rgba(5,6,10,0.95));
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 46px;
+    position: relative;
+    overflow: hidden;
+  }
+  .g-poly {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.75);
+    color: var(--biolume-lime);
+    border: 1px solid rgba(206,247,158,0.3);
+  }
+  .g-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--cream-text);
+    margin-top: 10px;
+  }
+  .g-author {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--muted-ash);
+  }
+  .g-remix-tag {
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--biolume-cyan);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .gallery-nav {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .g-nav-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: var(--cream-text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .g-nav-btn:hover {
+    border-color: var(--biolume-lime);
+    color: var(--biolume-lime);
+  }
+</style>
+</head>
+<body>
+
+<!-- 21st.dev Aurora / Liquid-Metal Backdrop Shader Canvas -->
+<canvas id="auroraShaderCanvas"></canvas>
+
+<div class="page-wrap">
+  <nav style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.12);font-family:'JetBrains Mono',monospace;font-size:11.5px;">
+    <a href="/" onclick="if(window.location.protocol==='file:'){window.location.href='orbital_3d_cards_demo.html';return false;}" style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:#FAF5E7;text-decoration:none;font-weight:700;">
+      <span>← Back to Main Hero</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <a href="mechanical_cad_section.html" style="padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);color:#FAF5E7;text-decoration:none;">⚙️ Mechanical CAD</a>
+      <a href="architecture_studio_section.html" style="padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);color:#FAF5E7;text-decoration:none;">🏛️ Architecture</a>
+      <span style="padding:6px 12px;border-radius:999px;background:linear-gradient(135deg,#FF2FD4,#8052FF);color:#fff;font-weight:700;">🎨 Creative 3D (Active)</span>
+    </div>
+  </nav>
+
+  <!-- TOP EDITORIAL DARKROOM HEADER -->
+  <header class="darkroom-header">
+    <div class="brand-kicker">
+      <span class="pulse-orb"></span>
+      <span>03 · CREATIVE 3D // ORYZO DARKROOM × BIOLUMINESCENT LAB</span>
+    </div>
+    <div class="shader-pills">
+      <button class="shader-btn active" id="shAurora" onclick="setShaderBackdrop('aurora')">21st.dev Aurora Shader</button>
+      <button class="shader-btn" id="shLiquid" onclick="setShaderBackdrop('liquid')">Liquid-Metal Chrome Shader</button>
+    </div>
+  </header>
+
+  <!-- MAIN DARKROOM HERO -->
+  <div class="hero-grid">
+    <!-- LEFT: EDITORIAL CONTROLS, PROMPT REMIX & 4-STEP PIPELINE -->
+    <aside class="editorial-card">
+      <div>
+        <div class="eyebrow-tag">// NEURAL TURNTABLE ATELIER</div>
+        <h1 class="editorial-title" id="modelHeadline">Cyber-Valkyrie Guardian</h1>
+        <p class="editorial-sub">
+          Watch a single text prompt materialize in the darkroom — evolving from a bioluminescent point cloud to a rigged, 4K PBR textured character.
+        </p>
+      </div>
+
+      <!-- Prompt Laboratory + Remix Button -->
+      <div class="prompt-laboratory">
+        <div class="prompt-label-row">
+          <span>ACTIVE SEED PROMPT</span>
+          <span id="seedTag">SEED #8841-VX</span>
+        </div>
+        <div class="prompt-text" id="promptDisplay">
+          "Bioluminescent cyber-valkyrie guardian in obsidian carapace armor, glowing cyan plasma wings, game-ready quad mesh, 4K PBR"
+        </div>
+        <button class="remix-btn" onclick="remixPrompt()">
+          <span>↻ Remix This Prompt</span>
+          <span style="opacity:0.75">(Cycle Archetype)</span>
+        </button>
+      </div>
+
+      <!-- 4-Step Pipeline Progression -->
+      <div class="pipeline-steps">
+        <div class="pipeline-head">
+          <span>PIPELINE STAGE PROGRESSION</span>
+          <button class="auto-cycle-btn" id="btnAutoStep" onclick="toggleAutoPipeline()">AUTO-STEP: ON</button>
+        </div>
+
+        <div class="step-card" data-step="0" onclick="selectPipelineStep(0)">
+          <div class="step-left">
+            <span class="step-num">01</span>
+            <div>
+              <div class="step-name">Prompt → Latent Cloud</div>
+              <div class="step-desc">3D semantic point-cloud synthesis</div>
+            </div>
+          </div>
+          <span class="step-badge">8,192 PTS</span>
+        </div>
+
+        <div class="step-card" data-step="1" onclick="selectPipelineStep(1)">
+          <div class="step-left">
+            <span class="step-num">02</span>
+            <div>
+              <div class="step-name">Image → Depth Relief</div>
+              <div class="step-desc">Multi-view silhouette &amp; normal contours</div>
+            </div>
+          </div>
+          <span class="step-badge">6-VIEW</span>
+        </div>
+
+        <div class="step-card" data-step="2" onclick="selectPipelineStep(2)">
+          <div class="step-left">
+            <span class="step-num">03</span>
+            <div>
+              <div class="step-name">Mesh → Quad Wireframe</div>
+              <div class="step-desc">Watertight manifold quad topology</div>
+            </div>
+          </div>
+          <span class="step-badge">34.2K QUADS</span>
+        </div>
+
+        <div class="step-card active" data-step="3" onclick="selectPipelineStep(3)">
+          <div class="step-left">
+            <span class="step-num">04</span>
+            <div>
+              <div class="step-name">Texture → 4K PBR + Emissive</div>
+              <div class="step-desc">Albedo, Roughness, Metallic &amp; Biolume</div>
+            </div>
+          </div>
+          <span class="step-badge">4K PBR</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT: 3D TURNTABLE CHARACTER + POSE & RIGGING CONTROLS -->
+    <div class="turntable-stage" id="turntableContainer">
+      <div class="stage-topbar">
+        <div class="telemetry-pill" id="stageStepReadout">
+          STAGE 04 // FULL 4K PBR + BIOLUMINESCENT SHADER
+        </div>
+
+        <div class="pose-controls">
+          <button class="pose-btn active" data-pose="idle" onclick="setPose('idle')">Pose: Idle</button>
+          <button class="pose-btn" data-pose="tpose" onclick="setPose('tpose')">Pose: T-Pose</button>
+          <button class="pose-btn" data-pose="action" onclick="setPose('action')">Pose: Combat</button>
+          <button class="pose-btn rig-toggle" id="btnRig" onclick="toggleRigSkeleton()">🦴 Show Rig (65 Bones)</button>
+        </div>
+      </div>
+
+      <canvas id="turntableCanvas"></canvas>
+
+      <div class="stage-bottombar">
+        <div class="morph-progress-wrap">
+          <span>WIREFRAME ↔ PBR MORPH:</span>
+          <input type="range" class="morph-slider" id="morphSlider" min="0" max="300" value="300" oninput="onMorphSlider(this.value)" />
+          <span id="morphPct" style="color:var(--biolume-lime)">100% TEXTURED</span>
+        </div>
+        <div>
+          <span style="color:var(--muted-ash)">EXPORT:</span>
+          <strong style="color:var(--cream-text)">.GLB · .FBX (RIGGED) · .OBJ</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BELOW THE HERO: 3D CIRCULAR COMMUNITY GALLERY (21st.dev style) -->
+  <section class="gallery-section">
+    <div class="gallery-header">
+      <div class="eyebrow-tag">// 21ST.DEV 3D ORBITAL ARCHIVE</div>
+      <h3>Community Darkroom Creations</h3>
+      <p>Click any creation in the 3D ring to load its prompt and archetype onto the turntable above.</p>
+    </div>
+
+    <div class="circular-gallery-viewport">
+      <div class="gallery-ring" id="galleryRing">
+        <!-- Populated dynamically with 6 3D ring cards -->
+      </div>
+    </div>
+
+    <div class="gallery-nav">
+      <button class="g-nav-btn" onclick="rotateGallery(-1)">← Rotate Ring Left</button>
+      <button class="g-nav-btn" onclick="rotateGallery(1)">Rotate Ring Right →</button>
+    </div>
+  </section>
+</div>
+
+<script>
+  // ========================================================
+  // ARCHETYPES FOR "REMIX THIS PROMPT" & COMMUNITY GALLERY
+  // ========================================================
+  const ARCHETYPES = [
+    {
+      name: "Cyber-Valkyrie Guardian",
+      seed: "SEED #8841-VX",
+      prompt: "\"Bioluminescent cyber-valkyrie guardian in obsidian carapace armor, glowing cyan plasma wings, game-ready quad mesh, 4K PBR\"",
+      author: "@kael_3d",
+      polys: "34.2K Quads",
+      icon: "🦾",
+      hueBase: 168, // Bioluminescent Cyan/Lime
+      hueAccent: 275,
+      wingSpan: 1.25,
+      shoulderScale: 1.15
+    },
+    {
+      name: "Abyssal Biolume Leviathan",
+      seed: "SEED #4092-AB",
+      prompt: "\"Deep-sea bioluminescent mecha-leviathan with translucent kelp-green fins and obsidian spine plates, subsurface scattering\"",
+      author: "@nautilus_lab",
+      polys: "41.8K Quads",
+      icon: "🐉",
+      hueBase: 95, // Bioluminescent Lime (#cef79e)
+      hueAccent: 180,
+      wingSpan: 1.45,
+      shoulderScale: 0.95
+    },
+    {
+      name: "Oryzo Ember Sentinel",
+      seed: "SEED #1904-OR",
+      prompt: "\"Darkroom walnut-and-bronze clockwork sentinel with glowing molten ember core and articulated knight pauldrons\"",
+      author: "@oryzo_studio",
+      polys: "29.6K Quads",
+      icon: "⚔️",
+      hueBase: 22, // Oryzo Ember (#dc5000)
+      hueAccent: 42,
+      wingSpan: 0.85,
+      shoulderScale: 1.35
+    },
+    {
+      name: "Astral Chrono-Seraph",
+      seed: "SEED #7730-AS",
+      prompt: "\"Floating astral seraphim construct with liquid-chrome halo rings, violet nebula core, rigged humanoid topology\"",
+      author: "@sera_vfx",
+      polys: "38.0K Quads",
+      icon: "✨",
+      hueBase: 265, // Electric Iris (#8052ff)
+      hueAccent: 315,
+      wingSpan: 1.5,
+      shoulderScale: 1.05
+    },
+    {
+      name: "Valkyrie Heavy Exosuit",
+      seed: "SEED #5512-EX",
+      prompt: "\"Hard-surface industrial exosuit with carbon-fiber limbs, neon lime hydraulic conduits, and articulated 65-bone rig\"",
+      author: "@mech_forge",
+      polys: "46.4K Quads",
+      icon: "🤖",
+      hueBase: 135,
+      hueAccent: 195,
+      wingSpan: 0.95,
+      shoulderScale: 1.4
+    },
+    {
+      name: "Obsidian Relic Blade & Stand",
+      seed: "SEED #3109-RB",
+      prompt: "\"Ancient volcanic glass greatsword hovering over a rune-carved darkroom pedestal with bioluminescent turquoise cracks\"",
+      author: "@rune_smith",
+      polys: "18.9K Quads",
+      icon: "🗡️",
+      hueBase: 185,
+      hueAccent: 150,
+      wingSpan: 0.7,
+      shoulderScale: 0.85
+    }
+  ];
+
+  const state = {
+    archetypeIdx: 0,
+    stepProgress: 3.0,   // 0 = Prompt Cloud, 1 = Image Contours, 2 = Wireframe Mesh, 3 = Full PBR Texture
+    targetStep: 3.0,
+    autoStep: true,
+    pose: 'idle',        // 'idle' | 'tpose' | 'action'
+    showRig: false,
+    shaderMode: 'aurora', // 'aurora' | 'liquid'
+    rotY: 0.45,
+    rotX: 0.22,
+    galleryIndex: 0
+  };
+
+  // Build 3D Circular Community Gallery Cards
+  const galleryRing = document.getElementById('galleryRing');
+  function initGallery() {
+    galleryRing.innerHTML = ARCHETYPES.map((item, idx) => {
+      const angle = idx * 60;
+      return `
+        <div class="gallery-card" style="transform: rotateY(${angle}deg) translateZ(340px);" onclick="loadArchetype(${idx})">
+          <div>
+            <div class="g-preview">
+              <span>${item.icon}</span>
+              <span class="g-poly">${item.polys}</span>
+            </div>
+            <div class="g-title">${item.name}</div>
+            <div class="g-author">by ${item.author} · ${item.seed}</div>
+          </div>
+          <div class="g-remix-tag">
+            <span>Load on Turntable</span>
+            <span>↑ Remix</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  initGallery();
+
+  function rotateGallery(dir) {
+    state.galleryIndex += dir;
+    galleryRing.style.transform = `rotateY(${-state.galleryIndex * 60}deg)`;
+  }
+
+  function loadArchetype(idx) {
+    state.archetypeIdx = idx;
+    const arch = ARCHETYPES[idx];
+    document.getElementById('modelHeadline').textContent = arch.name;
+    document.getElementById('seedTag').textContent = arch.seed;
+    document.getElementById('promptDisplay').textContent = arch.prompt;
+    state.galleryIndex = idx;
+    galleryRing.style.transform = `rotateY(${-idx * 60}deg)`;
+  }
+
+  function remixPrompt() {
+    const next = (state.archetypeIdx + 1) % ARCHETYPES.length;
+    loadArchetype(next);
+    // Replay pipeline morph from 0 -> 3 on remix!
+    state.stepProgress = 0.2;
+    selectPipelineStep(3);
+  }
+
+  function setShaderBackdrop(mode) {
+    state.shaderMode = mode;
+    document.getElementById('shAurora').classList.toggle('active', mode === 'aurora');
+    document.getElementById('shLiquid').classList.toggle('active', mode === 'liquid');
+  }
+
+  const STEP_LABELS = [
+    "STAGE 01 // PROMPT → BIOLUMINESCENT LATENT POINT CLOUD",
+    "STAGE 02 // IMAGE → MULTI-VIEW DEPTH SILHOUETTE SLICES",
+    "STAGE 03 // MESH → WATERTIGHT QUAD WIREFRAME TOPOLOGY",
+    "STAGE 04 // FULL 4K PBR + BIOLUMINESCENT SHADER"
+  ];
+
+  function selectPipelineStep(stepIdx) {
+    state.targetStep = stepIdx;
+    document.querySelectorAll('.step-card').forEach((el, i) => {
+      el.classList.toggle('active', i === stepIdx);
+    });
+    document.getElementById('stageStepReadout').textContent = STEP_LABELS[stepIdx];
+    document.getElementById('morphSlider').value = stepIdx * 100;
+    updateMorphLabel(stepIdx * 100);
+  }
+
+  function onMorphSlider(val) {
+    state.autoStep = false;
+    document.getElementById('btnAutoStep').textContent = 'AUTO-STEP: OFF';
+    const v = Number(val) / 100;
+    state.stepProgress = v;
+    state.targetStep = v;
+    const rounded = Math.round(v);
+    document.querySelectorAll('.step-card').forEach((el, i) => {
+      el.classList.toggle('active', i === rounded);
+    });
+    document.getElementById('stageStepReadout').textContent = STEP_LABELS[rounded];
+    updateMorphLabel(Number(val));
+  }
+
+  function updateMorphLabel(val) {
+    const pct = Math.round((val / 300) * 100);
+    const names = ["CLOUD", "DEPTH", "WIREFRAME", "TEXTURED"];
+    const stageName = names[Math.min(3, Math.floor(val / 95))];
+    document.getElementById('morphPct').textContent = `${pct}% (${stageName})`;
+  }
+
+  function toggleAutoPipeline() {
+    state.autoStep = !state.autoStep;
+    document.getElementById('btnAutoStep').textContent = state.autoStep ? 'AUTO-STEP: ON' : 'AUTO-STEP: OFF';
+  }
+
+  function setPose(pose) {
+    state.pose = pose;
+    document.querySelectorAll('.pose-btn[data-pose]').forEach(b => {
+      b.classList.toggle('active', b.dataset.pose === pose);
+    });
+  }
+
+  function toggleRigSkeleton() {
+    state.showRig = !state.showRig;
+    document.getElementById('btnRig').classList.toggle('active', state.showRig);
+  }
+
+  // Auto-advance pipeline steps every 3.4s when enabled
+  setInterval(() => {
+    if (!state.autoStep) return;
+    const next = (Math.round(state.targetStep) + 1) % 4;
+    selectPipelineStep(next);
+  }, 3400);
+
+  // ========================================================
+  // 1. 21st.dev AURORA / LIQUID-METAL BACKDROP SHADER CANVAS
+  // ========================================================
+  const bgCanvas = document.getElementById('auroraShaderCanvas');
+  const bgCtx = bgCanvas.getContext('2d');
+  function resizeBg() {
+    bgCanvas.width = window.innerWidth * 0.5;
+    bgCanvas.height = window.innerHeight * 0.5;
+  }
+  resizeBg();
+  window.addEventListener('resize', resizeBg);
+
+  function renderBackdropShader(t) {
+    const w = bgCanvas.width, h = bgCanvas.height;
+    bgCtx.clearRect(0, 0, w, h);
+
+    const arch = ARCHETYPES[state.archetypeIdx];
+    const blobs = state.shaderMode === 'aurora'
+      ? [
+          { x: w * (0.3 + 0.2 * Math.sin(t * 0.4)), y: h * (0.35 + 0.15 * Math.cos(t * 0.3)), r: w * 0.45, col: `hsla(${arch.hueBase}, 90%, 55%, 0.18)` },
+          { x: w * (0.7 + 0.18 * Math.cos(t * 0.35)), y: h * (0.55 + 0.2 * Math.sin(t * 0.45)), r: w * 0.42, col: `hsla(${arch.hueAccent}, 85%, 52%, 0.16)` },
+          { x: w * 0.5, y: h * (0.25 + 0.1 * Math.sin(t * 0.6)), r: w * 0.35, col: 'rgba(206, 247, 158, 0.10)' }
+        ]
+      : [
+          { x: w * (0.45 + 0.25 * Math.cos(t * 0.5)), y: h * 0.45, r: w * 0.5, col: 'rgba(220, 230, 242, 0.16)' },
+          { x: w * (0.55 - 0.2 * Math.sin(t * 0.4)), y: h * 0.5, r: w * 0.38, col: 'rgba(220, 80, 0, 0.14)' }
+        ];
+
+    blobs.forEach(b => {
+      const grad = bgCtx.createRadialGradient(b.x, b.y, 5, b.x, b.y, b.r);
+      grad.addColorStop(0, b.col);
+      grad.addColorStop(1, 'transparent');
+      bgCtx.fillStyle = grad;
+      bgCtx.fillRect(0, 0, w, h);
+    });
+  }
+
+  // ========================================================
+  // 2. 3D DARKROOM TURNTABLE + ARTICULATED RIGGED CHARACTER
+  // ========================================================
+  const ttCanvas = document.getElementById('turntableCanvas');
+  const ttCtx = ttCanvas.getContext('2d');
+  const ttContainer = document.getElementById('turntableContainer');
+
+  function resizeTurntable() {
+    const r = ttContainer.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    ttCanvas.width = r.width * dpr;
+    ttCanvas.height = r.height * dpr;
+    ttCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resizeTurntable();
+  window.addEventListener('resize', resizeTurntable);
+
+  let isDragging = false, lastX = 0, lastY = 0;
+  ttCanvas.addEventListener('pointerdown', (e) => {
+    isDragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+  });
+  window.addEventListener('pointerup', () => isDragging = false);
+  window.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+    state.rotY += (e.clientX - lastX) * 0.01;
+    state.rotX = Math.max(-0.5, Math.min(0.8, state.rotX + (e.clientY - lastY) * 0.01));
+    lastX = e.clientX;
+    lastY = e.clientY;
+  });
+
+  function proj3D(x, y, z, w, h) {
+    const cy = Math.cos(state.rotY), sy = Math.sin(state.rotY);
+    const cx = Math.cos(state.rotX), sx = Math.sin(state.rotX);
+    const x1 = x * cy - z * sy;
+    const z1 = x * sy + z * cy;
+    const y2 = y * cx - z1 * sx;
+    const z2 = y * sx + z1 * cx;
+    const s = 420 / (420 + z2 + 140);
+    return { x: w / 2 + x1 * s, y: h * 0.52 - y2 * s, z: z2, s };
+  }
+
+  // Build a 3D tapered limb/armor segment between joint A and joint B
+  function buildSegmentQuads(A, B, radA, radB, sides = 8) {
+    const dx = B.x - A.x, dy = B.y - A.y, dz = B.z - A.z;
+    const len = Math.hypot(dx, dy, dz) || 1;
+    const ux = dx / len, uy = dy / len, uz = dz / len;
+    // Perpendicular basis vectors
+    let vx = -uz, vy = 0, vz = ux;
+    if (Math.hypot(vx, vy, vz) < 0.1) { vx = 1; vy = 0; vz = 0; }
+    const vLen = Math.hypot(vx, vy, vz);
+    vx /= vLen; vy /= vLen; vz /= vLen;
+    const wx = uy * vz - uz * vy;
+    const wy = uz * vx - ux * vz;
+    const wz = ux * vy - uy * vx;
+
+    const ringA = [], ringB = [];
+    for (let i = 0; i < sides; i++) {
+      const a = (i / sides) * Math.PI * 2;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      ringA.push({
+        x: A.x + (vx * ca + wx * sa) * radA,
+        y: A.y + (vy * ca + wy * sa) * radA,
+        z: A.z + (vz * ca + wz * sa) * radA
+      });
+      ringB.push({
+        x: B.x + (vx * ca + wx * sa) * radB,
+        y: B.y + (vy * ca + wy * sa) * radB,
+        z: B.z + (vz * ca + wz * sa) * radB
+      });
+    }
+
+    const quads = [];
+    for (let i = 0; i < sides; i++) {
+      const next = (i + 1) % sides;
+      quads.push([ringA[i], ringA[next], ringB[next], ringB[i]]);
+    }
+    return quads;
+  }
+
+  function renderTurntable(t) {
+    const dpr = window.devicePixelRatio || 1;
+    const w = ttCanvas.width / dpr;
+    const h = ttCanvas.height / dpr;
+    ttCtx.clearRect(0, 0, w, h);
+
+    if (!isDragging) state.rotY += 0.0055;
+    state.stepProgress += (state.targetStep - state.stepProgress) * 0.08;
+
+    const arch = ARCHETYPES[state.archetypeIdx];
+    const sp = state.stepProgress; // 0..3
+
+    // 1. Draw Darkroom Turntable Pedestal Plinth Rings
+    [135, 105, 72].forEach((r, idx) => {
+      ttCtx.beginPath();
+      for (let i = 0; i <= 60; i++) {
+        const a = (i / 60) * Math.PI * 2 + (idx === 1 ? -t * 0.5 : t * 0.3);
+        const p = proj3D(Math.cos(a) * r, -128, Math.sin(a) * r, w, h);
+        i === 0 ? ttCtx.moveTo(p.x, p.y) : ttCtx.lineTo(p.x, p.y);
+      }
+      ttCtx.strokeStyle = idx === 0 ? `hsla(${arch.hueBase}, 90%, 60%, 0.45)` : 'rgba(255, 237, 215, 0.14)';
+      ttCtx.lineWidth = idx === 0 ? 1.6 : 1;
+      ttCtx.stroke();
+    });
+
+    // 2. Compute Articulated Skeleton Joints based on Pose (Idle / T-Pose / Combat Action)
+    const breath = state.pose === 'idle' ? Math.sin(t * 2.4) * 5 : 0;
+    const combatSwing = state.pose === 'action' ? Math.sin(t * 3.2) * 22 : 0;
+    const armRaise = state.pose === 'tpose' ? 38 : state.pose === 'action' ? 28 + combatSwing : -12 + breath;
+    const wingFlare = (state.pose === 'action' ? 1.25 : 1.0) * arch.wingSpan;
+    const shW = 42 * arch.shoulderScale;
+
+    const joints = {
+      pelvis:    { x: 0,    y: -15 + breath * 0.5, z: 0 },
+      chest:     { x: 0,    y: 38 + breath,        z: 0 },
+      neck:      { x: 0,    y: 68 + breath,        z: 0 },
+      head:      { x: 0,    y: 98 + breath * 1.2,  z: 4 },
+      shoulderL: { x: -shW, y: 58 + breath,        z: 0 },
+      elbowL:    { x: -shW - 34, y: 32 + armRaise * 0.7, z: 12 },
+      handL:     { x: -shW - 56, y: 12 + armRaise,       z: 28 + combatSwing * 0.5 },
+      shoulderR: { x: shW,  y: 58 + breath,        z: 0 },
+      elbowR:    { x: shW + 34,  y: 32 + armRaise * 0.7, z: 12 },
+      handR:     { x: shW + 56,  y: 12 + armRaise,       z: 28 - combatSwing * 0.5 },
+      hipL:      { x: -22,  y: -18,                z: 0 },
+      kneeL:     { x: -26,  y: -72,                z: state.pose === 'action' ? 18 : 6 },
+      footL:     { x: -28,  y: -124,               z: state.pose === 'action' ? 8 : 0 },
+      hipR:      { x: 22,   y: -18,                z: 0 },
+      kneeR:     { x: 26,   y: -72,                z: state.pose === 'action' ? -14 : 6 },
+      footR:     { x: 28,   y: -124,               z: state.pose === 'action' ? -18 : 0 },
+      // Bioluminescent Cyber Wings / Stabilizer Fins
+      wingTipL1: { x: -118 * wingFlare, y: 105 + breath * 2, z: -28 },
+      wingTipL2: { x: -96 * wingFlare,  y: 35 + breath,      z: -34 },
+      wingTipR1: { x: 118 * wingFlare,  y: 105 + breath * 2, z: -28 },
+      wingTipR2: { x: 96 * wingFlare,   y: 35 + breath,      z: -34 }
+    };
+
+    const bonePairs = [
+      ['pelvis', 'chest', 26, 34],
+      ['chest', 'neck', 30, 14],
+      ['neck', 'head', 16, 22],
+      ['chest', 'shoulderL', 20, 18],
+      ['shoulderL', 'elbowL', 16, 12],
+      ['elbowL', 'handL', 12, 9],
+      ['chest', 'shoulderR', 20, 18],
+      ['shoulderR', 'elbowR', 16, 12],
+      ['elbowR', 'handR', 12, 9],
+      ['pelvis', 'hipL', 18, 16],
+      ['hipL', 'kneeL', 16, 13],
+      ['kneeL', 'footL', 13, 10],
+      ['pelvis', 'hipR', 18, 16],
+      ['hipR', 'kneeR', 16, 13],
+      ['kneeR', 'footR', 13, 10],
+      ['chest', 'wingTipL1', 14, 4],
+      ['chest', 'wingTipL2', 12, 3],
+      ['chest', 'wingTipR1', 14, 4],
+      ['chest', 'wingTipR2', 12, 3]
+    ];
+
+    // Collect all 3D mesh quads across the character body
+    const allQuads = [];
+    bonePairs.forEach(([kA, kB, rA, rB], bIdx) => {
+      const segQuads = buildSegmentQuads(joints[kA], joints[kB], rA, rB, 8);
+      segQuads.forEach((q, qIdx) => {
+        // Project all 4 vertices
+        // In Stage 0 (Prompt Cloud), scatter vertices outward into a floating constellation!
+        const cloudScatter = Math.max(0, 1 - sp);
+        const pts = q.map((v, vIdx) => {
+          const jitter = cloudScatter * 42;
+          const sx = v.x + Math.sin(bIdx * 7 + qIdx * 3 + vIdx + t * 2) * jitter;
+          const sy = v.y + Math.cos(bIdx * 5 + qIdx * 4 + vIdx + t * 2) * jitter;
+          const sz = v.z + Math.sin(bIdx * 11 + qIdx * 2 - t * 2) * jitter;
+          return proj3D(sx, sy, sz, w, h);
+        });
+        const avgZ = (pts[0].z + pts[1].z + pts[2].z + pts[3].z) * 0.25;
+        const isWing = bIdx >= 15;
+        allQuads.push({ pts, avgZ, bIdx, qIdx, isWing });
+      });
+    });
+
+    // Painter's algorithm back-to-front sort
+    allQuads.sort((a, b) => b.avgZ - a.avgZ);
+
+    // Render based on continuous pipeline stage `sp` (0..3):
+    // sp < 0.8: Mostly Bioluminescent Point Cloud
+    // sp 0.8..1.8: Depth Silhouette Slices
+    // sp 1.8..2.5: Clean Quad Wireframe Cage
+    // sp > 2.5: Full Shaded 4K PBR Armor + Emissive Veins
+    const wireAlpha = Math.min(1, Math.max(0, (sp - 0.5) * 0.9));
+    const fillAlpha = Math.min(1, Math.max(0, (sp - 2.0) * 1.0));
+    const cloudAlpha = Math.max(0, 1.3 - sp * 0.65);
+
+    allQuads.forEach(({ pts, qIdx, isWing }) => {
+      const hue = isWing ? arch.hueAccent : arch.hueBase;
+
+      if (fillAlpha > 0.02 || (sp >= 0.8 && sp < 1.9)) {
+        ttCtx.beginPath();
+        ttCtx.moveTo(pts[0].x, pts[0].y);
+        ttCtx.lineTo(pts[1].x, pts[1].y);
+        ttCtx.lineTo(pts[2].x, pts[2].y);
+        ttCtx.lineTo(pts[3].x, pts[3].y);
+        ttCtx.closePath();
+
+        if (sp >= 0.8 && sp < 1.9) {
+          // Stage 02: Darkroom depth silhouette fill
+          ttCtx.fillStyle = `hsla(${hue}, 45%, 16%, 0.68)`;
+          ttCtx.fill();
+        } else {
+          // Stage 04: Full PBR Metallic + Bioluminescent emissive shading
+          const light = isWing ? 58 : (qIdx % 2 === 0 ? 32 : 22);
+          ttCtx.fillStyle = `hsla(${hue}, 82%, ${light}%, ${0.78 * fillAlpha})`;
+          ttCtx.fill();
+        }
+      }
+
+      if (wireAlpha > 0.05) {
+        ttCtx.beginPath();
+        ttCtx.moveTo(pts[0].x, pts[0].y);
+        ttCtx.lineTo(pts[1].x, pts[1].y);
+        ttCtx.lineTo(pts[2].x, pts[2].y);
+        ttCtx.lineTo(pts[3].x, pts[3].y);
+        ttCtx.closePath();
+        ttCtx.strokeStyle = isWing
+          ? `hsla(${arch.hueAccent}, 95%, 72%, ${wireAlpha * 0.85})`
+          : `hsla(${arch.hueBase}, 92%, 66%, ${wireAlpha * 0.72})`;
+        ttCtx.lineWidth = sp > 2.4 ? 0.9 : 1.15;
+        ttCtx.stroke();
+      }
+
+      if (cloudAlpha > 0.05) {
+        ttCtx.fillStyle = isWing ? '#cef79e' : '#00ffd5';
+        ttCtx.beginPath();
+        ttCtx.arc(pts[0].x, pts[0].y, 2.2 * cloudAlpha, 0, Math.PI * 2);
+        ttCtx.fill();
+      }
+    });
+
+    // 3. Optional 65-Bone Hierarchical Rig X-Ray Overlay
+    if (state.showRig) {
+      ttCtx.save();
+      bonePairs.forEach(([kA, kB]) => {
+        const pA = proj3D(joints[kA].x, joints[kA].y, joints[kA].z, w, h);
+        const pB = proj3D(joints[kB].x, joints[kB].y, joints[kB].z, w, h);
+        ttCtx.strokeStyle = '#cef79e';
+        ttCtx.lineWidth = 2.4;
+        ttCtx.beginPath();
+        ttCtx.moveTo(pA.x, pA.y);
+        ttCtx.lineTo(pB.x, pB.y);
+        ttCtx.stroke();
+      });
+      Object.values(joints).forEach(j => {
+        const p = proj3D(j.x, j.y, j.z, w, h);
+        ttCtx.fillStyle = '#050806';
+        ttCtx.strokeStyle = '#cef79e';
+        ttCtx.lineWidth = 2;
+        ttCtx.beginPath();
+        ttCtx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+        ttCtx.fill();
+        ttCtx.stroke();
+      });
+      ttCtx.restore();
+    }
+  }
+
+  function animate() {
+    const t = performance.now() * 0.001;
+    renderBackdropShader(t);
+    renderTurntable(t);
+    requestAnimationFrame(animate);
+  }
+  animate();
+</script>
+</body>
+</html>
