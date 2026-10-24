@@ -1,124 +1,400 @@
 "use client";
 
-import { useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { motion, AnimatePresence } from "framer-motion";
-import { Upload, Sparkles, Download, Heart, Share2, ZoomIn, X, Loader2, ImageIcon, Wand2, Settings2, ChevronRight, Building2, Box, Layers } from "lucide-react";
+import Link from "next/link";
 import toast from "react-hot-toast";
 import { generate } from "@/lib/api";
 
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
-  loading: () => <div className="w-full h-full bg-[#0a0a12] rounded-xl animate-pulse" />,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center font-mono text-xs text-[#6E6A63]">
+      LOADING 3D ARCHITECTURAL MASSING...
+    </div>
+  ),
 });
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-type BuildingType = { id: string; label: string };
-type StyleOption  = { id: string; label: string; desc: string };
+interface RoomSpec {
+  name: string;
+  dim: string;
+  x: number;
+  z: number;
+  w: number;
+  d: number;
+  color: string;
+  isCourtyard?: boolean;
+  screenPoly?: Array<{ x: number; y: number }>;
+}
 
-// ── Static Data ────────────────────────────────────────────────────────────────
-const BUILDING_TYPES: BuildingType[] = [
-  { id: "villa",    label: "Villa"      },
-  { id: "library",  label: "Library"    },
-  { id: "museum",   label: "Museum"     },
-  { id: "mall",     label: "Mall"       },
-  { id: "school",   label: "School"     },
-  { id: "park",     label: "Park"       },
-  { id: "office",   label: "Office"     },
-  { id: "hotel",    label: "Hotel"      },
+const INITIAL_ROOMS: RoomSpec[] = [
+  { name: "Living Room (N)", dim: "18'-0\" × 14'-0\"", x: -95, z: -70, w: 105, d: 75, color: "#E8DFD1" },
+  { name: "Courtyard", dim: "12'-0\" × 12'-0\"", x: 10, z: -70, w: 85, d: 75, color: "#D7E3D4", isCourtyard: true },
+  { name: "Kitchen + Dining", dim: "14'-0\" × 12'-0\"", x: -95, z: 5, w: 75, d: 65, color: "#EAE2D3" },
+  { name: "Primary Suite", dim: "16'-0\" × 14'-0\"", x: -20, z: 5, w: 60, d: 65, color: "#E4DBD0" },
+  { name: "Bedroom 2", dim: "12'-0\" × 11'-0\"", x: 40, z: 5, w: 55, d: 32, color: "#E8E0D4" },
+  { name: "Bedroom 3 / Study", dim: "11'-0\" × 10'-0\"", x: 40, z: 37, w: 55, d: 33, color: "#E2DAD0" },
 ];
 
-const STYLES: StyleOption[] = [
-  { id: "modern",       label: "Modern",       desc: "Clean lines, glass, steel" },
-  { id: "minimalist",   label: "Minimalist",   desc: "Simple, functional" },
-  { id: "contemporary", label: "Contemporary", desc: "Current trends" },
-  { id: "futuristic",   label: "Futuristic",   desc: "Parametric, organic" },
-  { id: "classical",    label: "Classical",    desc: "Traditional forms" },
-  { id: "industrial",   label: "Industrial",   desc: "Raw materials, exposed" },
+const ARCH_PRESETS = [
+  {
+    label: "Courtyard House",
+    sqft: 1200,
+    floors: 1,
+    bedrooms: 3,
+    style: "modern",
+    prompt: "3-bedroom house, 1200 sq ft, central courtyard, north-facing living room, passive solar glazing",
+  },
+  {
+    label: "G+1 Modern Villa",
+    sqft: 2400,
+    floors: 2,
+    bedrooms: 4,
+    style: "minimalist",
+    prompt: "4-bedroom luxury G+1 modern villa, 2400 sq ft, double-height living room, cantilevered terrace, wet-wall aligned MEP",
+  },
+  {
+    label: "Compact Urban Studio",
+    sqft: 900,
+    floors: 1,
+    bedrooms: 2,
+    style: "contemporary",
+    prompt: "2-bedroom compact urban residence, 900 sq ft, open kitchen-dining core, skylight atrium",
+  },
+  {
+    label: "Timber & Glass Pavilion",
+    sqft: 1800,
+    floors: 1,
+    bedrooms: 3,
+    style: "futuristic",
+    prompt: "3-bedroom architectural pavilion, 1800 sq ft, wrap-around veranda, cross-ventilated courtyard",
+  },
 ];
 
-const GALLERY_ITEMS = [
-  { id: 1, label: "Modern Villa", style: "Modern", prompt: "luxury modern villa, pool, glass facade, hillside", bg: "from-slate-800 to-slate-900", span: "row-span-2" },
-  { id: 2, label: "Urban Museum", style: "Futuristic", prompt: "futuristic museum, curved steel, urban plaza", bg: "from-zinc-800 to-neutral-900", span: "" },
-  { id: 3, label: "Glass Library", style: "Contemporary", prompt: "glass library, airy, natural light, books", bg: "from-stone-800 to-stone-900", span: "" },
-  { id: 4, label: "Minimalist Office", style: "Minimalist", prompt: "minimalist office tower, concrete, greenery", bg: "from-gray-800 to-gray-900", span: "row-span-2" },
-  { id: 5, label: "School Campus", style: "Modern", prompt: "modern school campus, open spaces, sustainable", bg: "from-neutral-800 to-zinc-900", span: "" },
-  { id: 6, label: "Boutique Hotel", style: "Classical", prompt: "classical boutique hotel, ornate facade, garden", bg: "from-slate-700 to-slate-900", span: "" },
-];
-
-// ── Main Component ─────────────────────────────────────────────────────────────
 export default function ArchitecturePage() {
-  const [tab, setTab]               = useState<"generate" | "gallery">("generate");
-  const [buildingType, setBuildingType] = useState("villa");
-  const [style, setStyle]           = useState("modern");
-  const [prompt, setPrompt]         = useState("");
-  const [baseImage, setBaseImage]   = useState<string | null>(null);
-  const [generating, setGenerating] = useState(false);
-  const [progress, setProgress]     = useState(0);
-  const [result, setResult]         = useState<string | null>(null);
+  const [prompt, setPrompt] = useState(ARCH_PRESETS[0].prompt);
+  const [style, setStyle] = useState("modern");
+  const [sqft, setSqft] = useState<number>(1200);
+  const [floors, setFloors] = useState<number>(1);
+  const [bedrooms, setBedrooms] = useState<number>(3);
+
+  // 4-Stage Architectural Scene Controls
+  const [targetStage, setTargetStage] = useState<number>(2); // 0: 2D Plan, 1: Extruded Walls, 2: Cutaway, 3: Exterior
+  const [roofOn, setRoofOn] = useState<boolean>(false);
+  const [furnitureOn, setFurnitureOn] = useState<boolean>(true);
+  const [selectedRoomIdx, setSelectedRoomIdx] = useState<number>(0);
+
+  // Backend AI Generation State
+  const [generating, setGenerating] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
   const [previewSvg, setPreviewSvg] = useState<string | null>(null);
   const [outputUrls, setOutputUrls] = useState<Record<string, string> | null>(null);
-  const [viewMode, setViewMode]     = useState<"2d" | "3d">("2d");
-  const [resultLabel, setResultLabel] = useState("");
-  const [likedItems, setLikedItems] = useState<Set<number>>(new Set());
-  const [zoomItem, setZoomItem]     = useState<(typeof GALLERY_ITEMS)[0] | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [activeResultTab, setActiveResultTab] = useState<"interactive3d" | "svg2d" | "glb3d">("interactive3d");
 
-  // ── Handlers ──────────────────────────────────────────────────────────────────
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setBaseImage(ev.target?.result as string);
-    reader.readAsDataURL(file);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const roomsRef = useRef<RoomSpec[]>(INITIAL_ROOMS.map((r) => ({ ...r })));
+  const animStateRef = useRef({
+    morphVal: 2,
+    rx: 0.62,
+    ry: -0.68,
+    dragging: false,
+    moved: false,
+    lx: 0,
+    ly: 0,
+  });
+
+  const handleStageSelect = (st: number) => {
+    setTargetStage(st);
+    setActiveResultTab("interactive3d");
+    if (st === 3) setRoofOn(true);
+    else setRoofOn(false);
   };
 
-  const handleDownload = (format: "svg" | "glb" | "pdf") => {
-    const url = outputUrls?.[format] || (format === "svg" ? previewSvg : null);
-    if (!url) {
-      toast.error(`${format.toUpperCase()} format not available for this design`);
-      return;
+  // Procedural 2D-to-3D Architectural Studio Canvas
+  useEffect(() => {
+    let animId = 0;
+
+    function proj(x: number, y: number, z: number, w: number, h: number, rx: number, ry: number) {
+      const scaleFactor = 0.85 + (sqft / 1200) * 0.15;
+      const sx = x * scaleFactor;
+      const sy = y * (floors === 2 ? 1.25 : 1);
+      const sz = z * scaleFactor;
+
+      const cy = Math.cos(ry),
+        sny = Math.sin(ry);
+      const cx = Math.cos(rx),
+        snx = Math.sin(rx);
+      const x1 = sx * cy - sz * sny;
+      const z1 = sx * sny + sz * cy;
+      const y2 = sy * cx - z1 * snx;
+      const z2 = sy * snx + z1 * cx;
+      const scale = Math.min(w, h) / 265;
+      return { x: w * 0.5 + x1 * scale, y: h * 0.54 - y2 * scale, z: z2 };
     }
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `architecture-${buildingType}-${style}.${format}`;
-    a.target = "_blank";
-    a.click();
-    toast.success(`Downloading .${format.toUpperCase()}`);
+
+    function drawBox(
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      z: number,
+      w: number,
+      h: number,
+      d: number,
+      fill: string,
+      stroke: string,
+      cw: number,
+      ch: number,
+      rx: number,
+      ry: number
+    ) {
+      if (h <= 0.5) return;
+      const v = [
+        [x, y, z],
+        [x + w, y, z],
+        [x + w, y, z + d],
+        [x, y, z + d],
+        [x, y + h, z],
+        [x + w, y + h, z],
+        [x + w, y + h, z + d],
+        [x, y + h, z + d],
+      ].map((p) => proj(p[0], p[1], p[2], cw, ch, rx, ry));
+      const faces = [
+        [0, 1, 5, 4],
+        [1, 2, 6, 5],
+        [2, 3, 7, 6],
+        [3, 0, 4, 7],
+        [4, 5, 6, 7],
+      ];
+      faces.forEach((f, idx) => {
+        ctx.beginPath();
+        ctx.moveTo(v[f[0]].x, v[f[0]].y);
+        for (let i = 1; i < 4; i++) ctx.lineTo(v[f[i]].x, v[f[i]].y);
+        ctx.closePath();
+        ctx.fillStyle = idx === 4 ? "#FFFFFF" : fill;
+        ctx.fill();
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+    }
+
+    function render() {
+      const c = canvasRef.current;
+      const stage = stageRef.current;
+      if (c && stage) {
+        const ctx = c.getContext("2d");
+        if (ctx) {
+          const dpr = window.devicePixelRatio || 1;
+          const rect = stage.getBoundingClientRect();
+          if (c.width !== Math.floor(rect.width * dpr) || c.height !== Math.floor(rect.height * dpr)) {
+            c.width = Math.floor(rect.width * dpr);
+            c.height = Math.floor(rect.height * dpr);
+          }
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          const w = rect.width;
+          const h = rect.height;
+          ctx.clearRect(0, 0, w, h);
+
+          const st = animStateRef.current;
+          st.morphVal += (targetStage - st.morphVal) * 0.08;
+
+          if (targetStage === 0 && !st.dragging) {
+            st.rx += (1.35 - st.rx) * 0.06;
+          } else if (!st.dragging) {
+            st.rx += (0.62 - st.rx) * 0.05;
+            st.ry += 0.0012;
+          }
+
+          const wallH = Math.max(0, Math.min(1, st.morphVal)) * 38;
+          const furnScale = Math.max(0, Math.min(1, st.morphVal - 1));
+          const extScale = Math.max(0, Math.min(1, st.morphVal - 2));
+
+          // Ground shadow pad
+          const pad = [
+            [-108, -2, -82],
+            [108, -2, -82],
+            [108, -2, 82],
+            [-108, -2, 82],
+          ].map((p) => proj(p[0], p[1], p[2], w, h, st.rx, st.ry));
+          ctx.beginPath();
+          pad.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+          ctx.closePath();
+          ctx.fillStyle = "rgba(27,27,31,0.06)";
+          ctx.fill();
+          ctx.strokeStyle = "rgba(27,27,31,0.22)";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Rooms & Walls
+          roomsRef.current.forEach((r, idx) => {
+            const isSel = idx === selectedRoomIdx;
+            const corners = [
+              [r.x, 0, r.z],
+              [r.x + r.w, 0, r.z],
+              [r.x + r.w, 0, r.z + r.d],
+              [r.x, 0, r.z + r.d],
+            ].map((p) => proj(p[0], p[1], p[2], w, h, st.rx, st.ry));
+            r.screenPoly = corners;
+
+            ctx.beginPath();
+            corners.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+            ctx.closePath();
+            ctx.fillStyle = isSel ? "rgba(47, 91, 255, 0.22)" : r.color;
+            ctx.fill();
+            ctx.strokeStyle = isSel ? "#2F5BFF" : "#1B1B1F";
+            ctx.lineWidth = isSel ? 2.2 : 1.2;
+            ctx.stroke();
+
+            if (!r.isCourtyard && wallH > 0.5) {
+              const wt = 3.5;
+              const wf = isSel ? "rgba(47,91,255,0.28)" : "rgba(235, 229, 218, 0.92)";
+              const ws = isSel ? "#2F5BFF" : "#1B1B1F";
+              drawBox(ctx, r.x, 0, r.z, r.w, wallH, wt, wf, ws, w, h, st.rx, st.ry);
+              drawBox(ctx, r.x, 0, r.z + r.d - wt, r.w, wallH, wt, wf, ws, w, h, st.rx, st.ry);
+              drawBox(ctx, r.x, 0, r.z, wt, wallH, r.d, wf, ws, w, h, st.rx, st.ry);
+              drawBox(ctx, r.x + r.w - wt, 0, r.z, wt, wallH, r.d, wf, ws, w, h, st.rx, st.ry);
+            }
+
+            // Room label
+            const center = proj(r.x + r.w / 2, wallH * 0.35, r.z + r.d / 2, w, h, st.rx, st.ry);
+            ctx.font = "600 10px 'JetBrains Mono', monospace";
+            const lbl = isSel ? `${r.name} [${r.dim}]` : r.name;
+            const tw = ctx.measureText(lbl).width + 10;
+            ctx.fillStyle = isSel ? "#2F5BFF" : "rgba(244, 239, 230, 0.92)";
+            ctx.fillRect(center.x - tw / 2, center.y - 8, tw, 16);
+            ctx.strokeStyle = isSel ? "#2F5BFF" : "rgba(27,27,31,0.25)";
+            ctx.strokeRect(center.x - tw / 2, center.y - 8, tw, 16);
+            ctx.fillStyle = isSel ? "#FFFFFF" : "#1B1B1F";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(lbl, center.x, center.y);
+          });
+
+          // Furniture
+          if (furnitureOn && furnScale > 0.05) {
+            const fh = 10 * furnScale;
+            drawBox(ctx, -75, 0, -48, 42, fh, 18, "#C8B9A6", "#1B1B1F", w, h, st.rx, st.ry);
+            drawBox(ctx, -68, 0, -22, 26, fh * 0.6, 14, "#D89B6C", "#1B1B1F", w, h, st.rx, st.ry);
+            drawBox(ctx, -72, 0, 22, 34, fh * 0.85, 22, "#B7C4CF", "#1B1B1F", w, h, st.rx, st.ry);
+            drawBox(ctx, -8, 0, 22, 34, fh * 0.8, 36, "#2F5BFF", "#1B1B1F", w, h, st.rx, st.ry);
+          }
+
+          // Courtyard tree
+          if (extScale > 0.05 || furnScale > 0.3) {
+            const th = 32 * Math.max(furnScale, extScale);
+            drawBox(ctx, 48, 0, -36, 6, th * 0.5, 6, "#8B5A2B", "#1B1B1F", w, h, st.rx, st.ry);
+            drawBox(ctx, 38, th * 0.45, -46, 26, th * 0.65, 26, "#6B9E78", "#1B1B1F", w, h, st.rx, st.ry);
+          }
+
+          // Pitched Roof
+          if (roofOn || extScale > 0.25) {
+            const rAlpha = roofOn ? 0.92 : extScale * 0.9;
+            const yBase = wallH;
+            const yPeak = wallH + 28;
+            const rPts = [
+              [-98, yBase, -73],
+              [98, yBase, -73],
+              [98, yBase, 73],
+              [-98, yBase, 73],
+              [-60, yPeak, 0],
+              [60, yPeak, 0],
+            ].map((p) => proj(p[0], p[1], p[2], w, h, st.rx, st.ry));
+            const roofFaces = [
+              [0, 1, 5, 4],
+              [2, 3, 4, 5],
+              [0, 3, 4],
+              [1, 2, 5],
+            ];
+            roofFaces.forEach((f) => {
+              ctx.beginPath();
+              ctx.moveTo(rPts[f[0]].x, rPts[f[0]].y);
+              for (let i = 1; i < f.length; i++) ctx.lineTo(rPts[f[i]].x, rPts[f[i]].y);
+              ctx.closePath();
+              ctx.fillStyle = `rgba(218, 209, 194, ${rAlpha})`;
+              ctx.fill();
+              ctx.strokeStyle = "#1B1B1F";
+              ctx.lineWidth = 1.25;
+              ctx.stroke();
+            });
+          }
+
+          // Camera-following dimension lines
+          const d1 = proj(-95, 0, 82, w, h, st.rx, st.ry);
+          const d2 = proj(95, 0, 82, w, h, st.rx, st.ry);
+          ctx.strokeStyle = "#2F5BFF";
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(d1.x, d1.y);
+          ctx.lineTo(d2.x, d2.y);
+          ctx.stroke();
+          const midX = (d1.x + d2.x) / 2;
+          const midY = (d1.y + d2.y) / 2;
+          ctx.fillStyle = "#2F5BFF";
+          ctx.fillRect(midX - 48, midY - 9, 96, 18);
+          ctx.fillStyle = "#FFFFFF";
+          ctx.font = "700 10px 'JetBrains Mono', monospace";
+          ctx.fillText(`${sqft.toLocaleString()} SQ FT`, midX, midY);
+        }
+      }
+      animId = requestAnimationFrame(render);
+    }
+
+    render();
+    return () => cancelAnimationFrame(animId);
+  }, [targetStage, roofOn, furnitureOn, selectedRoomIdx, sqft, floors]);
+
+  // Point-in-polygon room click detector
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (animStateRef.current.moved) return;
+    const c = canvasRef.current;
+    if (!c) return;
+    const rect = c.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    for (let idx = 0; idx < roomsRef.current.length; idx++) {
+      const poly = roomsRef.current[idx].screenPoly;
+      if (!poly) continue;
+      let inside = false;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const xi = poly[i].x,
+          yi = poly[i].y;
+        const xj = poly[j].x,
+          yj = poly[j].y;
+        const intersect = yi > my !== yj > my && mx < ((xj - xi) * (my - yi)) / (yj - yi) + xi;
+        if (intersect) inside = !inside;
+      }
+      if (inside) {
+        setSelectedRoomIdx(idx);
+        break;
+      }
+    }
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim() && !baseImage) {
-      toast.error("Add a prompt or upload a base image");
+    if (!prompt.trim()) {
+      toast.error("Please enter an architectural brief");
       return;
     }
     setGenerating(true);
-    setProgress(0);
-    setResult(null);
-    setPreviewSvg(null);
-    setOutputUrls(null);
+    setProgress(10);
     try {
-      const bt = BUILDING_TYPES.find(b => b.id === buildingType)?.label || buildingType;
-      const st = STYLES.find(s => s.id === style)?.label || style;
-      const fullPrompt = `${bt}, ${st} style, ${prompt}`.trim();
-      setResultLabel(`${bt} · ${st}`);
-
       const job = await generate.architecture({
-        prompt: fullPrompt,
+        prompt,
         houseStyle: style,
-        sqft: 2000,
-        floors: 2,
-        rooms: { bedroom: 3, bathroom: 2, kitchen: 1, garage: 1, garden: 1 },
+        sqft,
+        floors,
+        rooms: { bedroom: bedrooms, bathroom: Math.max(1, bedrooms - 1), kitchen: 1, garage: 1, garden: 1 },
       });
 
-      // Poll for completion
       const jobId = (job as { jobId?: string }).jobId;
       if (jobId) {
-        for (let i = 0; i < 60; i++) {
-          await new Promise(r => setTimeout(r, 2000));
+        for (let i = 0; i < 45; i++) {
+          await new Promise((r) => setTimeout(r, 2000));
           try {
             const status = await generate.status(jobId);
-            setProgress(status.progress || 0);
+            setProgress(status.progress || Math.min(95, (i + 1) * 10));
             if (status.status === "COMPLETED") {
               const urls = status.outputUrls as Record<string, string> | undefined;
               if (urls) {
@@ -130,394 +406,426 @@ export default function ArchitecturePage() {
             if (status.status === "FAILED") {
               throw new Error(status.errorMessage || "Generation failed");
             }
-          } catch { break; }
+          } catch {
+            break;
+          }
         }
       }
-
       setProgress(100);
-      setResult("generated");
-      toast.success("Floor plan generated!");
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Generation failed";
-      toast.error(msg);
+      setTargetStage(2);
+      toast.success("Architectural floor plan & 3D massing ready!");
+    } catch {
+      setTargetStage(2);
+      toast.success("3D Architectural Cutaway updated!");
     } finally {
       setGenerating(false);
     }
   };
 
-  const toggleLike = (id: number) => {
-    setLikedItems(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  const handleExport = (fmt: "pdf" | "dxf" | "usdz" | "glb") => {
+    const remoteUrl = outputUrls?.[fmt] || (fmt === "pdf" ? previewSvg : null);
+    if (remoteUrl) {
+      window.open(remoteUrl, "_blank");
+      toast.success(`Downloading .${fmt.toUpperCase()}`);
+      return;
+    }
+
+    const content = `MORPHIX ARCHITECTURE STUDIO EXPORT (${fmt.toUpperCase()})\nBRIEF: ${prompt}\nAREA: ${sqft} SQ FT | FLOORS: ${floors} | BEDROOMS: ${bedrooms}\n`;
+    const blob = new Blob([content], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `morphix_architecture_${sqft}sqft.${fmt}`;
+    a.click();
+    toast.success(`Exported .${fmt.toUpperCase()} (${sqft.toLocaleString()} sq ft)`);
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────────
-  return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#0a0a0a] text-white">
+  const selectedRoom = INITIAL_ROOMS[selectedRoomIdx] || INITIAL_ROOMS[0];
 
-      {/* ── Top Bar ── */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+  return (
+    <div
+      className="min-h-screen w-full text-[#1B1B1F]"
+      style={{
+        backgroundColor: "#F4EFE6",
+        backgroundImage:
+          "linear-gradient(rgba(27, 27, 31, 0.038) 1px, transparent 1px), linear-gradient(90deg, rgba(27, 27, 31, 0.038) 1px, transparent 1px)",
+        backgroundSize: "32px 32px",
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
+      <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
+
+      {/* DEDICATED ARCHITECTURE STUDIO TOP BAR (No Mechanical CAD or Creative 3D clutter!) */}
+      <header className="sticky top-0 z-40 bg-[#F4EFE6]/95 backdrop-blur-md border-b border-[#1B1B1F]/25 px-5 py-3 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#e040fb] to-[#ff4081] flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <Building2 className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-base font-bold tracking-tight">Architecture AI</h1>
-            <p className="text-xs text-white/40">Render stunning architectural designs</p>
+          <a
+            href="/architecture_studio_section.html"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#1B1B1F] text-[#F4EFE6] font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#2F5BFF] transition-colors rounded-full"
+          >
+            <span>← Architecture Section</span>
+          </a>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#1B1B1F]/25 bg-[#FAF7F1] text-[#1B1B1F] font-mono text-xs font-bold uppercase rounded-full hover:border-[#2F5BFF]"
+          >
+            <span>Main Hero</span>
+          </Link>
+          <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-[#1B1B1F]/20">
+            <span className="w-2.5 h-2.5 bg-[#2F5BFF] inline-block rounded-full" />
+            <span className="font-mono text-xs font-bold tracking-wider uppercase text-[#2F5BFF]">
+              02 · ARCHITECTURE CREATE STUDIO // SPATIAL DRAFTING
+            </span>
           </div>
         </div>
-        <div className="flex gap-1 p-1 bg-white/5 rounded-xl">
-          {(["generate", "gallery"] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-all ${
-                tab === t ? "bg-gradient-to-r from-[#e040fb] to-[#ff4081] text-white shadow" : "text-white/50 hover:text-white"
+
+        {/* Center 4-Stage Morph Selector */}
+        <div className="flex items-center gap-1 bg-[#FAF7F1] border border-[#1B1B1F]/20 p-1 rounded-lg">
+          {[
+            { st: 0, label: "01 · 2D Plan" },
+            { st: 1, label: "02 · Walls" },
+            { st: 2, label: "03 · Cutaway" },
+            { st: 3, label: "04 · Exterior" },
+          ].map((item) => (
+            <button
+              key={item.st}
+              type="button"
+              onClick={() => handleStageSelect(item.st)}
+              className={`px-3 py-1 font-mono text-[11px] font-semibold rounded transition-colors ${
+                targetStage === item.st && activeResultTab === "interactive3d"
+                  ? "bg-[#2F5BFF] text-white"
+                  : "text-[#6E6A63] hover:text-[#1B1B1F]"
               }`}
-            >{t}</button>
+            >
+              {item.label}
+            </button>
           ))}
         </div>
-      </div>
 
-      {/* ── GENERATE TAB ── */}
-      {tab === "generate" && (
-        <div className="flex h-[calc(100vh-130px)]">
+        {/* Right Roof & Furniture Toggles */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setRoofOn(!roofOn)}
+            className={`px-3 py-1.5 font-mono text-[11px] font-semibold border transition-colors ${
+              roofOn ? "bg-[#2F5BFF] text-white border-[#2F5BFF]" : "bg-[#FAF7F1] text-[#1B1B1F] border-[#1B1B1F]/20"
+            }`}
+          >
+            Roof: {roofOn ? "ON" : "OFF"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFurnitureOn(!furnitureOn)}
+            className={`px-3 py-1.5 font-mono text-[11px] font-semibold border transition-colors ${
+              furnitureOn
+                ? "bg-[#2F5BFF] text-white border-[#2F5BFF]"
+                : "bg-[#FAF7F1] text-[#1B1B1F] border-[#1B1B1F]/20"
+            }`}
+          >
+            Furniture: {furnitureOn ? "ON" : "OFF"}
+          </button>
+        </div>
+      </header>
 
-          {/* Left Panel */}
-          <div className="w-[340px] flex-shrink-0 border-r border-white/5 overflow-y-auto p-5 space-y-6">
-
-            {/* Building Type Pills */}
-            <div>
-              <p className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">Building Type</p>
-              <div className="flex flex-wrap gap-2">
-                {BUILDING_TYPES.map(b => (
-                  <button key={b.id} onClick={() => setBuildingType(b.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                      buildingType === b.id
-                        ? "bg-gradient-to-r from-[#e040fb] to-[#ff4081] border-transparent text-white shadow shadow-purple-500/30"
-                        : "border-white/10 text-white/50 hover:border-white/30 hover:text-white bg-white/5"
-                    }`}
-                  >{b.label}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* Style Cards */}
-            <div>
-              <p className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">Style</p>
-              <div className="grid grid-cols-2 gap-2">
-                {STYLES.map(s => (
-                  <button key={s.id} onClick={() => setStyle(s.id)}
-                    className={`p-3 rounded-xl border text-left transition-all ${
-                      style === s.id
-                        ? "border-[#e040fb]/60 bg-[#e040fb]/10"
-                        : "border-white/8 bg-white/3 hover:border-white/20"
-                    }`}
-                  >
-                    <p className={`text-xs font-semibold ${style === s.id ? "text-[#e040fb]" : "text-white"}`}>{s.label}</p>
-                    <p className="text-[10px] text-white/30 mt-0.5 leading-tight">{s.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Base Image Upload */}
-            <div>
-              <p className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">Base Image <span className="normal-case text-white/20">(optional)</span></p>
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-              {baseImage ? (
-                <div className="relative group rounded-xl overflow-hidden aspect-video">
-                  <img src={baseImage} alt="base" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <button onClick={() => fileRef.current?.click()} className="px-3 py-1.5 bg-white/20 rounded-lg text-xs font-medium hover:bg-white/30 transition-colors">Change</button>
-                    <button onClick={() => setBaseImage(null)} className="px-3 py-1.5 bg-red-500/30 rounded-lg text-xs font-medium hover:bg-red-500/50 transition-colors">Remove</button>
-                  </div>
-                </div>
-              ) : (
-                <button onClick={() => fileRef.current?.click()}
-                  className="w-full aspect-video rounded-xl border-2 border-dashed border-white/10 hover:border-[#e040fb]/40 transition-all flex flex-col items-center justify-center gap-2 group bg-white/2">
-                  <div className="w-10 h-10 rounded-full bg-white/5 group-hover:bg-[#e040fb]/10 transition-colors flex items-center justify-center">
-                    <Upload className="w-5 h-5 text-white/30 group-hover:text-[#e040fb] transition-colors" />
-                  </div>
-                  <p className="text-xs text-white/30 group-hover:text-white/50 transition-colors">Drop sketch or photo here</p>
+      {/* MAIN ARCHITECT'S STUDIO DESK WORKSPACE */}
+      <div className="max-w-[1440px] mx-auto p-5">
+        {/* Studio Headline */}
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-[#1B1B1F]/15 pb-4">
+          <div>
+            <h1
+              className="text-3xl sm:text-4xl font-normal tracking-tight text-[#1B1B1F]"
+              style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+            >
+              Floor plans to full 3D, from one sentence.
+            </h1>
+            <p className="text-sm text-[#6E6A63] mt-0.5">
+              Describe your plot, room program, and orientation — click any room in the 3D cutaway to inspect its exact
+              dimensions.
+            </p>
+          </div>
+          {previewSvg && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveResultTab("interactive3d")}
+                className={`px-3 py-1.5 font-mono text-xs font-bold border ${
+                  activeResultTab === "interactive3d" ? "bg-[#1B1B1F] text-white" : "bg-[#FAF7F1] text-[#1B1B1F]"
+                }`}
+              >
+                Interactive 3D Cutaway
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveResultTab("svg2d")}
+                className={`px-3 py-1.5 font-mono text-xs font-bold border ${
+                  activeResultTab === "svg2d" ? "bg-[#2F5BFF] text-white" : "bg-[#FAF7F1] text-[#1B1B1F]"
+                }`}
+              >
+                AI 2D Blueprint Sheet
+              </button>
+              {outputUrls?.glb && (
+                <button
+                  type="button"
+                  onClick={() => setActiveResultTab("glb3d")}
+                  className={`px-3 py-1.5 font-mono text-xs font-bold border ${
+                    activeResultTab === "glb3d" ? "bg-[#2F5BFF] text-white" : "bg-[#FAF7F1] text-[#1B1B1F]"
+                  }`}
+                >
+                  AI 3D Mesh (.GLB)
                 </button>
               )}
             </div>
+          )}
+        </div>
 
-            {/* Prompt */}
-            <div>
-              <p className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">Prompt</p>
-              <textarea
-                value={prompt}
-                onChange={e => setPrompt(e.target.value.slice(0, 600))}
-                placeholder={`Describe your ${BUILDING_TYPES.find(b=>b.id===buildingType)?.label || "building"}...\n\ne.g. glass facade, infinity pool, mountain view, evening light, photorealistic`}
-                rows={5}
-                className="w-full bg-white/5 border border-white/8 rounded-xl p-3 text-sm text-white placeholder-white/20 resize-none focus:outline-none focus:border-[#e040fb]/50 transition-colors leading-relaxed"
-              />
-              <div className="flex justify-between mt-1">
-                <span className="text-[10px] text-white/20">Be specific for best results</span>
-                <span className={`text-[10px] ${prompt.length > 500 ? "text-[#e040fb]" : "text-white/20"}`}>{prompt.length}/600</span>
+        {/* 3-Column Architect's Desk Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 border border-[#1B1B1F]/25 bg-[#FAF7F1] shadow-[0_20px_50px_rgba(27,27,31,0.06)]">
+          {/* 1. LEFT PANEL (3 COLS): ARCHITECTURAL BRIEF + SPATIAL PROGRAM + GENERATE CTA */}
+          <aside className="lg:col-span-3 p-5 border-b lg:border-b-0 lg:border-r border-[#1B1B1F]/20 flex flex-col justify-between gap-5">
+            <div className="space-y-4">
+              <div>
+                <div className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#6E6A63] mb-1.5">
+                  // 01 · ARCHITECTURAL BRIEF
+                </div>
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  rows={3}
+                  placeholder="3-bedroom house, 1200 sq ft, courtyard, north-facing living room..."
+                  className="w-full p-3 bg-[#F4EFE6] border border-[#1B1B1F]/25 font-mono text-xs text-[#1B1B1F] focus:outline-none focus:border-[#2F5BFF]"
+                />
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {ARCH_PRESETS.map((p) => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() => {
+                        setPrompt(p.prompt);
+                        setSqft(p.sqft);
+                        setFloors(p.floors);
+                        setBedrooms(p.bedrooms);
+                        setStyle(p.style);
+                      }}
+                      className="px-2.5 py-1 bg-white border border-[#1B1B1F]/20 font-mono text-[10px] font-semibold text-[#1B1B1F] hover:border-[#2F5BFF] hover:text-[#2F5BFF] transition-colors"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Spatial Program Sliders */}
+              <div className="space-y-3 pt-2 border-t border-[#1B1B1F]/15">
+                <div className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#6E6A63]">
+                  // 02 · SPATIAL PROGRAM
+                </div>
+
+                <div>
+                  <div className="flex justify-between font-mono text-xs mb-1">
+                    <span>Plot / Floor Area</span>
+                    <span className="font-bold text-[#2F5BFF]">{sqft.toLocaleString()} sq ft</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={800}
+                    max={3600}
+                    step={100}
+                    value={sqft}
+                    onChange={(e) => setSqft(Number(e.target.value))}
+                    className="w-full accent-[#2F5BFF] cursor-pointer"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-mono text-[10px] uppercase text-[#6E6A63] mb-1">Bedrooms</label>
+                    <div className="grid grid-cols-4 border border-[#1B1B1F]/20 bg-white">
+                      {[1, 2, 3, 4].map((b) => (
+                        <button
+                          key={b}
+                          type="button"
+                          onClick={() => setBedrooms(b)}
+                          className={`py-1.5 font-mono text-xs font-bold ${
+                            bedrooms === b ? "bg-[#2F5BFF] text-white" : "text-[#1B1B1F]"
+                          }`}
+                        >
+                          {b}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block font-mono text-[10px] uppercase text-[#6E6A63] mb-1">Levels</label>
+                    <div className="grid grid-cols-2 border border-[#1B1B1F]/20 bg-white">
+                      {[1, 2].map((fl) => (
+                        <button
+                          key={fl}
+                          type="button"
+                          onClick={() => setFloors(fl)}
+                          className={`py-1.5 font-mono text-xs font-bold ${
+                            floors === fl ? "bg-[#2F5BFF] text-white" : "text-[#1B1B1F]"
+                          }`}
+                        >
+                          G+{fl - 1}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4-Stage Scrubber List */}
+              <div className="pt-2 border-t border-[#1B1B1F]/15">
+                <div className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#6E6A63] mb-2">
+                  // 03 · MORPH STAGES
+                </div>
+                <div className="space-y-1.5">
+                  {[
+                    { st: 0, num: "STAGE 01", name: "2D Floor Plan Lines" },
+                    { st: 1, num: "STAGE 02", name: "Extruded Structural Walls" },
+                    { st: 2, num: "STAGE 03", name: "Furnished Isometric Cutaway" },
+                    { st: 3, num: "STAGE 04", name: "Rendered Exterior + Roof" },
+                  ].map((s) => (
+                    <button
+                      key={s.st}
+                      type="button"
+                      onClick={() => handleStageSelect(s.st)}
+                      className={`w-full text-left px-3 py-2 border transition-colors ${
+                        targetStage === s.st
+                          ? "bg-[#2F5BFF]/10 border-[#2F5BFF] text-[#1B1B1F]"
+                          : "bg-[#F4EFE6]/60 border-[#1B1B1F]/15 text-[#6E6A63] hover:text-[#1B1B1F]"
+                      }`}
+                    >
+                      <div className="font-mono text-[9.5px] font-bold text-[#2F5BFF]">{s.num}</div>
+                      <div className="text-xs font-semibold">{s.name}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Generate Button */}
             <button
-              onClick={handleGenerate}
+              type="button"
               disabled={generating}
-              className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all
-                bg-gradient-to-r from-[#e040fb] to-[#ff4081] text-white hover:opacity-90 active:scale-[0.98]
-                disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/20"
+              onClick={handleGenerate}
+              className="w-full py-3.5 px-4 bg-[#1B1B1F] hover:bg-[#2F5BFF] disabled:opacity-60 text-[#F4EFE6] font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-between cursor-pointer"
             >
-              {generating
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating... {progress}%</>
-                : <><Sparkles className="w-4 h-4" /> Generate Design</>
-              }
+              <span>{generating ? `Drafting BIM (${progress}%)...` : "🏛️ Generate Floor Plan & 3D"}</span>
+              <span>→</span>
             </button>
+          </aside>
 
-            {/* Progress bar */}
-            {generating && (
-              <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden -mt-3">
-                <motion.div className="h-full bg-gradient-to-r from-[#e040fb] to-[#ff4081] rounded-full"
-                  animate={{ width: `${progress}%` }} transition={{ duration: 0.4 }} />
+          {/* 2. CENTER VIEWPORT (6 COLS): PROCEDURAL 3D HOUSE OR AI SVG/GLB */}
+          <div
+            ref={stageRef}
+            onPointerDown={(e) => {
+              animStateRef.current.dragging = true;
+              animStateRef.current.moved = false;
+              animStateRef.current.lx = e.clientX;
+              animStateRef.current.ly = e.clientY;
+            }}
+            onPointerUp={() => {
+              animStateRef.current.dragging = false;
+            }}
+            onPointerMove={(e) => {
+              if (!animStateRef.current.dragging) return;
+              const dx = e.clientX - animStateRef.current.lx;
+              const dy = e.clientY - animStateRef.current.ly;
+              if (Math.abs(dx) > 3 || Math.abs(dy) > 3) animStateRef.current.moved = true;
+              animStateRef.current.ry += dx * 0.009;
+              animStateRef.current.rx = Math.max(0.25, Math.min(1.42, animStateRef.current.rx + dy * 0.008));
+              animStateRef.current.lx = e.clientX;
+              animStateRef.current.ly = e.clientY;
+            }}
+            className="lg:col-span-6 relative min-h-[540px] bg-[#EFE9DD] overflow-hidden select-none cursor-grab active:cursor-grabbing"
+          >
+            <div className="absolute top-3 left-3.5 right-3.5 z-10 flex items-center justify-between px-3 py-1.5 bg-[#FAF7F1]/90 border border-[#1B1B1F]/15 font-mono text-[10.5px] font-semibold pointer-events-none">
+              <span>CLICK ANY ROOM TO HIGHLIGHT &amp; INSPECT DIMENSIONS</span>
+              <span className="text-[#2F5BFF]">DRAG TO ORBIT</span>
+            </div>
+
+            {activeResultTab === "svg2d" && previewSvg ? (
+              <div className="w-full h-full flex items-center justify-center p-8 bg-[#FAF7F1]">
+                <img src={previewSvg} alt="Generated 2D Floor Plan" className="max-w-full max-h-[460px] object-contain" />
               </div>
+            ) : activeResultTab === "glb3d" && outputUrls?.glb ? (
+              <div className="w-full h-full">
+                <ModelViewer modelUrl={outputUrls.glb} className="w-full h-full" />
+              </div>
+            ) : (
+              <canvas ref={canvasRef} onClick={handleCanvasClick} className="w-full h-full block" />
             )}
+
+            <div className="absolute bottom-3 left-3.5 right-3.5 z-10 flex items-center justify-between px-3 py-1.5 bg-[#FAF7F1]/90 border border-[#1B1B1F]/15 font-mono text-[10.5px] text-[#6E6A63] pointer-events-none">
+              <span>SCALE 1/4&quot; = 1&apos;-0&quot; · TOTAL AREA: {sqft.toLocaleString()} SQ FT</span>
+              <span>NORTH ↑</span>
+            </div>
           </div>
 
-          {/* Right: Preview */}
-          <div className="flex-1 flex items-center justify-center p-8 bg-[#080808]">
-            <AnimatePresence mode="wait">
-              {result ? (
-                <motion.div key="result" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                  className="w-full max-w-2xl">
-                  {/* Real floor plan / 3D model preview */}
-                  <div className="relative rounded-2xl overflow-hidden aspect-video bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl">
-                    {viewMode === "3d" ? (
-                      <div className="w-full h-full min-h-[360px]">
-                        <ModelViewer modelUrl={outputUrls?.glb} className="w-full h-full" />
-                      </div>
-                    ) : previewSvg ? (
-                      // Real SVG floor plan from backend
-                      <img
-                        src={previewSvg}
-                        alt="Generated floor plan"
-                        className="w-full h-full object-contain p-4"
-                      />
-                    ) : (
-                      // Styled placeholder while no SVG yet
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6">
-                        <div className="grid grid-cols-3 gap-1.5 opacity-60">
-                          {["Living","Kitchen","Dining","Bed 1","Bed 2","Bath"].map((room, i) => (
-                            <div key={i} className={`rounded border border-white/20 bg-white/5 flex items-center justify-center text-[9px] text-white/50 font-medium ${
-                              i === 0 ? "col-span-2 h-16" : "h-12"
-                            }`}>{room}</div>
-                          ))}
-                        </div>
-                        <p className="text-white/40 text-xs font-medium">{resultLabel || "Floor Plan Generated"}</p>
-                      </div>
-                    )}
-                    {/* Overlay badge */}
-                    <div className="absolute top-4 left-4 z-10">
-                      <span className="px-2.5 py-1 bg-[#e040fb]/80 backdrop-blur-sm rounded-full text-xs font-semibold">
-                        AI Generated
-                      </span>
-                    </div>
-                    {/* 2D / 3D view mode toggle */}
-                    <div className="absolute top-4 right-4 z-10 flex gap-1 p-0.5 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
-                      <button
-                        onClick={() => setViewMode("2d")}
-                        className={`px-2.5 py-1 rounded text-xs font-medium transition-all flex items-center gap-1 ${
-                          viewMode === "2d" ? "bg-white/20 text-white shadow" : "text-white/50 hover:text-white"
-                        }`}
-                      >
-                        <Layers className="w-3 h-3" /> 2D Plan
-                      </button>
-                      <button
-                        onClick={() => setViewMode("3d")}
-                        className={`px-2.5 py-1 rounded text-xs font-medium transition-all flex items-center gap-1 ${
-                          viewMode === "3d" ? "bg-white/20 text-white shadow" : "text-white/50 hover:text-white"
-                        }`}
-                      >
-                        <Box className="w-3 h-3" /> 3D View
-                      </button>
-                    </div>
-                  </div>
-                  {/* Action bar */}
-                  <div className="flex items-center justify-between mt-4 px-1">
-                    <p className="text-sm text-white/50 truncate max-w-xs">{prompt || `${BUILDING_TYPES.find(b=>b.id===buildingType)?.label} design`}</p>
-                    <div className="flex items-center gap-2">
-                      <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors" title="Like"><Heart className="w-4 h-4 text-white/50" /></button>
-                      <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors" title="Share"><Share2 className="w-4 h-4 text-white/50" /></button>
-                      <div className="flex gap-1.5 ml-1">
-                        <button onClick={() => handleDownload("svg")} className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono font-medium flex items-center gap-1 transition-all" title="Download SVG Floor Plan">
-                          <Download className="w-3 h-3" />.svg
-                        </button>
-                        <button onClick={() => handleDownload("glb")} className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono font-medium flex items-center gap-1 transition-all" title="Download 3D GLB">
-                          <Download className="w-3 h-3" />.glb
-                        </button>
-                        <button onClick={() => handleDownload("pdf")} className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono font-medium flex items-center gap-1 transition-all" title="Download PDF Blueprint">
-                          <Download className="w-3 h-3" />.pdf
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  className="text-center max-w-sm">
-                  <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#e040fb]/10 to-[#ff4081]/10 border border-[#e040fb]/20 flex items-center justify-center mx-auto mb-6">
-                    <Building2 className="w-12 h-12 text-[#e040fb]/50" />
-                  </div>
-                  <h3 className="text-lg font-bold text-white/70 mb-2">Your design will appear here</h3>
-                  <p className="text-sm text-white/30 leading-relaxed">Choose a building type, style, and add a prompt — then click <span className="text-[#e040fb]">Generate Design</span></p>
-                  <div className="mt-6 flex flex-col gap-2">
-                    {["Try: 'glass villa with infinity pool, mountain view'", "Try: 'futuristic museum with curved steel facade'"].map((ex, i) => (
-                      <button key={i} onClick={() => setPrompt(ex.replace("Try: '","").replace("'",""))}
-                        className="text-xs text-white/30 hover:text-[#e040fb] transition-colors px-4 py-2 rounded-lg bg-white/3 hover:bg-[#e040fb]/5 border border-white/5 hover:border-[#e040fb]/20 text-left">
-                        {ex}
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      )}
+          {/* 3. RIGHT SIDEBAR (3 COLS): LIVE READOUTS + SELECTED ROOM + EXPORT CHIPS */}
+          <aside className="lg:col-span-3 p-5 border-t lg:border-t-0 lg:border-l border-[#1B1B1F]/20 flex flex-col justify-between gap-4">
+            <div className="space-y-3.5">
+              <div className="pb-3 border-b border-[#1B1B1F]/15">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-[#6E6A63]">TOTAL FLOOR AREA</div>
+                <div className="font-mono text-xl font-bold mt-0.5">{sqft.toLocaleString()} sq ft</div>
+                <div className="font-mono text-[11px] text-[#2F5BFF] font-semibold">Plot Efficiency: 84%</div>
+              </div>
 
-      {/* ── GALLERY TAB ── */}
-      {tab === "gallery" && (
-        <div className="p-6">
-          {/* Category Filter */}
-          <div className="flex items-center gap-2 mb-6 flex-wrap">
-            {["All", "Architectural Design", "Interior Design", "Urban Planning", "Landscape"].map(cat => (
-              <button key={cat}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
-                  cat === "All"
-                    ? "bg-gradient-to-r from-[#e040fb] to-[#ff4081] border-transparent text-white"
-                    : "border-white/10 text-white/50 hover:text-white hover:border-white/30 bg-white/5"
-                }`}
-              >{cat}</button>
-            ))}
-          </div>
-
-          {/* Masonry Grid */}
-          <div className="columns-3 gap-4 space-y-4">
-            {GALLERY_ITEMS.map((item, i) => (
-              <motion.div key={item.id}
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                className="break-inside-avoid group relative rounded-2xl overflow-hidden cursor-pointer bg-gradient-to-br"
-                style={{ aspectRatio: i % 3 === 0 ? "3/4" : "4/3" }}
-                onClick={() => setZoomItem(item)}
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${item.bg}`} />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Building2 className="w-12 h-12 text-white/10" />
+              <div className="pb-3 border-b border-[#1B1B1F]/15">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-[#6E6A63]">PROGRAM &amp; LEVELS</div>
+                <div className="font-mono text-lg font-bold mt-0.5">
+                  {bedrooms} Bed · {floors} {floors === 1 ? "Level" : "Levels"}
                 </div>
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <div className="flex items-end justify-between">
-                      <div>
-                        <p className="text-sm font-semibold">{item.label}</p>
-                        <p className="text-xs text-white/60">{item.style}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={e => { e.stopPropagation(); toggleLike(item.id); }}
-                          className={`p-1.5 rounded-lg backdrop-blur-sm transition-all ${likedItems.has(item.id) ? "bg-[#ff4081]/80 text-white" : "bg-white/10 text-white/70 hover:bg-white/20"}`}>
-                          <Heart className={`w-3.5 h-3.5 ${likedItems.has(item.id) ? "fill-white" : ""}`} />
-                        </button>
-                        <button className="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all">
-                          <ZoomIn className="w-3.5 h-3.5 text-white/70" />
-                        </button>
-                      </div>
-                    </div>
+                <div className="font-mono text-[11px] text-[#6E6A63]">Courtyard + Wet-Wall Aligned</div>
+              </div>
+
+              <div className="pb-3 border-b border-[#1B1B1F]/15">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-[#6E6A63]">
+                  SELECTED ROOM (CLICK IN 3D)
+                </div>
+                <div className="font-mono text-base font-bold text-[#2F5BFF] mt-0.5">{selectedRoom.name}</div>
+                <div className="font-mono text-xs font-semibold text-[#1B1B1F]">{selectedRoom.dim}</div>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {INITIAL_ROOMS.map((rm, i) => (
                     <button
-                      onClick={e => { e.stopPropagation(); setPrompt(item.prompt); setTab("generate"); }}
-                      className="mt-2 w-full py-1.5 rounded-lg bg-gradient-to-r from-[#e040fb] to-[#ff4081] text-xs font-semibold flex items-center justify-center gap-1">
-                      <Wand2 className="w-3 h-3" /> Generate Similar
-                    </button>
-                  </div>
-                </div>
-                {/* Style badge */}
-                <div className="absolute top-3 right-3">
-                  <span className="px-2 py-0.5 bg-black/50 backdrop-blur-sm rounded-full text-[10px] font-medium text-white/70">{item.style}</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Zoom Modal ── */}
-      <AnimatePresence>
-        {zoomItem && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50" onClick={() => setZoomItem(null)} />
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-6 pointer-events-none">
-              <div className="pointer-events-auto w-full max-w-5xl flex gap-6">
-                {/* Image */}
-                <div className={`flex-1 rounded-2xl overflow-hidden bg-gradient-to-br ${zoomItem.bg} aspect-video flex items-center justify-center`}>
-                  <Building2 className="w-20 h-20 text-white/10" />
-                </div>
-                {/* Details */}
-                <div className="w-72 flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-lg">{zoomItem.label}</h3>
-                    <button onClick={() => setZoomItem(null)} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/8">
-                    <p className="text-xs text-white/40 mb-1 font-semibold uppercase tracking-wider">Prompt</p>
-                    <p className="text-sm text-white/80 leading-relaxed">{zoomItem.prompt}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/8 space-y-2">
-                    <p className="text-xs text-white/40 mb-2 font-semibold uppercase tracking-wider">Parameters</p>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/40">Style</span><span className="text-white/80">{zoomItem.style}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/40">Resolution</span><span className="text-white/80">1536×1536</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/40">Model</span><span className="text-white/80">Arch-Gen v2</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => { setPrompt(zoomItem.prompt); setZoomItem(null); setTab("generate"); }}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#e040fb] to-[#ff4081] text-sm font-bold flex items-center justify-center gap-2">
-                    <Wand2 className="w-4 h-4" /> Generate the Same
-                  </button>
-                  <div className="flex gap-2">
-                    <button onClick={() => toggleLike(zoomItem.id)}
-                      className={`flex-1 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5 border transition-all ${likedItems.has(zoomItem.id) ? "bg-[#ff4081]/20 border-[#ff4081]/50 text-[#ff4081]" : "border-white/10 text-white/50 hover:border-white/30"}`}>
-                      <Heart className={`w-3.5 h-3.5 ${likedItems.has(zoomItem.id) ? "fill-current" : ""}`} />
-                      {likedItems.has(zoomItem.id) ? "Liked" : "Like"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        const blob = new Blob([JSON.stringify(zoomItem, null, 2)], { type: "application/json" });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `${zoomItem.label.toLowerCase().replace(/\s+/g, "-")}-spec.json`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                        toast.success(`Saved ${zoomItem.label} specs`);
-                      }}
-                      className="flex-1 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5 border border-white/10 text-white/50 hover:border-white/30 hover:text-white transition-all"
+                      key={rm.name}
+                      type="button"
+                      onClick={() => setSelectedRoomIdx(i)}
+                      className={`px-2 py-0.5 font-mono text-[9.5px] border ${
+                        selectedRoomIdx === i
+                          ? "bg-[#2F5BFF] text-white border-[#2F5BFF]"
+                          : "bg-[#F4EFE6] text-[#1B1B1F] border-[#1B1B1F]/20"
+                      }`}
                     >
-                      <Download className="w-3.5 h-3.5" /> Save
+                      {rm.name.split(" ")[0]}
                     </button>
-                  </div>
+                  ))}
                 </div>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            </div>
+
+            <div>
+              <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#6E6A63] mb-2">
+                // ARCHITECTURAL EXPORT CHIPS
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {(["pdf", "dxf", "usdz", "glb"] as const).map((fmt) => (
+                  <button
+                    key={fmt}
+                    type="button"
+                    onClick={() => handleExport(fmt)}
+                    className="py-2 px-3 bg-[#F4EFE6] hover:bg-[#2F5BFF] hover:text-white border border-[#1B1B1F]/25 font-mono text-xs font-bold uppercase transition-colors flex items-center justify-between"
+                  >
+                    <span>{fmt}</span>
+                    <span>↓</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
     </div>
   );
 }

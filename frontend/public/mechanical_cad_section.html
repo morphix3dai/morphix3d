@@ -365,9 +365,15 @@
       <div class="kicker">01 · MECHANICAL CAD // INDUSTRIAL CATALOG</div>
       <h1>Precision parts from a prompt.</h1>
     </div>
-    <div class="cnc-badge">
-      <span class="dot"></span>
-      <span>CNC-READY · ISO 2768-fH (±0.02 mm)</span>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div class="cnc-badge">
+        <span class="dot"></span>
+        <span>CNC-READY · ISO 2768-fH (±0.02 mm)</span>
+      </div>
+      <a href="/workspace/mechanical" onclick="if(window.location.protocol==='file:'){window.location.href='https://3dmorphix.com/workspace/mechanical';return false;}" style="display:inline-flex;align-items:center;gap:10px;padding:12px 22px;background:#FF6A1A;color:#fff;font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;text-decoration:none;border:1.5px solid #1E2126;box-shadow:3px 3px 0px #1E2126;transition:transform 0.15s ease;">
+        <span>⚙️ Start Creating</span>
+        <span>→</span>
+      </a>
     </div>
   </header>
 
@@ -418,17 +424,21 @@
         </div>
       </div>
 
-      <!-- 5. EXPORT CHIPS: STEP, STL, DXF -->
+      <!-- 5. EXPORT CHIPS: STEP, STL, DXF + START CREATING CTA -->
       <div class="panel-block" style="border-bottom:none;">
         <div class="block-label">
           <span>// DIRECT CAD EXPORT</span>
           <span>MANIFOLD</span>
         </div>
-        <div class="export-grid">
+        <div class="export-grid" style="margin-bottom:14px;">
           <button class="exp-chip" onclick="exportFile('step')"><span>STEP</span><span>↓</span></button>
           <button class="exp-chip" onclick="exportFile('stl')"><span>STL</span><span>↓</span></button>
           <button class="exp-chip" onclick="exportFile('dxf')"><span>DXF</span><span>↓</span></button>
         </div>
+        <a href="/workspace/mechanical" onclick="if(window.location.protocol==='file:'){window.location.href='https://3dmorphix.com/workspace/mechanical';return false;}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;background:#1E2126;color:#fff;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;border:1.5px solid #FF6A1A;">
+          <span>Start Creating CAD</span>
+          <span style="color:#FF6A1A;">→</span>
+        </a>
       </div>
     </aside>
 

@@ -540,9 +540,15 @@
       <span class="pulse-orb"></span>
       <span>03 · CREATIVE 3D // ORYZO DARKROOM × BIOLUMINESCENT LAB</span>
     </div>
-    <div class="shader-pills">
-      <button class="shader-btn active" id="shAurora" onclick="setShaderBackdrop('aurora')">21st.dev Aurora Shader</button>
-      <button class="shader-btn" id="shLiquid" onclick="setShaderBackdrop('liquid')">Liquid-Metal Chrome Shader</button>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div class="shader-pills">
+        <button class="shader-btn active" id="shAurora" onclick="setShaderBackdrop('aurora')">21st.dev Aurora Shader</button>
+        <button class="shader-btn" id="shLiquid" onclick="setShaderBackdrop('liquid')">Liquid-Metal Chrome Shader</button>
+      </div>
+      <a href="/workspace/text-to-3d" onclick="if(window.location.protocol==='file:'){window.location.href='https://3dmorphix.com/workspace/text-to-3d';return false;}" style="display:inline-flex;align-items:center;gap:10px;padding:11px 22px;border-radius:999px;background:linear-gradient(135deg,#7C5CFF,#FF2FD4,#00FFD5);color:#050608;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;box-shadow:0 0 28px rgba(0,255,213,0.4);">
+        <span>🎨 Start Creating</span>
+        <span>→</span>
+      </a>
     </div>
   </header>
 
@@ -567,10 +573,15 @@
         <div class="prompt-text" id="promptDisplay">
           "Bioluminescent cyber-valkyrie guardian in obsidian carapace armor, glowing cyan plasma wings, game-ready quad mesh, 4K PBR"
         </div>
-        <button class="remix-btn" onclick="remixPrompt()">
-          <span>↻ Remix This Prompt</span>
-          <span style="opacity:0.75">(Cycle Archetype)</span>
-        </button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="remix-btn" onclick="remixPrompt()">
+            <span>↻ Remix Prompt</span>
+          </button>
+          <a href="/workspace/text-to-3d" onclick="if(window.location.protocol==='file:'){window.location.href='https://3dmorphix.com/workspace/text-to-3d';return false;}" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 14px;border-radius:12px;background:#00FFD5;color:#050608;font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:800;text-transform:uppercase;text-decoration:none;">
+            <span>Start Creating</span>
+            <span>→</span>
+          </a>
+        </div>
       </div>
 
       <!-- 4-Step Pipeline Progression -->
