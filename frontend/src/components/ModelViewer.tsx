@@ -64,7 +64,18 @@ function LoadedModel({
   onStats: (stats: { faces: number; vertices: number }) => void;
 }) {
   const { scene } = useGLTF(url);
-  const clonedScene = useMemo(() => scene.clone(), [scene]);
+  const clonedScene = useMemo(() => {
+    const clone = scene.clone(true);
+    const box = new THREE.Box3().setFromObject(clone);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const maxDim = Math.max(size.x, size.y, size.z);
+    if (maxDim > 0 && isFinite(maxDim)) {
+      const targetScale = 2.4 / maxDim;
+      clone.scale.setScalar(targetScale);
+    }
+    return clone;
+  }, [scene]);
 
   // Compute and report stats after mounting/updating
   useEffect(() => {
@@ -136,13 +147,14 @@ export default function ModelViewer({ modelUrl, className = "" }: ModelViewerPro
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
         className="!bg-transparent"
       >
-        <Suspense fallback={null}>
-          {/* Lighting */}
-          <ambientLight intensity={0.4} />
-          <directionalLight position={[5, 5, 5]} intensity={0.8} castShadow />
-          <pointLight position={[-5, 3, -5]} intensity={0.3} color="#8b5cf6" />
-          <Environment preset="city" background={false} />
+        {/* Zero-latency Studio Lighting (no external HDR CDN fetch) */}
+        <ambientLight intensity={0.75} />
+        <hemisphereLight args={["#ffffff", "#1e293b", 0.9]} />
+        <directionalLight position={[5, 6, 5]} intensity={1.35} castShadow />
+        <directionalLight position={[-5, 4, -4]} intensity={0.65} color="#93c5fd" />
+        <pointLight position={[0, 4, 3]} intensity={0.5} color="#a78bfa" />
 
+        <Suspense fallback={<PlaceholderModel wireframe={wireframe} />}>
           {/* Model */}
           {modelUrl ? (
             <LoadedModel url={modelUrl} wireframe={wireframe} onStats={handleStats} />

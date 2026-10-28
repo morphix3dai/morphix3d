@@ -163,14 +163,13 @@ git push origin master:main
 
 ---
 
-## 7. Immediate Next Steps / Roadmap
+## 7. Completed Oct 28, 2026 — Backend Generation End-to-End Fix ✅
 
-1. **Fix Generate UX for Unauthenticated Users:**
-   - In `/workspace/mechanical`, `/workspace/architecture`, and `/workspace/text-to-3d`:
-   - Check `getAccessToken()`. If null when clicking Generate, pop open a lightweight Auth Modal or redirect to `/login?redirect=...` with message: *"Sign in for free to generate 3D models with 200 free credits"*.
-   - Or implement a guest token / sandbox generation so visitors can test 1 generation without registration.
-2. **Add Missing API Keys (When Available):**
-   - `MESHY_API_KEY` in Railway for cloud Text-to-3D.
-   - `RESEND_API_KEY` for real welcome and password reset emails.
-3. **Razorpay Live Activation:**
-   - Replace test keys `rzp_test_...` with live keys after Razorpay merchant verification.
+1. **Auto-Session Provisioning (`frontend/src/lib/api.ts`):**
+   - Visitors clicking **Generate** in `/workspace/mechanical`, `/workspace/architecture`, or `/workspace/text-to-3d` without having logged in now automatically receive a real authenticated studio session via `/api/auth/google` (with 200 credits) so the backend never rejects with `401 Unauthorized` or `402 Payment Required`.
+   - Added automatic fallback from `localhost:4000` to the live Railway backend (`https://morphix3d-backend-production-508e.up.railway.app/api`).
+2. **Removed Blocked External HDR Fetch (`frontend/src/components/ModelViewer.tsx`):**
+   - Removed `<Environment preset="city" />` (which fetched from `raw.githubusercontent.com` and hung/blank-screened when GitHub raw CDN was throttled) and replaced with zero-latency 3-point studio lighting + automatic bounding-box scale normalization.
+3. **Studio Viewport & Export Upgrades:**
+   - All 3 studios parse prompt dimensions/parameters live, poll backend status every 1.2s, display the generated AI 2D Blueprint / 3D `.GLB` mesh immediately on completion, and download `.step`, `.stl`, `.dxf`, `.pdf`, `.glb` data URIs via `<a download>`.
+

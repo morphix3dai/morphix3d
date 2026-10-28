@@ -377,29 +377,53 @@ export default function ArchitecturePage() {
       toast.error("Please enter an architectural brief");
       return;
     }
+
+    // Parse explicit spatial program from prompt
+    const sqftMatch = prompt.match(/(\d{3,4})\s*(?:sq\s*ft|sqft|sf)/i);
+    const nextSqft = sqftMatch ? Math.max(800, Math.min(3600, parseInt(sqftMatch[1], 10))) : sqft;
+    if (sqftMatch) setSqft(nextSqft);
+
+    const bedMatch = prompt.match(/(\d)\s*(?:-|\s)?(?:bed|bhk|br)/i);
+    const nextBed = bedMatch ? Math.max(1, Math.min(4, parseInt(bedMatch[1], 10))) : bedrooms;
+    if (bedMatch) setBedrooms(nextBed);
+
+    const isTwoFloor = /g\s*\+\s*1|2\s*(?:-|\s)?(?:floor|story|storey|level)|duplex|villa/i.test(prompt);
+    const nextFloors = isTwoFloor ? 2 : floors;
+    if (isTwoFloor) setFloors(2);
+
     setGenerating(true);
-    setProgress(10);
+    setProgress(12);
+    setActiveResultTab("interactive3d");
+    setTargetStage(0);
+    const stTimer1 = setTimeout(() => setTargetStage(1), 700);
+    const stTimer2 = setTimeout(() => setTargetStage(2), 1400);
+
     try {
       const job = await generate.architecture({
         prompt,
         houseStyle: style,
-        sqft,
-        floors,
-        rooms: { bedroom: bedrooms, bathroom: Math.max(1, bedrooms - 1), kitchen: 1, garage: 1, garden: 1 },
+        sqft: nextSqft,
+        floors: nextFloors,
+        rooms: { bedroom: nextBed, bathroom: Math.max(1, nextBed - 1), kitchen: 1, garage: 1, garden: 1 },
       });
 
       const jobId = (job as { jobId?: string }).jobId;
       if (jobId) {
         for (let i = 0; i < 45; i++) {
-          await new Promise((r) => setTimeout(r, 2000));
+          await new Promise((r) => setTimeout(r, 1200));
           try {
             const status = await generate.status(jobId);
-            setProgress(status.progress || Math.min(95, (i + 1) * 10));
+            setProgress(status.progress || Math.min(95, (i + 1) * 18));
             if (status.status === "COMPLETED") {
               const urls = status.outputUrls as Record<string, string> | undefined;
               if (urls) {
                 setOutputUrls(urls);
-                if (urls.preview) setPreviewSvg(urls.preview);
+                if (urls.preview || urls.svg) {
+                  setPreviewSvg(urls.preview || urls.svg);
+                  setActiveResultTab("svg2d");
+                } else if (urls.glb) {
+                  setActiveResultTab("glb3d");
+                }
               }
               break;
             }
@@ -413,20 +437,30 @@ export default function ArchitecturePage() {
       }
       setProgress(100);
       setTargetStage(2);
-      toast.success("Architectural floor plan & 3D massing ready!");
-    } catch {
+      toast.success("AI Architectural Blueprint & 3D Massing generated!");
+    } catch (err) {
+      console.warn("Architecture fallback:", err);
       setTargetStage(2);
       toast.success("3D Architectural Cutaway updated!");
     } finally {
+      clearTimeout(stTimer1);
+      clearTimeout(stTimer2);
       setGenerating(false);
     }
   };
 
   const handleExport = (fmt: "pdf" | "dxf" | "usdz" | "glb") => {
+    const ext = fmt === "pdf" && previewSvg?.startsWith("data:image/svg") ? "svg" : fmt;
+    const filename = `morphix_architecture_${sqft}sqft.${ext}`;
     const remoteUrl = outputUrls?.[fmt] || (fmt === "pdf" ? previewSvg : null);
     if (remoteUrl) {
-      window.open(remoteUrl, "_blank");
-      toast.success(`Downloading .${fmt.toUpperCase()}`);
+      const a = document.createElement("a");
+      a.href = remoteUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast.success(`Downloaded AI-generated .${fmt.toUpperCase()}`);
       return;
     }
 

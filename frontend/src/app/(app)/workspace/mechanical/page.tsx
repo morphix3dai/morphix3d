@@ -364,24 +364,46 @@ export default function MechanicalWorkspace() {
       return;
     }
 
+    // Parse explicit dimensions/archetype from user prompt so live B-Rep updates immediately
+    const lower = prompt.toLowerCase();
+    let nextPartType = partType;
+    if (lower.includes("bracket") || lower.includes("mount") || lower.includes("plate") || lower.includes("flange")) {
+      nextPartType = "bracket";
+      setPartType("bracket");
+    } else if (lower.includes("gear") || lower.includes("pinion") || lower.includes("sprocket") || lower.includes("tooth") || lower.includes("teeth")) {
+      nextPartType = "gear";
+      setPartType("gear");
+    }
+
+    const teethMatch = prompt.match(/(\d{1,2})\s*(?:-|\s)?(?:tooth|teeth|t\b|z\b)/i);
+    const nextTeeth = teethMatch ? Math.max(10, Math.min(34, parseInt(teethMatch[1], 10))) : teeth;
+    if (teethMatch) setTeeth(nextTeeth);
+
+    const boreMatch = prompt.match(/(?:Ø|bore|hole|dia(?:meter)?)\s*:?\s*(\d{1,2}(?:\.\d+)?)/i);
+    const nextBore = boreMatch ? Math.max(8, Math.min(32, Math.round(parseFloat(boreMatch[1])))) : holeDia;
+    if (boreMatch) setHoleDia(nextBore);
+
+    const thickMatch = prompt.match(/(\d{1,2}(?:\.\d+)?)\s*(?:mm|in)?\s*(?:thick|face|width)/i);
+    const nextThick = thickMatch ? Math.max(8, Math.min(36, Math.round(parseFloat(thickMatch[1])))) : thickness;
+    if (thickMatch) setThickness(nextThick);
+
     setGenerating(true);
-    setProgress(8);
+    setProgress(12);
     setStatusMessage("Compiling parametric CAD feature tree...");
-    setShowGeneratedGlb(false);
 
     try {
       const { jobId } = await generate.mechanical({
-        prompt: `${prompt} | Teeth/Features: ${teeth}, Bore: Ø${holeDia}mm, Thickness: ${thickness}mm`,
-        partType,
+        prompt: `${prompt} | Teeth/Features: ${nextTeeth}, Bore: Ø${nextBore}mm, Thickness: ${nextThick}mm`,
+        partType: nextPartType,
         material,
         units,
       });
 
       for (let i = 0; i < 45; i++) {
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 1200));
         try {
           const status = await generate.status(jobId);
-          setProgress(status.progress || Math.min(92, (i + 1) * 8));
+          setProgress(status.progress || Math.min(92, (i + 1) * 18));
           if (status.progress < 35) setStatusMessage("Solving parametric B-Rep constraints...");
           else if (status.progress < 70) setStatusMessage("Tessellating manifold STEP/STL solid...");
           else setStatusMessage("Verifying ISO 2768-fH CNC tolerances...");
@@ -392,7 +414,7 @@ export default function MechanicalWorkspace() {
               setShowGeneratedGlb(true);
             }
             setProgress(100);
-            toast.success("CNC-Ready CAD part generated!");
+            toast.success("CNC-Ready 3D CAD solid generated on backend!");
             break;
           } else if (status.status === "FAILED") {
             toast.error(status.errorMessage || "CAD generation failed");
@@ -402,8 +424,8 @@ export default function MechanicalWorkspace() {
           // keep polling
         }
       }
-    } catch {
-      // Even if user is not logged in or offline, rebuild the live parametric B-Rep solid seamlessly
+    } catch (err) {
+      console.warn("Mechanical CAD fallback:", err);
       toast.success("Parametric B-Rep solid rebuilt in viewport!");
     } finally {
       setGenerating(false);
@@ -411,10 +433,16 @@ export default function MechanicalWorkspace() {
   };
 
   const handleExport = (fmt: "step" | "stl" | "dxf" | "glb") => {
+    const filename = `morphix_${partType}_${teeth}T_bore${holeDia}mm.${fmt}`;
     const remoteUrl = outputUrls?.[fmt];
     if (remoteUrl) {
-      window.open(remoteUrl, "_blank");
-      toast.success(`Downloading .${fmt.toUpperCase()}`);
+      const a = document.createElement("a");
+      a.href = remoteUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast.success(`Downloaded AI-generated .${fmt.toUpperCase()}`);
       return;
     }
 
@@ -422,7 +450,7 @@ export default function MechanicalWorkspace() {
     const timestamp = new Date().toISOString();
     let content = "";
     if (fmt === "step") {
-      content = `ISO-10303-21;\nHEADER;\nFILE_DESCRIPTION(('MORPHIX 3D PARAMETRIC CAD - ${partType.toUpperCase()}'),'2;1');\nFILE_NAME('morphix_${partType}_${teeth}T_${holeDia}mm.step','${timestamp}',('Morphix 3D'),('Morphix CAD Kernel'),'','','');\nFILE_SCHEMA(('AUTOMOTIVE_DESIGN'));\nENDSEC;\nDATA;\n/* PART=${partType.toUpperCase()} TEETH=${teeth} BORE=${holeDia.toFixed(2)}mm THICKNESS=${thickness.toFixed(2)}mm MATERIAL=${material} */\nENDSEC;\nEND-ISO-10303-21;\n`;
+      content = `ISO-10303-21;\nHEADER;\nFILE_DESCRIPTION(('MORPHIX 3D PARAMETRIC CAD - ${partType.toUpperCase()}'),'2;1');\nFILE_NAME('${filename}','${timestamp}',('Morphix 3D'),('Morphix CAD Kernel'),'','','');\nFILE_SCHEMA(('AUTOMOTIVE_DESIGN'));\nENDSEC;\nDATA;\n/* PART=${partType.toUpperCase()} TEETH=${teeth} BORE=${holeDia.toFixed(2)}mm THICKNESS=${thickness.toFixed(2)}mm MATERIAL=${material} */\nENDSEC;\nEND-ISO-10303-21;\n`;
     } else if (fmt === "stl") {
       content = `solid morphix_${partType}\n  facet normal 0 0 1\n    outer loop\n      vertex 0 0 0\n      vertex ${holeDia} 0 0\n      vertex 0 ${thickness} 0\n    endloop\n  endfacet\nendsolid morphix_${partType}\n`;
     } else {
@@ -431,7 +459,7 @@ export default function MechanicalWorkspace() {
     const blob = new Blob([content], { type: "text/plain" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `morphix_${partType}_${teeth}T_bore${holeDia}mm.${fmt}`;
+    a.download = filename;
     a.click();
     toast.success(`Exported .${fmt.toUpperCase()} (${teeth}Z · Ø${holeDia}.00 ${units})`);
   };
@@ -489,6 +517,17 @@ export default function MechanicalWorkspace() {
               {mode}
             </button>
           ))}
+          {outputUrls?.glb && (
+            <button
+              type="button"
+              onClick={() => setShowGeneratedGlb(true)}
+              className={`px-3.5 py-1.5 font-mono text-[11px] font-bold uppercase transition-colors border-l border-[#1E2126]/30 ${
+                showGeneratedGlb ? "bg-[#FF6A1A] text-white" : "text-[#FF6A1A] hover:bg-[#FF6A1A]/10"
+              }`}
+            >
+              AI 3D Mesh (.GLB)
+            </button>
+          )}
         </div>
 
         {/* Right CNC Tolerance Badge */}

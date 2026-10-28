@@ -302,9 +302,9 @@ export default function TextTo3DPage() {
     setPipelineStep(0);
 
     // Step through visual pipeline stages while backend processes
-    const stepTimer1 = setTimeout(() => setPipelineStep(1), 900);
-    const stepTimer2 = setTimeout(() => setPipelineStep(2), 1800);
-    const stepTimer3 = setTimeout(() => setPipelineStep(3), 2700);
+    const stepTimer1 = setTimeout(() => setPipelineStep(1), 700);
+    const stepTimer2 = setTimeout(() => setPipelineStep(2), 1400);
+    const stepTimer3 = setTimeout(() => setPipelineStep(3), 2100);
 
     try {
       const result = await generate.textTo3d({
@@ -315,17 +315,17 @@ export default function TextTo3DPage() {
       });
 
       for (let i = 0; i < 45; i++) {
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 1200));
         try {
           const status = await generate.status(result.jobId);
-          setProgress(status.progress || Math.min(95, (i + 1) * 10));
+          setProgress(status.progress || Math.min(95, (i + 1) * 18));
           if (status.status === "COMPLETED") {
             if (status.outputUrls) {
               setOutputUrls(status.outputUrls);
               if (status.outputUrls.glb) setShowGeneratedGlb(true);
             }
             setProgress(100);
-            toast.success("4K PBR 3D character generated!");
+            toast.success("4K PBR 3D mesh generated on backend!");
             break;
           } else if (status.status === "FAILED") {
             toast.error(status.errorMessage || "Generation failed");
@@ -335,11 +335,12 @@ export default function TextTo3DPage() {
           break;
         }
       }
-    } catch {
+    } catch (err) {
+      console.warn("Creative 3D fallback:", err);
       setTimeout(() => {
         setPipelineStep(3);
         toast.success("Bioluminescent 4K PBR Turntable Mesh synthesized!");
-      }, 2800);
+      }, 2200);
     } finally {
       clearTimeout(stepTimer1);
       clearTimeout(stepTimer2);
@@ -350,10 +351,16 @@ export default function TextTo3DPage() {
   };
 
   const handleExport = (fmt: "glb" | "fbx" | "obj" | "usdz") => {
-    const remoteUrl = outputUrls?.[fmt];
+    const filename = `morphix_creative3d_${style}.${fmt}`;
+    const remoteUrl = outputUrls?.[fmt] || (fmt === "glb" ? outputUrls?.glb : undefined);
     if (remoteUrl) {
-      window.open(remoteUrl, "_blank");
-      toast.success(`Downloading .${fmt.toUpperCase()}`);
+      const a = document.createElement("a");
+      a.href = remoteUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast.success(`Downloaded AI-generated .${fmt.toUpperCase()}`);
       return;
     }
 
@@ -361,7 +368,7 @@ export default function TextTo3DPage() {
     const blob = new Blob([content], { type: "text/plain" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `morphix_creative3d_${style}.${fmt}`;
+    a.download = filename;
     a.click();
     toast.success(`Exported .${fmt.toUpperCase()} (Watertight Quad Mesh)`);
   };
@@ -424,6 +431,19 @@ export default function TextTo3DPage() {
               {s.label}
             </button>
           ))}
+          {outputUrls?.glb && (
+            <button
+              type="button"
+              onClick={() => setShowGeneratedGlb(true)}
+              className={`px-3.5 py-1 rounded-full font-mono text-[11px] font-bold transition-all ${
+                showGeneratedGlb
+                  ? "bg-[#27E1FF] text-[#07070B] shadow-[0_0_20px_rgba(39,225,255,0.5)]"
+                  : "text-[#27E1FF] hover:bg-white/10"
+              }`}
+            >
+              ✨ AI 3D Mesh (.GLB)
+            </button>
+          )}
         </div>
 
         {/* Right Creative 3D Sub-Tools */}

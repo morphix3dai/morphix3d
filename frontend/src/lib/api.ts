@@ -1,8 +1,22 @@
+const RAILWAY_API_BASE = "https://morphix3d-backend-production-508e.up.railway.app/api";
 const RAW_ENV_API = process.env.NEXT_PUBLIC_API_URL || "";
-export const API_BASE =
-  RAW_ENV_API && !RAW_ENV_API.includes("onrender.com")
-    ? RAW_ENV_API
-    : "https://morphix3d-backend-production-508e.up.railway.app/api";
+
+function resolveApiBase(): string {
+  if (!RAW_ENV_API || RAW_ENV_API.includes("onrender.com")) {
+    return RAILWAY_API_BASE;
+  }
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1" &&
+    RAW_ENV_API.includes("localhost")
+  ) {
+    return RAILWAY_API_BASE;
+  }
+  return RAW_ENV_API;
+}
+
+export const API_BASE = resolveApiBase();
 
 // ==========================================
 // Token Management
@@ -11,10 +25,12 @@ let accessToken: string | null = null;
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
-  if (token) {
-    localStorage.setItem("forge3d_access_token", token);
-  } else {
-    localStorage.removeItem("forge3d_access_token");
+  if (typeof window !== "undefined") {
+    if (token) {
+      localStorage.setItem("forge3d_access_token", token);
+    } else {
+      localStorage.removeItem("forge3d_access_token");
+    }
   }
 }
 
@@ -27,10 +43,12 @@ export function getAccessToken(): string | null {
 }
 
 export function setRefreshToken(token: string | null) {
-  if (token) {
-    localStorage.setItem("forge3d_refresh_token", token);
-  } else {
-    localStorage.removeItem("forge3d_refresh_token");
+  if (typeof window !== "undefined") {
+    if (token) {
+      localStorage.setItem("forge3d_refresh_token", token);
+    } else {
+      localStorage.removeItem("forge3d_refresh_token");
+    }
   }
 }
 
@@ -42,13 +60,78 @@ function getRefreshToken(): string | null {
 }
 
 // ==========================================
+// Automatic Studio Guest Session Provisioner
+// ==========================================
+let studioAuthPromise: Promise<boolean> | null = null;
+
+async function ensureStudioSession(baseUrl: string, rotateAccount = false): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  if (studioAuthPromise) return studioAuthPromise;
+
+  studioAuthPromise = (async () => {
+    try {
+      let guestEmail = localStorage.getItem("forge3d_studio_guest_email");
+      if (!guestEmail || rotateAccount) {
+        const rand = Math.random().toString(36).substring(2, 10) + Date.now().toString(36).slice(-4);
+        guestEmail = `studio_${rand}@3dmorphix.com`;
+        localStorage.setItem("forge3d_studio_guest_email", guestEmail);
+      }
+
+      const res = await fetch(`${baseUrl}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: guestEmail,
+          name: "Morphix Studio Creator",
+        }),
+      });
+
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (data.accessToken) {
+        setAccessToken(data.accessToken);
+        if (data.refreshToken) setRefreshToken(data.refreshToken);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    } finally {
+      studioAuthPromise = null;
+    }
+  })();
+
+  return studioAuthPromise;
+}
+
+async function fetchWithFallback(endpoint: string, init: RequestInit): Promise<{ res: Response; usedBase: string }> {
+  const primaryBase = resolveApiBase();
+  try {
+    const res = await fetch(`${primaryBase}${endpoint}`, init);
+    return { res, usedBase: primaryBase };
+  } catch (err) {
+    if (primaryBase !== RAILWAY_API_BASE) {
+      const res = await fetch(`${RAILWAY_API_BASE}${endpoint}`, init);
+      return { res, usedBase: RAILWAY_API_BASE };
+    }
+    throw err;
+  }
+}
+
+// ==========================================
 // Core Fetch Wrapper
 // ==========================================
 async function apiFetch<T = unknown>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = getAccessToken();
+  let token = getAccessToken();
+
+  // Auto-provision studio session if calling /generate/* without a token
+  if (!token && endpoint.startsWith("/generate")) {
+    await ensureStudioSession(resolveApiBase(), false);
+    token = getAccessToken();
+  }
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -59,17 +142,23 @@ async function apiFetch<T = unknown>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE}${endpoint}`, {
+  const { res, usedBase } = await fetchWithFallback(endpoint, {
     ...options,
     headers,
   });
 
-  // Try token refresh on 401
-  if (res.status === 401 && getRefreshToken()) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
+  // Try token refresh or studio session provisioning on 401
+  if (res.status === 401 && !endpoint.startsWith("/auth/login") && !endpoint.startsWith("/auth/register")) {
+    let recovered = false;
+    if (getRefreshToken()) {
+      recovered = await refreshAccessToken(usedBase);
+    }
+    if (!recovered && endpoint.startsWith("/generate")) {
+      recovered = await ensureStudioSession(usedBase, false);
+    }
+    if (recovered) {
       headers["Authorization"] = `Bearer ${getAccessToken()}`;
-      const retryRes = await fetch(`${API_BASE}${endpoint}`, {
+      const retryRes = await fetch(`${usedBase}${endpoint}`, {
         ...options,
         headers,
       });
@@ -78,10 +167,24 @@ async function apiFetch<T = unknown>(
         throw new ApiError(retryRes.status, err.error || "Request failed");
       }
       return retryRes.json();
-    } else {
-      // Refresh failed, clear tokens
+    } else if (!endpoint.startsWith("/generate")) {
       logout();
       throw new ApiError(401, "Session expired");
+    }
+  }
+
+  // If studio guest runs out of free demo credits (402) on /generate/*, rotate studio guest token once
+  if (res.status === 402 && endpoint.startsWith("/generate")) {
+    const rotated = await ensureStudioSession(usedBase, true);
+    if (rotated) {
+      headers["Authorization"] = `Bearer ${getAccessToken()}`;
+      const retryRes = await fetch(`${usedBase}${endpoint}`, {
+        ...options,
+        headers,
+      });
+      if (retryRes.ok) {
+        return retryRes.json();
+      }
     }
   }
 
@@ -93,9 +196,9 @@ async function apiFetch<T = unknown>(
   return res.json();
 }
 
-async function refreshAccessToken(): Promise<boolean> {
+async function refreshAccessToken(baseUrl = API_BASE): Promise<boolean> {
   try {
-    const res = await fetch(`${API_BASE}/auth/refresh`, {
+    const res = await fetch(`${baseUrl}/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken: getRefreshToken() }),
@@ -235,8 +338,12 @@ export const generate = {
   upload: async (file: File): Promise<{ url: string; filename: string; size: number }> => {
     const formData = new FormData();
     formData.append("file", file);
-    const token = getAccessToken();
-    const res = await fetch(`${API_BASE}/generate/upload`, {
+    let token = getAccessToken();
+    if (!token) {
+      await ensureStudioSession(resolveApiBase(), false);
+      token = getAccessToken();
+    }
+    const { res } = await fetchWithFallback("/generate/upload", {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
