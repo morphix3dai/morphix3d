@@ -21,11 +21,15 @@
 ## 2. Branding, Slogans & Core Philosophy
 
 - **Official Brand Name:** **Morphix 3D** (repo `forge3d`)
+- **Official Brand Logo:** **MARK 01 // THE IMPOSSIBLE RIBBON "M" (Option A — Resting on Top V-Surface)**
+  - Isometric 3-slab folded `"M"` in `#141413` architectural ink with the `#FF6A1A` engineering-orange sphere resting directly on the top V-surface (`cx="50", cy="29", r="7.5"`), paired with `'Instrument Serif'` wordmark (`Morphix`).
 - **Hero Slogan:** **"Type it / See it — Just Morphix it"**
-- **The Tri-Engine Concept:**
-  1. **Mechanical CAD:** Industrial catalog aesthetic, blueprint on frosted paper (`#EDEFF2`), `#FF6A1A` engineering orange accent, orthographic viewport, live parametric sliders (teeth, bore, thickness), STEP/STL/DXF/GLB exports, ISO 2768 tolerances.
-  2. **Architecture Studio:** Warm architect's desk (`#F4EFE6`), `#2F5BFF` blue accent, serif typography, 4-stage scroll/toggle morph: *2D Floor Plan -> Extruded Walls -> Furnished Isometric Cutaway -> Rendered Exterior*, live sqft & room inspector, PDF/DXF/USDZ/GLB exports.
-  3. **Creative 3D Darkroom:** Bioluminescent darkroom (`#07070B`), `#7C5CFF` to `#27E1FF` glow gradient, 4-stage pipeline: *Prompt -> Image Depth -> Quad Wireframe -> 4K PBR*, turntable rotation, 65-bone auto-rigging skeleton overlay, GLB/FBX/OBJ/USDZ exports.
+- **Unified Site Theme (100% Cohesive Light Aesthetic):**
+  - **Foundation:** Warm Architectural Drafting Paper (`#F4F1E6` / `#FAF8F2`) + Frosted Industrial Blueprint (`#EDEFF2`) + `#141413` architectural ink borders (`1.5px solid #141413`) and hard tactile shadows (`6px 6px 0px #141413`).
+  - **The Tri-Engine Concept:**
+    1. **Mechanical CAD:** Industrial catalog aesthetic, blueprint on frosted paper (`#EDEFF2`), `#FF6A1A` engineering orange accent, orthographic viewport, live parametric sliders (teeth, bore, thickness), STEP/STL/DXF/GLB exports, ISO 2768 tolerances.
+    2. **Architecture Studio:** Warm architect's desk (`#F4EFE6`), `#2F5BFF` blue accent, serif typography, 4-stage scroll/toggle morph: *2D Floor Plan -> Extruded Walls -> Furnished Isometric Cutaway -> Rendered Exterior*, live sqft & room inspector, PDF/DXF/USDZ/GLB exports.
+    3. **Creative 3D Atelier:** Daylight sculpture atelier (`#F4F1E6` / `#EDEFF2`), `#6D4AFF` & `#FF6A1A` accents, 4-stage pipeline: *Prompt -> Image Depth -> Quad Wireframe -> 4K PBR*, turntable rotation, 65-bone auto-rigging skeleton overlay, GLB/FBX/OBJ/USDZ exports.
 
 ---
 

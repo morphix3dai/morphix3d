@@ -19,84 +19,148 @@ import Orbital3DHero from "@/components/Orbital3DHero";
 import PhyloFooter from "@/components/PhyloFooter";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 24 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { delay: i * 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
 const capabilities = [
   {
+    code: "01 // MECHANICAL CAD",
     icon: Cog,
-    title: "Mechanical CAD",
+    title: "Precision B-Rep Parts",
+    description:
+      "Clinical blueprint on frosted paper. Real-time parametric sliders for tooth count, bore diameter, and wall thickness.",
     href: "/mechanical_cad_section.html",
-    items: ["Parametric parts", "STEP/STL export", "CNC-ready precision", "Feature tree editing"],
-    gradient: "from-[#00F0FF] to-[#0EA5E9]",
+    items: [
+      "Parametric involute gears & CNC brackets",
+      "Shaded, Wireframe & Exploded orthographic views",
+      "ISO 2768-fH tolerance callouts (±0.02 mm)",
+      "Direct STEP, STL, DXF & GLB export",
+    ],
+    accent: "#FF6A1A",
+    accentBg: "rgba(255, 106, 26, 0.12)",
   },
   {
+    code: "02 // ARCHITECTURE BIM",
     icon: Building2,
-    title: "Architecture",
+    title: "Floor Plans to Full 3D",
+    description:
+      "Warm architect's studio desk. Watch 2D drafting lines extrude into structural walls, furnished cutaways, and exteriors.",
     href: "/architecture_studio_section.html",
-    items: ["AI floor plans", "3D house models", "PDF/DXF export", "Interior layouts"],
-    gradient: "from-[#7B2FFF] to-[#A855F7]",
+    items: [
+      "4-stage interactive 2D-to-3D morphing",
+      "Click any room to inspect live dimensions",
+      "Toggle Roof & Furniture layers on/off",
+      "Export scaled PDF, AutoCAD DXF, USDZ & GLB",
+    ],
+    accent: "#2F5BFF",
+    accentBg: "rgba(47, 91, 255, 0.10)",
   },
   {
+    code: "03 // CREATIVE 3D ATELIER",
     icon: Palette,
-    title: "Creative 3D",
+    title: "Characters & Props",
+    description:
+      "Daylight sculpture atelier. Step through Prompt → Image → Quad Mesh → 4K PBR Texture with 65-bone auto-rigging.",
     href: "/creative_3d_darkroom.html",
-    items: ["Text to 3D", "Image to 3D", "AI texturing", "Auto-rigging"],
-    gradient: "from-[#FF2FD4] to-[#F43F5E]",
+    items: [
+      "4-stage transparent mesh synthesis pipeline",
+      "Live 65-bone skeleton & T-Pose / Action toggle",
+      "Watertight quad topology for Unity & Unreal",
+      "Export GLB, FBX, OBJ & Apple USDZ",
+    ],
+    accent: "#6D4AFF",
+    accentBg: "rgba(109, 74, 255, 0.10)",
   },
 ];
 
-const exportFormats = ["STEP", "GLB", "FBX", "OBJ", "STL", "DXF", "PDF", "USDZ", "3MF", "BLEND"];
+const exportFormats = ["STEP", "STL", "DXF", "PDF", "GLB", "FBX", "OBJ", "USDZ", "3MF", "BLEND"];
 
 const useCases = [
-  { title: "3D Printing", description: "Print-ready, watertight models exported in STL & 3MF", icon: Layers },
-  { title: "Game Development", description: "Low-poly assets with PBR textures for Unity & Unreal", icon: Sparkles },
-  { title: "Product Design", description: "Precision CAD models for manufacturing & prototyping", icon: Cog },
-  { title: "Architecture", description: "Floor plans and 3D visualizations for clients", icon: Building2 },
-  { title: "E-Commerce", description: "3D product mockups for online stores", icon: Globe },
-  { title: "Education", description: "Visual 3D models for learning and presentations", icon: Star },
+  {
+    code: "SPEC // IND-01",
+    title: "CNC & Additive Manufacturing",
+    description: "Watertight manifold B-Rep solids exported directly to STEP, IGES, STL, and 3MF for 5-axis milling.",
+    icon: Layers,
+  },
+  {
+    code: "SPEC // IND-02",
+    title: "Robotics & Mechatronics",
+    description: "Planetary gearboxes, NEMA motor mounts, and sensor brackets with ISO tolerance clearances.",
+    icon: Cog,
+  },
+  {
+    code: "SPEC // IND-03",
+    title: "Architectural Residential",
+    description: "Scaled 2D floor plans and 3D daylight cutaways for client approvals and rapid site massing.",
+    icon: Building2,
+  },
+  {
+    code: "SPEC // IND-04",
+    title: "Game Development",
+    description: "Clean quad-remeshed assets with 4K PBR textures and 65-bone rigs for Unity, Unreal, and Godot.",
+    icon: Sparkles,
+  },
+  {
+    code: "SPEC // IND-05",
+    title: "AR / E-Commerce",
+    description: "Apple Vision Pro USDZ and web-ready GLB product configurators from a single photo or prompt.",
+    icon: Globe,
+  },
+  {
+    code: "SPEC // IND-06",
+    title: "STEM & Education",
+    description: "Interactive exploded assemblies and cross-sections for engineering labs and classrooms.",
+    icon: Star,
+  },
 ];
 
 const pricingPlans = [
   {
+    tier: "TIER 01 // STARTER",
     name: "Free",
     price: "₹0",
-    period: "forever",
-    features: ["200 one-time credits", "All 7 AI engines", "GLB & OBJ export", "Community gallery", "Basic support"],
-    cta: "Get Started",
+    period: "/ forever",
+    features: [
+      "200 one-time signup credits",
+      "All 3 AI 3D Studio engines",
+      "GLB, OBJ, STL & SVG export",
+      "Public community gallery",
+      "Standard generation queue",
+    ],
+    cta: "Get Started Free",
     popular: false,
   },
   {
-    name: "Pro",
+    tier: "TIER 02 // PROFESSIONAL",
+    name: "Pro Studio",
     price: "₹999",
-    period: "/month",
+    period: "/ month",
     features: [
-      "2,000 credits/month",
-      "All export formats",
-      "Priority queue",
+      "2,000 high-speed credits / month",
+      "All native CAD exports (STEP, DXF, USDZ)",
+      "Priority GPU generation queue",
       "No watermark",
-      "Commercial license",
-      "Priority support",
+      "Full commercial ownership & private models",
     ],
     cta: "Upgrade to Pro",
     popular: true,
   },
   {
+    tier: "TIER 03 // ORGANIZATION",
     name: "Enterprise",
     price: "Custom",
     period: "",
     features: [
-      "Unlimited credits",
-      "Dedicated GPU",
-      "API access",
-      "Team management",
-      "SLA guarantee",
-      "Custom model training",
+      "Unlimited team credits & seats",
+      "Dedicated CAD / BIM REST API",
+      "Custom tolerance & library training",
+      "Team workspace & role management",
+      "99.9% SLA & dedicated engineer",
     ],
     cta: "Contact Sales",
     popular: false,
@@ -105,21 +169,23 @@ const pricingPlans = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#06060b] text-white">
+    <div className="min-h-screen bg-[#F4F1E6] text-[#141413]">
       <Navbar />
 
-      {/* Main Hero Section: 3D Orbital Depth-of-Field Carousel + "Type it / See it — Just Morphix it" */}
+      {/* Main Hero Section: 3D Orbital Carousel in Warm Architectural Paper Theme */}
       <Orbital3DHero />
 
       {/* Export Formats Bar */}
-      <section className="border-y border-[rgba(148,163,184,0.05)] bg-[rgba(18,18,26,0.5)]">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-wrap items-center justify-center gap-3">
-          <FileDown className="w-4 h-4 text-[#64748b] mr-1" />
-          <span className="text-sm text-[#64748b] mr-2">Export to:</span>
+      <section className="border-b-[1.5px] border-[#141413] bg-[#EFECE0]">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-center gap-2.5">
+          <FileDown className="w-4 h-4 text-[#575652] mr-1" />
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#575652] mr-2">
+            NATIVE CAD &amp; 3D PIPELINE EXPORTS:
+          </span>
           {exportFormats.map((fmt) => (
             <span
               key={fmt}
-              className="px-3 py-1 rounded-lg bg-[#1a1a2e] text-xs font-mono font-semibold text-[#94a3b8] border border-[rgba(148,163,184,0.05)]"
+              className="px-2.5 py-1 bg-[#FAF8F2] text-xs font-mono font-bold text-[#141413] border border-[#141413]"
             >
               .{fmt.toLowerCase()}
             </span>
@@ -127,159 +193,224 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Capabilities Section (Clicking any card opens its dedicated 3D Studio Section) */}
-      <section className="py-24 px-4">
+      {/* Capabilities Section (Three Engines, One Drafting Table) */}
+      <section className="py-20 px-4 border-b-[1.5px] border-[#141413] bg-[#F4F1E6]">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="flex flex-wrap items-end justify-between gap-6 pb-6 mb-12 border-b-[1.5px] border-[#141413]"
           >
-            <motion.p
-              variants={fadeUp}
-              custom={0}
-              className="text-sm font-semibold text-[#00F0FF] mb-3 tracking-wider uppercase"
-            >
-              Three Engines, One Platform
-            </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-4xl font-bold mb-4">
-              Every 3D Workflow, Covered
-            </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="text-[#94a3b8] max-w-2xl mx-auto">
-              Click any engine below to launch its dedicated interactive 3D Studio.
+            <div>
+              <motion.p
+                variants={fadeUp}
+                custom={0}
+                className="text-xs font-mono font-bold text-[#FF6A1A] mb-2 tracking-widest uppercase"
+              >
+                // 01 · THREE ENGINES, ONE DRAFTING TABLE
+              </motion.p>
+              <motion.h2
+                variants={fadeUp}
+                custom={1}
+                className="text-4xl sm:text-5xl font-normal text-[#141413]"
+                style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+              >
+                Every 3D Workflow, Unified.
+              </motion.h2>
+            </div>
+            <motion.p variants={fadeUp} custom={2} className="text-sm text-[#575652] max-w-md">
+              Crafted with the tactile clarity of architectural vellum and industrial catalog blueprints. Click any
+              engine to launch its dedicated studio.
             </motion.p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-7">
             {capabilities.map((cap, i) => (
               <motion.a
                 href={cap.href}
                 key={cap.title}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className="block p-6 rounded-2xl bg-[#0f0f18] border border-[rgba(148,163,184,0.07)] hover:border-[rgba(0,240,255,0.35)] transition-all hover:-translate-y-1 group"
+                transition={{ delay: i * 0.1 }}
+                className="flex flex-col justify-between p-7 bg-[#FAF8F2] border-2 border-[#141413] shadow-[6px_6px_0px_rgba(20,20,19,0.08)] hover:shadow-[8px_8px_0px_#141413] hover:-translate-y-1 transition-all group"
               >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span
+                      className="text-[11px] font-mono font-bold px-2.5 py-1 border border-[#141413]"
+                      style={{ backgroundColor: cap.accentBg, color: cap.accent }}
+                    >
+                      {cap.code}
+                    </span>
+                    <cap.icon className="w-5 h-5 text-[#141413]" />
+                  </div>
+                  <h3
+                    className="text-3xl font-normal mb-2 text-[#141413]"
+                    style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+                  >
+                    {cap.title}
+                  </h3>
+                  <p className="text-sm text-[#575652] mb-5 leading-relaxed">{cap.description}</p>
+                  <ul className="space-y-2.5 mb-7 border-t border-dashed border-[#141413]/25 pt-4">
+                    {cap.items.map((item) => (
+                      <li key={item} className="flex items-center gap-2.5 text-xs font-mono text-[#141413]">
+                        <span className="font-bold" style={{ color: cap.accent }}>
+                          ✓
+                        </span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
                 <div
-                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${cap.gradient} flex items-center justify-center mb-5`}
+                  className="flex items-center justify-between px-4 py-3 bg-[#141413] text-[#F4F1E6] font-mono text-xs font-bold uppercase tracking-wider group-hover:bg-[#FF6A1A] group-hover:text-white transition-colors"
+                  style={{ boxShadow: `3px 3px 0px ${cap.accent}` }}
                 >
-                  <cap.icon className="w-6 h-6 text-white" />
+                  <span>Launch Studio</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold">{cap.title}</h3>
-                  <ArrowRight className="w-4 h-4 text-[#64748b] group-hover:text-white group-hover:translate-x-1 transition-all" />
-                </div>
-                <ul className="space-y-2.5">
-                  {cap.items.map((item) => (
-                    <li key={item} className="flex items-center gap-2.5 text-sm text-[#94a3b8]">
-                      <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
               </motion.a>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Use Cases */}
-      <section className="py-24 px-4 bg-[rgba(18,18,26,0.3)]">
+      {/* Use Cases (Ruled Industrial Catalog Grid) */}
+      <section className="py-20 px-4 border-b-[1.5px] border-[#141413] bg-[#EDEFF2]">
         <div className="max-w-7xl mx-auto">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-16">
-            <motion.p
-              variants={fadeUp}
-              custom={0}
-              className="text-sm font-semibold text-[#7B2FFF] mb-3 tracking-wider uppercase"
-            >
-              Use Cases
-            </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-4xl font-bold mb-4">
-              Built for Every Industry
-            </motion.h2>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="flex flex-wrap items-end justify-between gap-6 pb-6 mb-12 border-b-[1.5px] border-[#141413]"
+          >
+            <div>
+              <motion.p
+                variants={fadeUp}
+                custom={0}
+                className="text-xs font-mono font-bold text-[#2F5BFF] mb-2 tracking-widest uppercase"
+              >
+                // 02 · INDUSTRY SPECIFICATION MATRIX
+              </motion.p>
+              <motion.h2
+                variants={fadeUp}
+                custom={1}
+                className="text-4xl sm:text-5xl font-normal text-[#141413]"
+                style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+              >
+                Built for Every Engineering &amp; Creative Discipline.
+              </motion.h2>
+            </div>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 border-[1.5px] border-[#141413] bg-[#FAF8F2]">
             {useCases.map((uc, i) => (
               <motion.div
                 key={uc.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="p-5 rounded-xl bg-[#0f0f18] border border-[rgba(148,163,184,0.07)] hover:border-[rgba(148,163,184,0.15)] transition-colors group"
+                transition={{ delay: i * 0.06 }}
+                className="p-7 border-b border-r border-[#141413]/20 hover:bg-[#F4F1E6] transition-colors"
               >
-                <uc.icon className="w-8 h-8 text-[#64748b] group-hover:text-[#818cf8] transition-colors mb-3" />
-                <h3 className="font-semibold mb-1">{uc.title}</h3>
-                <p className="text-sm text-[#64748b]">{uc.description}</p>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10.5px] font-mono font-bold text-[#2F5BFF]">{uc.code}</span>
+                  <uc.icon className="w-5 h-5 text-[#141413]" />
+                </div>
+                <h3
+                  className="text-2xl font-normal mb-2 text-[#141413]"
+                  style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+                >
+                  {uc.title}
+                </h3>
+                <p className="text-sm text-[#575652] leading-relaxed">{uc.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="py-24 px-4">
+      {/* Pricing (Unified Paper Catalog) */}
+      <section className="py-20 px-4 border-b-[1.5px] border-[#141413] bg-[#F4F1E6]">
         <div className="max-w-7xl mx-auto">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-16">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-14">
             <motion.p
               variants={fadeUp}
               custom={0}
-              className="text-sm font-semibold text-[#FF2FD4] mb-3 tracking-wider uppercase"
+              className="text-xs font-mono font-bold text-[#FF6A1A] mb-2 tracking-widest uppercase"
             >
-              Pricing
+              // 03 · TRANSPARENT LICENSING
             </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-4xl font-bold mb-4">
-              Start Free, Scale as You Grow
+            <motion.h2
+              variants={fadeUp}
+              custom={1}
+              className="text-4xl sm:text-5xl font-normal mb-3 text-[#141413]"
+              style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+            >
+              Start Free, Scale as You Build.
             </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="text-[#94a3b8] max-w-lg mx-auto">
-              200 free credits to start. Upgrade when you need more power.
+            <motion.p variants={fadeUp} custom={2} className="text-[#575652] max-w-lg mx-auto text-sm">
+              200 free credits on signup. Full access to Mechanical CAD, Architecture, and Creative 3D.
             </motion.p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7 max-w-5xl mx-auto">
             {pricingPlans.map((plan, i) => (
               <motion.div
                 key={plan.name}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className={`p-6 rounded-2xl border transition-all ${
+                transition={{ delay: i * 0.08 }}
+                className={`relative p-7 border-2 border-[#141413] flex flex-col justify-between transition-all ${
                   plan.popular
-                    ? "bg-gradient-to-b from-[rgba(123,47,255,0.08)] to-[#0f0f18] border-[rgba(123,47,255,0.3)] shadow-lg shadow-[rgba(123,47,255,0.1)]"
-                    : "bg-[#0f0f18] border-[rgba(148,163,184,0.07)]"
+                    ? "bg-[#FFFDF7] shadow-[10px_10px_0px_#141413]"
+                    : "bg-[#FAF8F2] shadow-[5px_5px_0px_rgba(20,20,19,0.08)]"
                 }`}
               >
                 {plan.popular && (
-                  <span className="inline-block text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full bg-gradient-to-r from-[#7B2FFF] to-[#FF2FD4] text-white mb-3">
+                  <span className="absolute -top-3 right-5 text-[10px] font-mono font-bold tracking-wider uppercase px-3 py-1 bg-[#FF6A1A] text-white border-[1.5px] border-[#141413]">
                     Most Popular
                   </span>
                 )}
-                <h3 className="text-lg font-bold">{plan.name}</h3>
-                <div className="mt-2 mb-4">
-                  <span className="text-3xl font-black">{plan.price}</span>
-                  <span className="text-sm text-[#64748b]">{plan.period}</span>
+                <div>
+                  <div className="text-[11px] font-mono font-bold text-[#575652] mb-1">{plan.tier}</div>
+                  <h3
+                    className="text-3xl font-normal text-[#141413]"
+                    style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+                  >
+                    {plan.name}
+                  </h3>
+                  <div className="mt-3 mb-5 pb-4 border-b border-dashed border-[#141413]/25">
+                    <span
+                      className="text-5xl font-normal text-[#141413]"
+                      style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+                    >
+                      {plan.price}
+                    </span>
+                    <span className="text-xs font-mono text-[#575652] ml-1">{plan.period}</span>
+                  </div>
+                  <ul className="space-y-2.5 mb-7">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-center gap-2.5 text-xs font-mono text-[#141413]">
+                        <Check className="w-3.5 h-3.5 text-[#FF6A1A] flex-shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="space-y-2 mb-6">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-[#94a3b8]">
-                      <Check className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
                 <Link
                   href="/register"
-                  className={`block text-center py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  className={`flex items-center justify-center gap-2 py-3 px-4 border-[1.5px] border-[#141413] font-mono text-xs font-bold uppercase tracking-wider transition-all ${
                     plan.popular
-                      ? "bg-gradient-to-r from-[#7B2FFF] to-[#FF2FD4] text-white hover:opacity-90"
-                      : "bg-[#1a1a2e] text-[#94a3b8] hover:text-white hover:bg-[#252540]"
+                      ? "bg-[#141413] text-[#F4F1E6] shadow-[3px_3px_0px_#FF6A1A] hover:bg-[#FF6A1A] hover:text-white"
+                      : "bg-[#FAF8F2] text-[#141413] hover:bg-[#141413] hover:text-[#F4F1E6]"
                   }`}
                 >
-                  {plan.cta} <ArrowRight className="w-3.5 h-3.5 inline ml-1" />
+                  <span>{plan.cta}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </motion.div>
             ))}
@@ -287,7 +418,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Phylo-Style Editorial + Technical Sketch + 3D Iridescent Sculpture Footer */}
+      {/* Signature Editorial + Technical Sketch + 3D Iridescent Sculpture Footer */}
       <PhyloFooter />
     </div>
   );

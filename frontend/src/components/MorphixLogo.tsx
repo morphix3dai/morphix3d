@@ -4,79 +4,65 @@ interface MorphixLogoProps {
   size?: "sm" | "md" | "lg";
   showTagline?: boolean;
   className?: string;
+  theme?: "light" | "dark";
 }
 
-function MorphixIcon({ id = "mx" }: { id?: string }) {
+function MorphixIcon({ id = "mx", theme = "light" }: { id?: string; theme?: "light" | "dark" }) {
+  const inkColor = theme === "dark" ? "#F4F1E6" : "#141413";
   return (
-    <svg viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-      <defs>
-        <linearGradient id={`${id}-top`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#00F0FF" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#7B2FFF" stopOpacity="0.75" />
-        </linearGradient>
-        <linearGradient id={`${id}-left`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#7B2FFF" stopOpacity="0.85" />
-          <stop offset="100%" stopColor="#FF2FD4" stopOpacity="0.65" />
-        </linearGradient>
-      </defs>
-      {/* Right dark face */}
-      <polygon points="50,4 84,44 50,66 50,4" fill="#0d0520" opacity="0.95" />
-      {/* Left bright face */}
-      <polygon points="50,4 16,44 50,66 50,4" fill={`url(#${id}-top)`} />
-      {/* Bottom left face */}
-      <polygon points="16,44 50,66 50,126 16,44" fill={`url(#${id}-left)`} />
-      {/* Bottom right face */}
-      <polygon points="84,44 50,66 50,126 84,44" fill="#08080F" opacity="0.95" />
-      {/* Edge highlights */}
-      <line x1="50" y1="4" x2="16" y2="44" stroke="#00F0FF" strokeWidth="1.5" opacity="0.9" />
-      <line x1="50" y1="4" x2="84" y2="44" stroke="#7B2FFF" strokeWidth="1.5" opacity="0.7" />
-      <line x1="16" y1="44" x2="50" y2="126" stroke="#FF2FD4" strokeWidth="1.2" opacity="0.8" />
-      <line x1="84" y1="44" x2="50" y2="126" stroke="#7B2FFF" strokeWidth="1.2" opacity="0.5" />
-      {/* Apex glow dots */}
-      <circle cx="50" cy="4" r="3" fill="#00F0FF" opacity="0.95" />
-      <circle cx="50" cy="4" r="7" fill="#00F0FF" opacity="0.2" />
-      <circle cx="50" cy="126" r="2.5" fill="#FF2FD4" opacity="0.8" />
-      <circle cx="16" cy="44" r="2" fill="#00F0FF" opacity="0.7" />
-      <circle cx="84" cy="44" r="2" fill="#7B2FFF" opacity="0.7" />
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+      {/* Left 3D Pillar */}
+      <polygon id={`${id}-left`} points="16,28 34,18 34,74 16,84" fill={inkColor} />
+      {/* Right 3D Pillar */}
+      <polygon id={`${id}-right`} points="66,28 84,18 84,74 66,84" fill={inkColor} />
+      {/* Diagonal Fold Wings meeting at center */}
+      <polygon points="34,18 50,36 50,56 34,38" fill={inkColor} opacity="0.78" />
+      <polygon points="66,28 50,36 50,56 66,48" fill={inkColor} />
+      {/* Option A: Orange Sphere Resting on Top V-Surface (cx=50, cy=29) */}
+      <circle cx="50" cy="29" r="7.5" fill="#FF6A1A" />
     </svg>
   );
 }
 
 const sizeMap = {
-  sm: { icon: "w-[28px] h-[36px]", name: "text-[17px]", gap: "gap-2.5" },
-  md: { icon: "w-[34px] h-[44px]", name: "text-[22px]", gap: "gap-3" },
-  lg: { icon: "w-[48px] h-[62px]", name: "text-[32px]", gap: "gap-3.5" },
+  sm: { icon: "w-[32px] h-[32px]", name: "text-[26px]", gap: "gap-2.5", tag: "text-[9.5px] px-1.5 py-0.5" },
+  md: { icon: "w-[38px] h-[38px]", name: "text-[32px]", gap: "gap-3", tag: "text-[10px] px-2 py-0.5" },
+  lg: { icon: "w-[48px] h-[48px]", name: "text-[40px]", gap: "gap-3.5", tag: "text-[11px] px-2.5 py-0.5" },
 };
 
 export default function MorphixLogo({
   size = "md",
   showTagline = false,
   className = "",
+  theme = "light",
 }: MorphixLogoProps) {
   const s = sizeMap[size];
   const uid = `mx-${size}`;
+  const textColor = theme === "dark" ? "text-[#F4F1E6]" : "text-[#141413]";
 
   return (
     <span className={`inline-flex items-center ${s.gap} ${className}`}>
       <span className={`${s.icon} flex-shrink-0`}>
-        <MorphixIcon id={uid} />
+        <MorphixIcon id={uid} theme={theme} />
       </span>
-      <span className="flex flex-col">
+      <span className="flex items-center gap-2.5">
         <span
-          className={`${s.name} font-black tracking-[-0.5px] leading-none`}
+          className={`${s.name} font-normal tracking-[-0.02em] leading-none ${textColor}`}
           style={{
-            fontFamily: "'Arial Black', Impact, sans-serif",
-            background: "linear-gradient(90deg, #ffffff 0%, #ffffff 60%, #00F0FF 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
+            fontFamily: "'Instrument Serif', 'Newsreader', Georgia, serif",
           }}
         >
-          MORPHIX
+          Morphix
         </span>
         {showTagline && (
-          <span className="text-[9px] font-normal tracking-[4px] text-[#444] uppercase leading-tight mt-0.5">
-            AI · 3D · Generation
+          <span
+            className={`${s.tag} font-mono font-bold uppercase tracking-[0.08em] border ${
+              theme === "dark"
+                ? "border-[#F4F1E6]/40 bg-[#1E2126] text-[#F4F1E6]"
+                : "border-[#141413] bg-[#EFECE0] text-[#141413]"
+            }`}
+          >
+            3D Studio
           </span>
         )}
       </span>

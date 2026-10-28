@@ -9,17 +9,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    /* Refero "ORYZO AI - Darkroom product editorial" + "Integrated Biosciences - Bioluminescent laboratory" tokens */
-    --void-bg: #050608;
-    --darkroom-card: rgba(12, 15, 18, 0.78);
-    --darkroom-border: rgba(206, 247, 158, 0.14);
-    --cream-text: #ffedd7;
-    --bone-white: #f7f7f5;
-    --muted-ash: #8b9596;
-    --biolume-lime: #cef79e;
-    --biolume-cyan: #00ffd5;
-    --electric-iris: #8052ff;
-    --ember-accent: #dc5000;
+    --void-bg: #F4F1E6;
+    --darkroom-card: #FAF8F2;
+    --darkroom-border: #141413;
+    --cream-text: #141413;
+    --bone-white: #141413;
+    --muted-ash: #575652;
+    --biolume-lime: #FF6A1A;
+    --biolume-cyan: #6D4AFF;
+    --electric-iris: #2F5BFF;
+    --ember-accent: #FF6A1A;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,9 +31,12 @@
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
+    background-image:
+      linear-gradient(rgba(20, 20, 19, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(20, 20, 19, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
   }
 
-  /* 21st.dev Aurora + Liquid-Metal Shader Backdrop Canvas */
   #auroraShaderCanvas {
     position: fixed;
     inset: 0;
@@ -42,7 +44,7 @@
     height: 100vh;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.72;
+    opacity: 0.35;
   }
 
   .page-wrap {
@@ -53,7 +55,7 @@
     padding: 24px 20px 80px;
   }
 
-  /* Top Darkroom Editorial Header */
+  /* Top Daylight Atelier Editorial Header */
   .darkroom-header {
     display: flex;
     flex-wrap: wrap;
@@ -61,17 +63,17 @@
     align-items: center;
     gap: 16px;
     padding: 14px 20px;
-    background: rgba(8, 10, 14, 0.72);
-    backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 237, 215, 0.1);
-    border-radius: 16px;
+    background: #FAF8F2;
+    border: 1.5px solid #141413;
+    box-shadow: 6px 6px 0px rgba(20, 20, 19, 0.08);
     margin-bottom: 24px;
   }
   .brand-kicker {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
-    color: var(--biolume-lime);
-    letter-spacing: 0.12em;
+    font-weight: 700;
+    color: var(--biolume-cyan);
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     display: flex;
     align-items: center;
@@ -81,8 +83,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--biolume-lime);
-    box-shadow: 0 0 12px var(--biolume-lime);
+    background: #FF6A1A;
   }
   .shader-pills {
     display: flex;
@@ -91,22 +92,22 @@
     font-size: 10.5px;
   }
   .shader-btn {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: var(--muted-ash);
-    padding: 5px 11px;
-    border-radius: 8px;
+    background: #EFECE0;
+    border: 1px solid #141413;
+    color: #575652;
+    padding: 6px 11px;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
   }
   .shader-btn.active {
-    background: rgba(206, 247, 158, 0.14);
-    border-color: var(--biolume-lime);
-    color: var(--biolume-lime);
+    background: #141413;
+    border-color: #141413;
+    color: #F4F1E6;
   }
 
   /* ==========================================
-     HERO: DARKROOM TURNTABLE + 4-STEP PIPELINE
+     HERO: ATELIER TURNTABLE + 4-STEP PIPELINE
      ========================================== */
   .hero-grid {
     display: grid;
@@ -118,34 +119,33 @@
     .hero-grid { grid-template-columns: 1fr; }
   }
 
-  /* Left Editorial Column (ORYZO Warm Cream Typography + Prompt Remix + Pipeline Steps) */
   .editorial-card {
-    background: var(--darkroom-card);
-    backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 237, 215, 0.12);
-    border-radius: 24px;
+    background: #FAF8F2;
+    border: 1.5px solid #141413;
     padding: 28px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     gap: 22px;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65);
+    box-shadow: 8px 8px 0px rgba(20, 20, 19, 0.08);
   }
 
   .eyebrow-tag {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
+    font-weight: 700;
     color: var(--biolume-cyan);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     margin-bottom: 8px;
   }
   .editorial-title {
-    font-size: 32px;
-    font-weight: 800;
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-    color: var(--cream-text);
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 38px;
+    font-weight: 400;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    color: #141413;
     margin-bottom: 10px;
   }
   .editorial-sub {
@@ -156,9 +156,8 @@
 
   /* Prompt Box + "Remix This Prompt" Button */
   .prompt-laboratory {
-    background: rgba(5, 7, 10, 0.85);
-    border: 1px solid rgba(206, 247, 158, 0.22);
-    border-radius: 16px;
+    background: #F4F1E6;
+    border: 1.5px solid #141413;
     padding: 14px 16px;
   }
   .prompt-label-row {
@@ -168,26 +167,26 @@
     margin-bottom: 8px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: var(--biolume-lime);
+    font-weight: 700;
+    color: #FF6A1A;
   }
   .prompt-text {
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
-    color: var(--cream-text);
+    color: #141413;
     line-height: 1.5;
     min-height: 38px;
   }
   .remix-btn {
     margin-top: 12px;
     width: 100%;
-    background: linear-gradient(135deg, rgba(206,247,158,0.16), rgba(0,255,213,0.14));
-    border: 1px solid var(--biolume-lime);
-    color: var(--biolume-lime);
+    background: #FAF8F2;
+    border: 1.5px solid #141413;
+    color: #141413;
     font-family: 'JetBrains Mono', monospace;
     font-size: 11.5px;
     font-weight: 700;
     padding: 10px 14px;
-    border-radius: 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -196,9 +195,8 @@
     transition: all 0.2s;
   }
   .remix-btn:hover {
-    background: var(--biolume-lime);
-    color: #050806;
-    box-shadow: 0 0 24px rgba(206, 247, 158, 0.45);
+    background: #141413;
+    color: #F4F1E6;
   }
 
   /* 4-Step Pipeline Progression (01 PROMPT -> 02 IMAGE -> 03 MESH -> 04 TEXTURE) */
@@ -213,17 +211,18 @@
     align-items: center;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10.5px;
+    font-weight: 700;
     color: var(--muted-ash);
     margin-bottom: 4px;
   }
   .auto-cycle-btn {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.15);
-    color: var(--cream-text);
+    background: #EFECE0;
+    border: 1px solid #141413;
+    color: #141413;
     font-family: inherit;
     font-size: 10px;
+    font-weight: 700;
     padding: 3px 8px;
-    border-radius: 6px;
     cursor: pointer;
   }
 
@@ -232,19 +231,18 @@
     align-items: center;
     justify-content: space-between;
     padding: 11px 14px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
+    background: #F4F1E6;
+    border: 1px solid rgba(20, 20, 19, 0.25);
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
   }
   .step-card:hover {
-    background: rgba(255,255,255,0.06);
+    background: #EFECE0;
   }
   .step-card.active {
-    background: rgba(0, 255, 213, 0.11);
-    border-color: var(--biolume-cyan);
-    box-shadow: 0 0 24px rgba(0, 255, 213, 0.16);
+    background: #FFFDF7;
+    border: 1.5px solid #141413;
+    box-shadow: 4px 4px 0px #6D4AFF;
   }
   .step-left {
     display: flex;
@@ -257,21 +255,21 @@
     font-weight: 700;
     width: 28px;
     height: 28px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.06);
+    background: #EFECE0;
+    border: 1px solid #141413;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--muted-ash);
+    color: #141413;
   }
   .step-card.active .step-num {
-    background: var(--biolume-cyan);
-    color: #041210;
+    background: #6D4AFF;
+    color: #FFFFFF;
   }
   .step-name {
     font-size: 13px;
     font-weight: 700;
-    color: var(--bone-white);
+    color: #141413;
   }
   .step-desc {
     font-size: 11px;
@@ -280,21 +278,25 @@
   .step-badge {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: var(--biolume-lime);
+    font-weight: 700;
+    color: #FF6A1A;
   }
 
-  /* Right Darkroom Turntable 3D Stage */
+  /* Right Daylight Turntable 3D Stage */
   .turntable-stage {
     position: relative;
-    background: radial-gradient(circle at 50% 56%, rgba(16, 38, 36, 0.48) 0%, rgba(7, 8, 12, 0.92) 72%);
-    border: 1px solid rgba(255, 237, 215, 0.14);
-    border-radius: 24px;
+    background-color: #EDEFF2;
+    background-image:
+      linear-gradient(rgba(20, 20, 19, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(20, 20, 19, 0.05) 1px, transparent 1px);
+    background-size: 24px 24px;
+    border: 1.5px solid #141413;
     min-height: 580px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.75);
+    box-shadow: 8px 8px 0px rgba(20, 20, 19, 0.08);
   }
 
   .stage-topbar {
@@ -310,12 +312,11 @@
   .telemetry-pill {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
+    font-weight: 700;
     padding: 7px 13px;
-    border-radius: 999px;
-    background: rgba(6, 8, 12, 0.82);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: var(--cream-text);
-    backdrop-filter: blur(12px);
+    background: #FAF8F2;
+    border: 1.5px solid #141413;
+    color: #141413;
   }
 
   /* Pose & Rigging Toggle Bar */
@@ -323,32 +324,28 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    background: rgba(6, 8, 12, 0.85);
+    background: #FAF8F2;
     padding: 5px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.12);
+    border: 1.5px solid #141413;
   }
   .pose-btn {
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
     color: var(--muted-ash);
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     padding: 6px 11px;
-    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
   }
   .pose-btn.active {
-    background: rgba(128, 82, 255, 0.28);
-    color: #fff;
-    border: 1px solid var(--electric-iris);
+    background: #141413;
+    color: #F4F1E6;
   }
   .pose-btn.rig-toggle.active {
-    background: rgba(206, 247, 158, 0.2);
-    color: var(--biolume-lime);
-    border: 1px solid var(--biolume-lime);
+    background: #FF6A1A;
+    color: #FFFFFF;
   }
 
   #turntableCanvas {
@@ -367,10 +364,8 @@
     z-index: 5;
     margin: 18px 22px;
     padding: 12px 18px;
-    background: rgba(8, 10, 14, 0.84);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 14px;
+    background: #FAF8F2;
+    border: 1.5px solid #141413;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -388,24 +383,24 @@
   }
   .morph-slider {
     flex: 1;
-    accent-color: var(--biolume-cyan);
+    accent-color: #6D4AFF;
     cursor: pointer;
   }
 
   /* ==============================================================
-     BELOW THE HERO: 21st.dev 3D CIRCULAR COMMUNITY GALLERY
+     BELOW THE HERO: 3D CIRCULAR COMMUNITY GALLERY
      ============================================================== */
   .gallery-section {
     margin-top: 64px;
     padding-top: 48px;
-    border-top: 1px solid rgba(255, 237, 215, 0.1);
+    border-top: 1.5px solid #141413;
     text-align: center;
   }
   .gallery-header h3 {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--cream-text);
-    letter-spacing: -0.02em;
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: #141413;
   }
   .gallery-header p {
     font-size: 13.5px;
@@ -434,28 +429,25 @@
   .gallery-card {
     position: absolute;
     inset: 0;
-    background: rgba(14, 17, 22, 0.92);
-    border: 1px solid rgba(206, 247, 158, 0.22);
-    border-radius: 20px;
+    background: #FAF8F2;
+    border: 1.5px solid #141413;
     padding: 16px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     text-align: left;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.65);
+    box-shadow: 6px 6px 0px rgba(20, 20, 19, 0.12);
     cursor: pointer;
     transition: border-color 0.3s, box-shadow 0.3s;
   }
   .gallery-card:hover {
-    border-color: var(--biolume-cyan);
-    box-shadow: 0 0 35px rgba(0, 255, 213, 0.25);
+    box-shadow: 8px 8px 0px #6D4AFF;
   }
   .g-preview {
     width: 100%;
     height: 140px;
-    border-radius: 12px;
-    background: radial-gradient(circle at 50% 45%, rgba(128,82,255,0.22), rgba(5,6,10,0.95));
-    border: 1px solid rgba(255,255,255,0.08);
+    background: #EDEFF2;
+    border: 1px solid #141413;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -469,16 +461,15 @@
     right: 8px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 9.5px;
+    font-weight: 700;
     padding: 2px 7px;
-    border-radius: 999px;
-    background: rgba(0,0,0,0.75);
-    color: var(--biolume-lime);
-    border: 1px solid rgba(206,247,158,0.3);
+    background: #141413;
+    color: #F4F1E6;
   }
   .g-title {
     font-size: 14.5px;
     font-weight: 700;
-    color: var(--cream-text);
+    color: #141413;
     margin-top: 10px;
   }
   .g-author {
@@ -490,7 +481,8 @@
     margin-top: 8px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10.5px;
-    color: var(--biolume-cyan);
+    font-weight: 700;
+    color: #6D4AFF;
     display: flex;
     justify-content: space-between;
   }
@@ -502,51 +494,58 @@
     margin-top: 12px;
   }
   .g-nav-btn {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.14);
-    color: var(--cream-text);
+    background: #FAF8F2;
+    border: 1.5px solid #141413;
+    color: #141413;
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
+    font-weight: 700;
     padding: 8px 18px;
-    border-radius: 999px;
     cursor: pointer;
   }
   .g-nav-btn:hover {
-    border-color: var(--biolume-lime);
-    color: var(--biolume-lime);
+    background: #141413;
+    color: #F4F1E6;
   }
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<!-- 21st.dev Aurora / Liquid-Metal Backdrop Shader Canvas -->
 <canvas id="auroraShaderCanvas"></canvas>
 
 <div class="page-wrap">
-  <nav style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.12);font-family:'JetBrains Mono',monospace;font-size:11.5px;">
-    <a href="/" onclick="if(window.location.protocol==='file:'){window.location.href='orbital_3d_cards_demo.html';return false;}" style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:#FAF5E7;text-decoration:none;font-weight:700;">
-      <span>← Back to Main Hero</span>
+  <nav style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:1.5px solid #141413;font-family:'JetBrains Mono',monospace;font-size:11.5px;">
+    <a href="/" onclick="if(window.location.protocol==='file:'){window.location.href='orbital_3d_cards_demo.html';return false;}" style="display:inline-flex;align-items:center;gap:10px;padding:7px 14px;background:#FAF8F2;border:1.5px solid #141413;color:#141413;text-decoration:none;font-weight:700;">
+      <svg width="22" height="22" viewBox="0 0 100 100" fill="none">
+        <polygon points="16,28 34,18 34,74 16,84" fill="#141413" />
+        <polygon points="66,28 84,18 84,74 66,84" fill="#141413" />
+        <polygon points="34,18 50,36 50,56 34,38" fill="#141413" opacity="0.78" />
+        <polygon points="66,28 50,36 50,56 66,48" fill="#141413" />
+        <circle cx="50" cy="29" r="7.5" fill="#FF6A1A" />
+      </svg>
+      <span>← Back to Morphix Home</span>
     </a>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <a href="mechanical_cad_section.html" style="padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);color:#FAF5E7;text-decoration:none;">⚙️ Mechanical CAD</a>
-      <a href="architecture_studio_section.html" style="padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);color:#FAF5E7;text-decoration:none;">🏛️ Architecture</a>
-      <span style="padding:6px 12px;border-radius:999px;background:linear-gradient(135deg,#FF2FD4,#8052FF);color:#fff;font-weight:700;">🎨 Creative 3D (Active)</span>
+      <a href="mechanical_cad_section.html" style="padding:6px 12px;background:#FAF8F2;border:1.5px solid #141413;color:#141413;text-decoration:none;font-weight:700;">01 · Mechanical CAD</a>
+      <a href="architecture_studio_section.html" style="padding:6px 12px;background:#FAF8F2;border:1.5px solid #141413;color:#141413;text-decoration:none;font-weight:700;">02 · Architecture</a>
+      <span style="padding:6px 12px;background:#141413;color:#F4F1E6;border:1.5px solid #141413;box-shadow:3px 3px 0px #6D4AFF;font-weight:700;">03 · Creative 3D Atelier (Active)</span>
     </div>
   </nav>
 
-  <!-- TOP EDITORIAL DARKROOM HEADER -->
+  <!-- TOP EDITORIAL ATELIER HEADER -->
   <header class="darkroom-header">
     <div class="brand-kicker">
       <span class="pulse-orb"></span>
-      <span>03 · CREATIVE 3D // ORYZO DARKROOM × BIOLUMINESCENT LAB</span>
+      <span>03 · CREATIVE 3D ATELIER // 4-STAGE TRANSPARENT MESH PIPELINE</span>
     </div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <div class="shader-pills">
-        <button class="shader-btn active" id="shAurora" onclick="setShaderBackdrop('aurora')">21st.dev Aurora Shader</button>
-        <button class="shader-btn" id="shLiquid" onclick="setShaderBackdrop('liquid')">Liquid-Metal Chrome Shader</button>
+        <button class="shader-btn active" id="shAurora" onclick="setShaderBackdrop('aurora')">Daylight Vellum Grid</button>
+        <button class="shader-btn" id="shLiquid" onclick="setShaderBackdrop('liquid')">Studio Clay Lighting</button>
       </div>
-      <a href="/workspace/text-to-3d" onclick="if(window.location.protocol==='file:'){window.location.href='https://3dmorphix.com/workspace/text-to-3d';return false;}" style="display:inline-flex;align-items:center;gap:10px;padding:11px 22px;border-radius:999px;background:linear-gradient(135deg,#7C5CFF,#FF2FD4,#00FFD5);color:#050608;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;box-shadow:0 0 28px rgba(0,255,213,0.4);">
-        <span>🎨 Start Creating</span>
+      <a href="/workspace/text-to-3d" onclick="if(window.location.protocol==='file:'){window.location.href='https://3dmorphix.com/workspace/text-to-3d';return false;}" style="display:inline-flex;align-items:center;gap:10px;padding:10px 20px;background:#141413;color:#F4F1E6;border:1.5px solid #141413;box-shadow:3px 3px 0px #FF6A1A;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;">
+        <span>Start Creating</span>
         <span>→</span>
       </a>
     </div>
@@ -577,7 +576,7 @@
           <button class="remix-btn" onclick="remixPrompt()">
             <span>↻ Remix Prompt</span>
           </button>
-          <a href="/workspace/text-to-3d" onclick="if(window.location.protocol==='file:'){window.location.href='https://3dmorphix.com/workspace/text-to-3d';return false;}" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 14px;border-radius:12px;background:#00FFD5;color:#050608;font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:800;text-transform:uppercase;text-decoration:none;">
+          <a href="/workspace/text-to-3d" onclick="if(window.location.protocol==='file:'){window.location.href='https://3dmorphix.com/workspace/text-to-3d';return false;}" style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px;background:#141413;color:#F4F1E6;border:1.5px solid #141413;box-shadow:3px 3px 0px #FF6A1A;font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:800;text-transform:uppercase;text-decoration:none;">
             <span>Start Creating</span>
             <span>→</span>
           </a>
@@ -1035,7 +1034,7 @@
         const p = proj3D(Math.cos(a) * r, -128, Math.sin(a) * r, w, h);
         i === 0 ? ttCtx.moveTo(p.x, p.y) : ttCtx.lineTo(p.x, p.y);
       }
-      ttCtx.strokeStyle = idx === 0 ? `hsla(${arch.hueBase}, 90%, 60%, 0.45)` : 'rgba(255, 237, 215, 0.14)';
+      ttCtx.strokeStyle = idx === 0 ? `hsla(${arch.hueBase}, 85%, 42%, 0.55)` : 'rgba(20, 20, 19, 0.22)';
       ttCtx.lineWidth = idx === 0 ? 1.6 : 1;
       ttCtx.stroke();
     });
@@ -1098,8 +1097,6 @@
     bonePairs.forEach(([kA, kB, rA, rB], bIdx) => {
       const segQuads = buildSegmentQuads(joints[kA], joints[kB], rA, rB, 8);
       segQuads.forEach((q, qIdx) => {
-        // Project all 4 vertices
-        // In Stage 0 (Prompt Cloud), scatter vertices outward into a floating constellation!
         const cloudScatter = Math.max(0, 1 - sp);
         const pts = q.map((v, vIdx) => {
           const jitter = cloudScatter * 42;
@@ -1114,14 +1111,8 @@
       });
     });
 
-    // Painter's algorithm back-to-front sort
     allQuads.sort((a, b) => b.avgZ - a.avgZ);
 
-    // Render based on continuous pipeline stage `sp` (0..3):
-    // sp < 0.8: Mostly Bioluminescent Point Cloud
-    // sp 0.8..1.8: Depth Silhouette Slices
-    // sp 1.8..2.5: Clean Quad Wireframe Cage
-    // sp > 2.5: Full Shaded 4K PBR Armor + Emissive Veins
     const wireAlpha = Math.min(1, Math.max(0, (sp - 0.5) * 0.9));
     const fillAlpha = Math.min(1, Math.max(0, (sp - 2.0) * 1.0));
     const cloudAlpha = Math.max(0, 1.3 - sp * 0.65);
@@ -1138,13 +1129,11 @@
         ttCtx.closePath();
 
         if (sp >= 0.8 && sp < 1.9) {
-          // Stage 02: Darkroom depth silhouette fill
-          ttCtx.fillStyle = `hsla(${hue}, 45%, 16%, 0.68)`;
+          ttCtx.fillStyle = `hsla(${hue}, 35%, 86%, 0.82)`;
           ttCtx.fill();
         } else {
-          // Stage 04: Full PBR Metallic + Bioluminescent emissive shading
-          const light = isWing ? 58 : (qIdx % 2 === 0 ? 32 : 22);
-          ttCtx.fillStyle = `hsla(${hue}, 82%, ${light}%, ${0.78 * fillAlpha})`;
+          const light = isWing ? 62 : (qIdx % 2 === 0 ? 88 : 76);
+          ttCtx.fillStyle = `hsla(${hue}, 65%, ${light}%, ${0.88 * fillAlpha})`;
           ttCtx.fill();
         }
       }
@@ -1157,16 +1146,16 @@
         ttCtx.lineTo(pts[3].x, pts[3].y);
         ttCtx.closePath();
         ttCtx.strokeStyle = isWing
-          ? `hsla(${arch.hueAccent}, 95%, 72%, ${wireAlpha * 0.85})`
-          : `hsla(${arch.hueBase}, 92%, 66%, ${wireAlpha * 0.72})`;
-        ttCtx.lineWidth = sp > 2.4 ? 0.9 : 1.15;
+          ? `hsla(${arch.hueAccent}, 85%, 38%, ${wireAlpha * 0.9})`
+          : `rgba(20, 20, 19, ${wireAlpha * 0.82})`;
+        ttCtx.lineWidth = sp > 2.4 ? 0.95 : 1.2;
         ttCtx.stroke();
       }
 
       if (cloudAlpha > 0.05) {
-        ttCtx.fillStyle = isWing ? '#cef79e' : '#00ffd5';
+        ttCtx.fillStyle = isWing ? '#FF6A1A' : '#6D4AFF';
         ttCtx.beginPath();
-        ttCtx.arc(pts[0].x, pts[0].y, 2.2 * cloudAlpha, 0, Math.PI * 2);
+        ttCtx.arc(pts[0].x, pts[0].y, 2.4 * cloudAlpha, 0, Math.PI * 2);
         ttCtx.fill();
       }
     });
@@ -1177,8 +1166,8 @@
       bonePairs.forEach(([kA, kB]) => {
         const pA = proj3D(joints[kA].x, joints[kA].y, joints[kA].z, w, h);
         const pB = proj3D(joints[kB].x, joints[kB].y, joints[kB].z, w, h);
-        ttCtx.strokeStyle = '#cef79e';
-        ttCtx.lineWidth = 2.4;
+        ttCtx.strokeStyle = '#FF6A1A';
+        ttCtx.lineWidth = 2.6;
         ttCtx.beginPath();
         ttCtx.moveTo(pA.x, pA.y);
         ttCtx.lineTo(pB.x, pB.y);
@@ -1186,9 +1175,9 @@
       });
       Object.values(joints).forEach(j => {
         const p = proj3D(j.x, j.y, j.z, w, h);
-        ttCtx.fillStyle = '#050806';
-        ttCtx.strokeStyle = '#cef79e';
-        ttCtx.lineWidth = 2;
+        ttCtx.fillStyle = '#FAF8F2';
+        ttCtx.strokeStyle = '#FF6A1A';
+        ttCtx.lineWidth = 2.2;
         ttCtx.beginPath();
         ttCtx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
         ttCtx.fill();

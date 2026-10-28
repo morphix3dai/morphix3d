@@ -319,26 +319,16 @@ export default function PhyloFooter() {
         {/* Left Brand Column */}
         <div className="lg:col-span-6 max-w-sm">
           <Link href="/" className="inline-flex items-center gap-3 text-[#141413] mb-5">
-            <svg width="38" height="38" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="20" cy="20" r="18" stroke="#141413" strokeWidth="2.3" />
-              <path
-                d="M13 28C11.5 24.5 11.5 17 15.5 13.5C19.5 10 26.5 11 28.5 16C30.5 21 27.5 27.5 23 29.5"
-                stroke="#141413"
-                strokeWidth="2.1"
-                strokeLinecap="round"
-              />
-              <path
-                d="M16.2 26C15 23 15.2 18 18 15.8C20.8 13.6 24.8 14.8 25.5 18.2C26.2 21.6 23.5 25 20.5 26.2"
-                stroke="#141413"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <circle cx="20.2" cy="20.2" r="2.6" fill="#141413" />
-              <path d="M19.5 26.5V37" stroke="#141413" strokeWidth="2.2" strokeLinecap="round" />
+            <svg width="38" height="38" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="16,28 34,18 34,74 16,84" fill="#141413" />
+              <polygon points="66,28 84,18 84,74 66,84" fill="#141413" />
+              <polygon points="34,18 50,36 50,56 34,38" fill="#141413" opacity="0.78" />
+              <polygon points="66,28 50,36 50,56 66,48" fill="#141413" />
+              <circle cx="50" cy="29" r="7.5" fill="#FF6A1A" />
             </svg>
             <span
-              className="text-3xl font-medium tracking-tight text-[#141413]"
-              style={{ fontFamily: "'Newsreader', 'Instrument Serif', Georgia, serif" }}
+              className="text-3xl font-normal tracking-tight text-[#141413]"
+              style={{ fontFamily: "'Instrument Serif', 'Newsreader', Georgia, serif" }}
             >
               Morphix
             </span>
