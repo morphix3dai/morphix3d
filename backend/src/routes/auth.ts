@@ -295,14 +295,15 @@ router.post("/forgot-password", async (req: Request, res: Response): Promise<voi
 // ==========================================
 router.post("/reset-password", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { token, email, newPassword } = req.body;
+    const { token, email, newPassword, password } = req.body;
+    const finalPassword = newPassword || password;
 
-    if (!token || !email || !newPassword) {
-      res.status(400).json({ error: "Token, email, and new password are required" });
+    if (!token || !finalPassword) {
+      res.status(400).json({ error: "Token and new password are required" });
       return;
     }
 
-    if (newPassword.length < 8) {
+    if (finalPassword.length < 8) {
       res.status(400).json({ error: "Password must be at least 8 characters" });
       return;
     }
@@ -318,13 +319,13 @@ router.post("/reset-password", async (req: Request, res: Response): Promise<void
       return;
     }
 
-    if (stored.user.email !== email) {
+    if (email && stored.user.email !== email) {
       res.status(400).json({ error: "Invalid reset link." });
       return;
     }
 
     // Hash new password and update user
-    const passwordHash = await bcrypt.hash(newPassword, 12);
+    const passwordHash = await bcrypt.hash(finalPassword, 12);
     await prisma.user.update({
       where: { id: stored.userId },
       data: { passwordHash },

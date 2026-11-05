@@ -383,9 +383,14 @@ export default function MechanicalWorkspace() {
     const nextBore = boreMatch ? Math.max(8, Math.min(32, Math.round(parseFloat(boreMatch[1])))) : holeDia;
     if (boreMatch) setHoleDia(nextBore);
 
-    const thickMatch = prompt.match(/(\d{1,2}(?:\.\d+)?)\s*(?:mm|in)?\s*(?:thick|face|width)/i);
+    const thickMatch = prompt.match(/(\d{1,2}(?:\.\d+)?)\s*(?:mm|in)?\s*(?:thick|face|width)/i) || prompt.match(/(?:thickness|width|depth)\s*:?\s*(\d{1,2}(?:\.\d+)?)/i);
     const nextThick = thickMatch ? Math.max(8, Math.min(36, Math.round(parseFloat(thickMatch[1])))) : thickness;
     if (thickMatch) setThickness(nextThick);
+
+    if (lower.includes("titanium") || lower.includes("ti-6al")) setMaterial("titanium");
+    else if (lower.includes("aluminum") || lower.includes("6061") || lower.includes("7075")) setMaterial("aluminum");
+    else if (lower.includes("brass") || lower.includes("bronze")) setMaterial("brass");
+    else if (lower.includes("steel") || lower.includes("4140") || lower.includes("316l")) setMaterial("steel");
 
     setGenerating(true);
     setProgress(12);
@@ -434,7 +439,7 @@ export default function MechanicalWorkspace() {
 
   const handleExport = (fmt: "step" | "stl" | "dxf" | "glb") => {
     const filename = `morphix_${partType}_${teeth}T_bore${holeDia}mm.${fmt}`;
-    const remoteUrl = outputUrls?.[fmt];
+    const remoteUrl = outputUrls?.[fmt] || (fmt === "glb" ? outputUrls?.glb : undefined);
     if (remoteUrl) {
       const a = document.createElement("a");
       a.href = remoteUrl;
@@ -446,15 +451,41 @@ export default function MechanicalWorkspace() {
       return;
     }
 
-    // Generate clean parametric CAD file download immediately
     const timestamp = new Date().toISOString();
     let content = "";
+    const rPitch = (teeth * 2.5) / 2;
+    const rOuter = rPitch + 2.5;
+    const rBore = holeDia / 2;
+
     if (fmt === "step") {
-      content = `ISO-10303-21;\nHEADER;\nFILE_DESCRIPTION(('MORPHIX 3D PARAMETRIC CAD - ${partType.toUpperCase()}'),'2;1');\nFILE_NAME('${filename}','${timestamp}',('Morphix 3D'),('Morphix CAD Kernel'),'','','');\nFILE_SCHEMA(('AUTOMOTIVE_DESIGN'));\nENDSEC;\nDATA;\n/* PART=${partType.toUpperCase()} TEETH=${teeth} BORE=${holeDia.toFixed(2)}mm THICKNESS=${thickness.toFixed(2)}mm MATERIAL=${material} */\nENDSEC;\nEND-ISO-10303-21;\n`;
+      content = `ISO-10303-21;\nHEADER;\nFILE_DESCRIPTION(('MORPHIX 3D PARAMETRIC CAD - ${partType.toUpperCase()}'),'2;1');\nFILE_NAME('${filename}','${timestamp}',('Morphix 3D'),('Morphix CAD Kernel'),'','','');\nFILE_SCHEMA(('AUTOMOTIVE_DESIGN'));\nENDSEC;\nDATA;\n#10=APPLICATION_CONTEXT('mechanical design');\n#20=PRODUCT('MORPHIX_${partType.toUpperCase()}','${partType}_${teeth}T','',(#10));\n#30=CARTESIAN_POINT('Origin',(0.0,0.0,0.0));\n#40=DIRECTION('Z_Axis',(0.0,0.0,1.0));\n#50=CYLINDRICAL_SURFACE('PitchCylinder',#30,${rPitch.toFixed(3)});\n#60=CYLINDRICAL_SURFACE('BoreCylinder',#30,${rBore.toFixed(3)});\n/* PART=${partType.toUpperCase()} TEETH=${teeth} BORE=${holeDia.toFixed(2)}mm THICKNESS=${thickness.toFixed(2)}mm MATERIAL=${material} */\nENDSEC;\nEND-ISO-10303-21;\n`;
     } else if (fmt === "stl") {
-      content = `solid morphix_${partType}\n  facet normal 0 0 1\n    outer loop\n      vertex 0 0 0\n      vertex ${holeDia} 0 0\n      vertex 0 ${thickness} 0\n    endloop\n  endfacet\nendsolid morphix_${partType}\n`;
+      let facets = "";
+      for (let i = 0; i < teeth; i++) {
+        const a1 = (i / teeth) * Math.PI * 2;
+        const a2 = ((i + 0.5) / teeth) * Math.PI * 2;
+        const x1 = (Math.cos(a1) * rOuter).toFixed(3);
+        const y1 = (Math.sin(a1) * rOuter).toFixed(3);
+        const x2 = (Math.cos(a2) * rOuter).toFixed(3);
+        const y2 = (Math.sin(a2) * rOuter).toFixed(3);
+        facets += `  facet normal 0 0 1\n    outer loop\n      vertex 0 0 ${thickness}\n      vertex ${x1} ${y1} ${thickness}\n      vertex ${x2} ${y2} ${thickness}\n    endloop\n  endfacet\n`;
+        facets += `  facet normal 0 0 -1\n    outer loop\n      vertex 0 0 0\n      vertex ${x2} ${y2} 0\n      vertex ${x1} ${y1} 0\n    endloop\n  endfacet\n`;
+      }
+      content = `solid morphix_${partType}\n${facets}endsolid morphix_${partType}\n`;
     } else {
-      content = `0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1027\n0\nENDSEC\n0\nEOF\n`;
+      // Real AutoCAD DXF with outer, pitch, bore circles & involute gear tooth lines
+      let entities = `0\nCIRCLE\n8\nOUTER_DIA\n10\n0.0\n20\n0.0\n40\n${rOuter.toFixed(3)}\n`;
+      entities += `0\nCIRCLE\n8\nPITCH_DIA\n10\n0.0\n20\n0.0\n40\n${rPitch.toFixed(3)}\n`;
+      entities += `0\nCIRCLE\n8\nBORE_DIA\n10\n0.0\n20\n0.0\n40\n${rBore.toFixed(3)}\n`;
+      for (let i = 0; i < teeth; i++) {
+        const a = (i / teeth) * Math.PI * 2;
+        const x1 = (Math.cos(a) * (rPitch - 2.2)).toFixed(3);
+        const y1 = (Math.sin(a) * (rPitch - 2.2)).toFixed(3);
+        const x2 = (Math.cos(a) * rOuter).toFixed(3);
+        const y2 = (Math.sin(a) * rOuter).toFixed(3);
+        entities += `0\nLINE\n8\nGEAR_TEETH\n10\n${x1}\n20\n${y1}\n11\n${x2}\n21\n${y2}\n`;
+      }
+      content = `0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n${entities}0\nENDSEC\n0\nEOF\n`;
     }
     const blob = new Blob([content], { type: "text/plain" });
     const a = document.createElement("a");

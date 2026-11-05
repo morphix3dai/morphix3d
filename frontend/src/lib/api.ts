@@ -118,6 +118,11 @@ async function fetchWithFallback(endpoint: string, init: RequestInit): Promise<{
   }
 }
 
+export async function ensureGuestSession(): Promise<boolean> {
+  if (getAccessToken()) return true;
+  return ensureStudioSession(resolveApiBase(), false);
+}
+
 // ==========================================
 // Core Fetch Wrapper
 // ==========================================
@@ -127,8 +132,15 @@ async function apiFetch<T = unknown>(
 ): Promise<T> {
   let token = getAccessToken();
 
-  // Auto-provision studio session if calling /generate/* without a token
-  if (!token && endpoint.startsWith("/generate")) {
+  const isAuthAttempt =
+    endpoint.startsWith("/auth/login") ||
+    endpoint.startsWith("/auth/register") ||
+    endpoint.startsWith("/auth/forgot-password") ||
+    endpoint.startsWith("/auth/reset-password") ||
+    endpoint.startsWith("/auth/google");
+
+  // Auto-provision studio guest session if calling protected studio/app endpoints without a token
+  if (!token && !isAuthAttempt) {
     await ensureStudioSession(resolveApiBase(), false);
     token = getAccessToken();
   }
@@ -148,12 +160,12 @@ async function apiFetch<T = unknown>(
   });
 
   // Try token refresh or studio session provisioning on 401
-  if (res.status === 401 && !endpoint.startsWith("/auth/login") && !endpoint.startsWith("/auth/register")) {
+  if (res.status === 401 && !isAuthAttempt) {
     let recovered = false;
     if (getRefreshToken()) {
       recovered = await refreshAccessToken(usedBase);
     }
-    if (!recovered && endpoint.startsWith("/generate")) {
+    if (!recovered) {
       recovered = await ensureStudioSession(usedBase, false);
     }
     if (recovered) {
@@ -167,9 +179,6 @@ async function apiFetch<T = unknown>(
         throw new ApiError(retryRes.status, err.error || "Request failed");
       }
       return retryRes.json();
-    } else if (!endpoint.startsWith("/generate")) {
-      logout();
-      throw new ApiError(401, "Session expired");
     }
   }
 
@@ -262,10 +271,15 @@ export const auth = {
       body: JSON.stringify(data),
     }),
 
-  resetPassword: (data: { token: string; password: string }) =>
+  resetPassword: (data: { token: string; email?: string; password?: string; newPassword?: string }) =>
     apiFetch<{ message: string }>("/auth/reset-password", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        token: data.token,
+        email: data.email,
+        newPassword: data.newPassword || data.password,
+        password: data.password || data.newPassword,
+      }),
     }),
 
   logout: () => {

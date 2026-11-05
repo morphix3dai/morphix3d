@@ -45,16 +45,16 @@ router.get("/", authMiddleware, async (req: Request, res: Response): Promise<voi
 });
 
 // ==========================================
-// GET /api/assets/:id — Get single asset
+// GET /api/assets/:id — Get single asset (by Asset.id or Generation.id)
 // ==========================================
-router.get("/:id", authMiddleware, async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+router.get("/:id", optionalAuth, async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   try {
     const asset = await prisma.asset.findFirst({
       where: {
-        id: req.params.id,
-        userId: req.user!.userId,
+        OR: [{ id: req.params.id }, { generationId: req.params.id }],
       },
       include: {
+        user: { select: { name: true, avatarUrl: true } },
         generation: {
           select: {
             type: true,
@@ -67,12 +67,42 @@ router.get("/:id", authMiddleware, async (req: Request<{ id: string }>, res: Res
       },
     });
 
-    if (!asset) {
+    if (asset) {
+      res.json(asset);
+      return;
+    }
+
+    const gen = await prisma.generation.findFirst({
+      where: { id: req.params.id },
+    });
+
+    if (!gen) {
       res.status(404).json({ error: "Asset not found" });
       return;
     }
 
-    res.json(asset);
+    const urls = (gen.outputUrls as Record<string, string>) || {};
+    res.json({
+      id: gen.id,
+      generationId: gen.id,
+      name: gen.prompt || `${gen.type} Model`,
+      fileFormat: urls.glb ? "GLB" : urls.step ? "STEP" : urls.dxf ? "DXF" : "GLB",
+      fileUrl: urls.glb || urls.svg || urls.stl || "/samples/gear.glb",
+      fileSize: null,
+      thumbnailUrl: urls.preview || urls.svg || null,
+      outputUrls: urls,
+      isPublic: false,
+      likes: 0,
+      downloads: 0,
+      createdAt: gen.createdAt,
+      generation: {
+        type: gen.type,
+        prompt: gen.prompt,
+        styleOption: gen.styleOption,
+        outputUrls: urls,
+        createdAt: gen.createdAt,
+      },
+    });
   } catch (error) {
     console.error("Get asset error:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -80,21 +110,39 @@ router.get("/:id", authMiddleware, async (req: Request<{ id: string }>, res: Res
 });
 
 // ==========================================
-// DELETE /api/assets/:id
+// DELETE /api/assets/:id (by Asset.id or Generation.id)
 // ==========================================
 router.delete("/:id", authMiddleware, async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   try {
+    const userId = req.user!.userId;
+    const targetId = req.params.id;
+
     const asset = await prisma.asset.findFirst({
-      where: { id: req.params.id, userId: req.user!.userId },
+      where: {
+        userId,
+        OR: [{ id: targetId }, { generationId: targetId }],
+      },
     });
 
-    if (!asset) {
+    const gen = await prisma.generation.findFirst({
+      where: {
+        userId,
+        id: asset?.generationId || targetId,
+      },
+    });
+
+    if (!asset && !gen) {
       res.status(404).json({ error: "Asset not found" });
       return;
     }
 
-    // TODO: Delete from S3/R2
-    await prisma.asset.delete({ where: { id: asset.id } });
+    if (asset) {
+      await prisma.asset.delete({ where: { id: asset.id } }).catch(() => {});
+    }
+    if (gen) {
+      await prisma.asset.deleteMany({ where: { generationId: gen.id, userId } }).catch(() => {});
+      await prisma.generation.delete({ where: { id: gen.id } }).catch(() => {});
+    }
 
     res.json({ message: "Asset deleted" });
   } catch (error) {
@@ -104,20 +152,47 @@ router.delete("/:id", authMiddleware, async (req: Request<{ id: string }>, res: 
 });
 
 // ==========================================
-// PATCH /api/assets/:id — Update (rename, toggle public)
+// PATCH /api/assets/:id — Update (rename, toggle public; auto-creates Asset if given Generation.id)
 // ==========================================
 router.patch("/:id", authMiddleware, async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   try {
-    const asset = await prisma.asset.findFirst({
-      where: { id: req.params.id, userId: req.user!.userId },
+    const userId = req.user!.userId;
+    const targetId = req.params.id;
+    const { name, isPublic } = req.body;
+
+    let asset = await prisma.asset.findFirst({
+      where: {
+        userId,
+        OR: [{ id: targetId }, { generationId: targetId }],
+      },
     });
 
     if (!asset) {
-      res.status(404).json({ error: "Asset not found" });
+      const gen = await prisma.generation.findFirst({
+        where: { id: targetId, userId },
+      });
+
+      if (!gen) {
+        res.status(404).json({ error: "Asset not found" });
+        return;
+      }
+
+      const urls = (gen.outputUrls as Record<string, string>) || {};
+      asset = await prisma.asset.create({
+        data: {
+          userId,
+          generationId: gen.id,
+          name: name || gen.prompt || `${gen.type} Creation`,
+          fileFormat: urls.glb ? "GLB" : urls.step ? "STEP" : urls.dxf ? "DXF" : "GLB",
+          fileUrl: urls.glb || urls.svg || urls.stl || "/samples/gear.glb",
+          thumbnailUrl: urls.preview || urls.svg || null,
+          isPublic: isPublic !== undefined ? Boolean(isPublic) : true,
+        },
+      });
+      res.json(asset);
       return;
     }
 
-    const { name, isPublic } = req.body;
     const updateData: Record<string, unknown> = {};
     if (name !== undefined) updateData.name = name;
     if (isPublic !== undefined) updateData.isPublic = isPublic;
@@ -140,7 +215,10 @@ router.patch("/:id", authMiddleware, async (req: Request<{ id: string }>, res: R
 router.get("/:id/download", authMiddleware, async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   try {
     const asset = await prisma.asset.findFirst({
-      where: { id: req.params.id, userId: req.user!.userId },
+      where: {
+        userId: req.user!.userId,
+        OR: [{ id: req.params.id }, { generationId: req.params.id }],
+      },
     });
 
     if (!asset) {
@@ -148,7 +226,6 @@ router.get("/:id/download", authMiddleware, async (req: Request<{ id: string }>,
       return;
     }
 
-    // TODO: Generate presigned S3 URL
     res.json({
       downloadUrl: asset.fileUrl,
       expiresIn: 3600,
@@ -184,7 +261,7 @@ router.get("/community/gallery", optionalAuth, async (req: Request, res: Respons
         take: limit,
         include: {
           user: { select: { name: true, avatarUrl: true } },
-          generation: { select: { type: true, styleOption: true } },
+          generation: { select: { type: true, styleOption: true, prompt: true, outputUrls: true } },
         },
       }),
       prisma.asset.count({ where: { isPublic: true } }),
@@ -201,10 +278,13 @@ router.get("/community/gallery", optionalAuth, async (req: Request, res: Respons
 });
 
 // POST /api/community/like/:id
-router.post("/community/like/:id", authMiddleware, async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+router.post("/community/like/:id", optionalAuth, async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   try {
     const asset = await prisma.asset.findFirst({
-      where: { id: req.params.id, isPublic: true },
+      where: {
+        OR: [{ id: req.params.id }, { generationId: req.params.id }],
+        isPublic: true,
+      },
     });
 
     if (!asset) {

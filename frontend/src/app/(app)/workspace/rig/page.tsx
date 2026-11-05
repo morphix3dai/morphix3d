@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { useDropzone } from "react-dropzone";
 import { Bone, Upload, Download, Loader2, Check } from "lucide-react";
 import toast from "react-hot-toast";
-import { generate, getAccessToken } from "@/lib/api";
+import { generate, uploadFile } from "@/lib/api";
 
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
@@ -47,41 +47,18 @@ export default function RigPage() {
     setSelectedAnims((prev) => (prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]));
   };
 
-  const uploadFile = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append("file", file);
-    const token = getAccessToken();
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
-    const res = await fetch(`${API_URL}/generate/upload`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
-    if (!res.ok) throw new Error("File upload failed");
-    const data = await res.json();
-    return data.url;
-  };
-
   const handleRig = useCallback(async () => {
-    if (!modelFile) {
-      toast.error("Upload a model first");
-      return;
-    }
-    const token = getAccessToken();
-    if (!token) {
-      toast.error("Please sign in first");
-      window.location.href = "/login";
-      return;
-    }
-
     setIsProcessing(true);
     setProgress(0);
     setIsDone(false);
 
     try {
-      toast.loading("Uploading model...", { id: "upload" });
-      const modelUrl = await uploadFile(modelFile);
-      toast.dismiss("upload");
+      let modelUrl = "/samples/dragon.glb";
+      if (modelFile) {
+        toast.loading("Uploading model...", { id: "upload" });
+        modelUrl = await uploadFile(modelFile);
+        toast.dismiss("upload");
+      }
 
       const result = await generate.rig({ modelUrl, charType, animations: selectedAnims });
       setJobId(result.jobId);

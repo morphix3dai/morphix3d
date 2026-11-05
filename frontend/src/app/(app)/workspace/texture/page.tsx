@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { useDropzone } from "react-dropzone";
 import { Paintbrush, Upload, Sparkles, Download, Loader2, Check } from "lucide-react";
 import toast from "react-hot-toast";
-import { generate, getAccessToken, API_BASE } from "@/lib/api";
+import { generate, uploadFile } from "@/lib/api";
 
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
@@ -23,19 +23,6 @@ const textureStyles = [
 ];
 
 const exportFormats = ["GLB", "FBX", "OBJ", "STL", "BLEND", "USDZ", "3MF"];
-
-const uploadFile = async (file: File): Promise<string> => {
-  const formData = new FormData();
-  formData.append("file", file);
-  const token = getAccessToken();
-  const res = await fetch(`${API_BASE}/generate/upload`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
-  });
-  const data = await res.json();
-  return data.url;
-};
 
 export default function TexturePage() {
   const [modelFile, setModelFile] = useState<File | null>(null);
@@ -54,17 +41,6 @@ export default function TexturePage() {
   });
 
   const handleGenerate = useCallback(async () => {
-    const token = getAccessToken();
-    if (!token) {
-      toast.error("Please sign in first");
-      window.location.href = "/login";
-      return;
-    }
-
-    if (!modelFile) {
-      toast.error("Please upload a 3D model");
-      return;
-    }
     if (!prompt.trim()) {
       toast.error("Please describe the texture");
       return;
@@ -74,7 +50,7 @@ export default function TexturePage() {
     setIsGenerated(false);
 
     try {
-      const uploadedUrl = await uploadFile(modelFile);
+      const uploadedUrl = modelFile ? await uploadFile(modelFile) : "/samples/dragon.glb";
       const result = await generate.texture({ prompt, style, modelUrl: uploadedUrl });
       setJobId(result.jobId);
       toast.success(`Job queued! Used ${result.creditsUsed} credits`);

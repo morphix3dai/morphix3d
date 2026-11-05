@@ -36,6 +36,41 @@ const INITIAL_ROOMS: RoomSpec[] = [
   { name: "Bedroom 3 / Study", dim: "11'-0\" × 10'-0\"", x: 40, z: 37, w: 55, d: 33, color: "#E2DAD0" },
 ];
 
+function buildRoomsFromPrompt(promptText: string, targetSqft: number, bedCount: number): RoomSpec[] {
+  const lower = promptText.toLowerCase();
+  const scale = Math.max(0.78, Math.min(1.22, Math.sqrt(targetSqft / 1400)));
+  const hasPool = lower.includes("pool") || lower.includes("deck");
+  const hasOffice = lower.includes("office") || lower.includes("study") || lower.includes("studio");
+  const hasGarage = lower.includes("garage") || lower.includes("parking");
+  const hasTerrace = lower.includes("terrace") || lower.includes("veranda") || lower.includes("balcony");
+
+  const openZoneName = hasPool ? "Pool Deck" : hasTerrace ? "Terrace Court" : "Courtyard";
+  const livingName = lower.includes("double-height") ? "Double-Ht Living" : "Living Room (N)";
+  const thirdRoomName = hasOffice
+    ? "Home Office"
+    : hasGarage
+    ? "Garage Bay"
+    : bedCount >= 4
+    ? "Bedroom 3 & 4"
+    : bedCount === 1
+    ? "Walk-In Dressing"
+    : "Bedroom 3 / Study";
+
+  const wL = Math.round(105 * scale);
+  const wR = Math.round(85 * scale);
+  const dTop = Math.round(75 * scale);
+  const dBot = Math.round(65 * scale);
+
+  return [
+    { name: livingName, dim: `${Math.round(18 * scale)}'-0" × ${Math.round(14 * scale)}'-0"`, x: -95, z: -70, w: wL, d: dTop, color: "#E8DFD1" },
+    { name: openZoneName, dim: `${Math.round(12 * scale)}'-0" × ${Math.round(12 * scale)}'-0"`, x: -95 + wL, z: -70, w: wR, d: dTop, color: "#D7E3D4", isCourtyard: true },
+    { name: "Kitchen + Dining", dim: `${Math.round(14 * scale)}'-0" × ${Math.round(12 * scale)}'-0"`, x: -95, z: -70 + dTop, w: Math.round(75 * scale), d: dBot, color: "#EAE2D3" },
+    { name: "Primary Suite", dim: `${Math.round(16 * scale)}'-0" × ${Math.round(14 * scale)}'-0"`, x: -95 + Math.round(75 * scale), z: -70 + dTop, w: Math.round(60 * scale), d: dBot, color: "#E4DBD0" },
+    { name: bedCount >= 2 ? "Bedroom 2" : "Guest Lounge", dim: `${Math.round(12 * scale)}'-0" × ${Math.round(11 * scale)}'-0"`, x: -95 + Math.round(135 * scale), z: -70 + dTop, w: Math.round(55 * scale), d: Math.round(dBot * 0.5), color: "#E8E0D4" },
+    { name: thirdRoomName, dim: `${Math.round(11 * scale)}'-0" × ${Math.round(10 * scale)}'-0"`, x: -95 + Math.round(135 * scale), z: -70 + dTop + Math.round(dBot * 0.5), w: Math.round(55 * scale), d: Math.round(dBot * 0.5), color: "#E2DAD0" },
+  ];
+}
+
 const ARCH_PRESETS = [
   {
     label: "Courtyard House",
@@ -77,6 +112,7 @@ export default function ArchitecturePage() {
   const [sqft, setSqft] = useState<number>(1200);
   const [floors, setFloors] = useState<number>(1);
   const [bedrooms, setBedrooms] = useState<number>(3);
+  const [rooms, setRooms] = useState<RoomSpec[]>(INITIAL_ROOMS);
 
   // 4-Stage Architectural Scene Controls
   const [targetStage, setTargetStage] = useState<number>(2); // 0: 2D Plan, 1: Extruded Walls, 2: Cutaway, 3: Exterior
@@ -391,6 +427,10 @@ export default function ArchitecturePage() {
     const nextFloors = isTwoFloor ? 2 : floors;
     if (isTwoFloor) setFloors(2);
 
+    const updatedRooms = buildRoomsFromPrompt(prompt, nextSqft, nextBed);
+    setRooms(updatedRooms);
+    roomsRef.current = updatedRooms.map((r) => ({ ...r }));
+
     setGenerating(true);
     setProgress(12);
     setActiveResultTab("interactive3d");
@@ -450,9 +490,9 @@ export default function ArchitecturePage() {
   };
 
   const handleExport = (fmt: "pdf" | "dxf" | "usdz" | "glb") => {
-    const ext = fmt === "pdf" && previewSvg?.startsWith("data:image/svg") ? "svg" : fmt;
+    const ext = fmt === "pdf" && previewSvg?.startsWith("data:image/svg") ? "svg" : fmt === "usdz" ? "obj" : fmt;
     const filename = `morphix_architecture_${sqft}sqft.${ext}`;
-    const remoteUrl = outputUrls?.[fmt] || (fmt === "pdf" ? previewSvg : null);
+    const remoteUrl = outputUrls?.[fmt] || (fmt === "pdf" ? previewSvg : fmt === "glb" ? outputUrls?.glb : null);
     if (remoteUrl) {
       const a = document.createElement("a");
       a.href = remoteUrl;
@@ -460,20 +500,64 @@ export default function ArchitecturePage() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      toast.success(`Downloaded AI-generated .${fmt.toUpperCase()}`);
+      toast.success(`Downloaded AI-generated .${ext.toUpperCase()}`);
       return;
     }
 
-    const content = `MORPHIX ARCHITECTURE STUDIO EXPORT (${fmt.toUpperCase()})\nBRIEF: ${prompt}\nAREA: ${sqft} SQ FT | FLOORS: ${floors} | BEDROOMS: ${bedrooms}\n`;
+    let content = "";
+    if (fmt === "dxf") {
+      let entities = "";
+      for (const r of roomsRef.current) {
+        const x1 = r.x.toFixed(2);
+        const y1 = r.z.toFixed(2);
+        const x2 = (r.x + r.w).toFixed(2);
+        const y2 = (r.z + r.d).toFixed(2);
+        entities += `0\nLINE\n8\nWALLS\n10\n${x1}\n20\n${y1}\n11\n${x2}\n21\n${y1}\n`;
+        entities += `0\nLINE\n8\nWALLS\n10\n${x2}\n20\n${y1}\n11\n${x2}\n21\n${y2}\n`;
+        entities += `0\nLINE\n8\nWALLS\n10\n${x2}\n20\n${y2}\n11\n${x1}\n21\n${y2}\n`;
+        entities += `0\nLINE\n8\nWALLS\n10\n${x1}\n20\n${y2}\n11\n${x1}\n21\n${y1}\n`;
+      }
+      content = `0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n${entities}0\nENDSEC\n0\nEOF\n`;
+    } else if (fmt === "usdz" || fmt === "glb") {
+      // Export valid Wavefront .OBJ 3D architectural massing mesh
+      let vIdx = 1;
+      let obj = `# MORPHIX 3D ARCHITECTURAL BIM MASSING (.OBJ)\n# BRIEF: ${prompt}\n# AREA: ${sqft} SQ FT | FLOORS: ${floors}\n`;
+      const h = floors * 30;
+      for (const r of roomsRef.current) {
+        const x1 = (r.x * 0.1).toFixed(3);
+        const z1 = (r.z * 0.1).toFixed(3);
+        const x2 = ((r.x + r.w) * 0.1).toFixed(3);
+        const z2 = ((r.z + r.d) * 0.1).toFixed(3);
+        const yTop = r.isCourtyard ? "0.200" : (h * 0.1).toFixed(3);
+        obj += `g ${r.name.replace(/[^a-zA-Z0-9]/g, "_")}\n`;
+        obj += `v ${x1} 0.000 ${z1}\nv ${x2} 0.000 ${z1}\nv ${x2} 0.000 ${z2}\nv ${x1} 0.000 ${z2}\n`;
+        obj += `v ${x1} ${yTop} ${z1}\nv ${x2} ${yTop} ${z1}\nv ${x2} ${yTop} ${z2}\nv ${x1} ${yTop} ${z2}\n`;
+        obj += `f ${vIdx} ${vIdx + 1} ${vIdx + 2} ${vIdx + 3}\n`;
+        obj += `f ${vIdx + 4} ${vIdx + 7} ${vIdx + 6} ${vIdx + 5}\n`;
+        obj += `f ${vIdx} ${vIdx + 4} ${vIdx + 5} ${vIdx + 1}\n`;
+        obj += `f ${vIdx + 1} ${vIdx + 5} ${vIdx + 6} ${vIdx + 2}\n`;
+        obj += `f ${vIdx + 2} ${vIdx + 6} ${vIdx + 7} ${vIdx + 3}\n`;
+        obj += `f ${vIdx + 3} ${vIdx + 7} ${vIdx + 4} ${vIdx}\n`;
+        vIdx += 8;
+      }
+      content = obj;
+    } else {
+      // Generate valid SVG architectural blueprint sheet
+      let rects = "";
+      for (const r of roomsRef.current) {
+        rects += `<rect x="${r.x + 150}" y="${r.z + 120}" width="${r.w}" height="${r.d}" fill="${r.color}" stroke="#1B1B1F" stroke-width="2"/><text x="${r.x + 150 + r.w / 2}" y="${r.z + 120 + r.d / 2}" font-family="monospace" font-size="9" text-anchor="middle" fill="#1B1B1F">${r.name}</text>`;
+      }
+      content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280" width="1200" height="900"><rect width="100%" height="100%" fill="#F4EFE6"/>${rects}</svg>`;
+    }
     const blob = new Blob([content], { type: "text/plain" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `morphix_architecture_${sqft}sqft.${fmt}`;
+    a.download = `morphix_architecture_${sqft}sqft.${fmt === "pdf" ? "svg" : ext}`;
     a.click();
-    toast.success(`Exported .${fmt.toUpperCase()} (${sqft.toLocaleString()} sq ft)`);
+    toast.success(`Exported .${(fmt === "pdf" ? "svg" : ext).toUpperCase()} (${sqft.toLocaleString()} sq ft)`);
   };
 
-  const selectedRoom = INITIAL_ROOMS[selectedRoomIdx] || INITIAL_ROOMS[0];
+  const selectedRoom = rooms[selectedRoomIdx] || rooms[0] || INITIAL_ROOMS[0];
 
   return (
     <div
@@ -647,6 +731,9 @@ export default function ArchitecturePage() {
                         setFloors(p.floors);
                         setBedrooms(p.bedrooms);
                         setStyle(p.style);
+                        const nextRooms = buildRoomsFromPrompt(p.prompt, p.sqft, p.bedrooms);
+                        setRooms(nextRooms);
+                        roomsRef.current = nextRooms.map((r) => ({ ...r }));
                       }}
                       className="px-2.5 py-1 bg-white border border-[#1B1B1F]/20 font-mono text-[10px] font-semibold text-[#1B1B1F] hover:border-[#2F5BFF] hover:text-[#2F5BFF] transition-colors"
                     >
@@ -828,7 +915,7 @@ export default function ArchitecturePage() {
                 <div className="font-mono text-base font-bold text-[#2F5BFF] mt-0.5">{selectedRoom.name}</div>
                 <div className="font-mono text-xs font-semibold text-[#1B1B1F]">{selectedRoom.dim}</div>
                 <div className="mt-2 flex flex-wrap gap-1">
-                  {INITIAL_ROOMS.map((rm, i) => (
+                  {rooms.map((rm, i) => (
                     <button
                       key={rm.name}
                       type="button"

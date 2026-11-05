@@ -44,12 +44,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = getAccessToken();
-    if (!token) {
-      window.location.href = "/login";
-      return;
-    }
-
     generate.history(1, 10)
       .then((historyData) => {
         setJobs(historyData.generations || []);

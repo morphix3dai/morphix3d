@@ -372,7 +372,7 @@ export default function PhyloFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-[#141413] transition-colors">
+                <Link href="/contact#faq" className="hover:text-[#141413] transition-colors">
                   FAQ
                 </Link>
               </li>
@@ -424,13 +424,13 @@ export default function PhyloFooter() {
                 </a>
               </li>
               <li>
-                <a href="mailto:hello@3dmorphix.com" className="hover:text-[#141413] transition-colors">
+                <a href="mailto:morphix3dai@gmail.com" className="hover:text-[#141413] transition-colors">
                   Email
                 </a>
               </li>
               <li>
                 <Link href="/contact" className="hover:text-[#141413] transition-colors">
-                  Discord
+                  Contact &amp; Support
                 </Link>
               </li>
             </ul>

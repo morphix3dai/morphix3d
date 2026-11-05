@@ -41,12 +41,12 @@ function PlaceholderModel({ wireframe }: { wireframe: boolean }) {
       <mesh ref={meshRef}>
         <dodecahedronGeometry args={[1.2, 0]} />
         <meshStandardMaterial
-          color="#6366f1"
+          color="#FF6A1A"
           wireframe={wireframe}
-          roughness={0.3}
-          metalness={0.7}
-          emissive="#4338ca"
-          emissiveIntensity={0.1}
+          roughness={0.32}
+          metalness={0.55}
+          emissive="#E85A0C"
+          emissiveIntensity={0.08}
         />
       </mesh>
     </Center>
@@ -121,7 +121,7 @@ function LoadedModel({
 }
 
 interface ModelViewerProps {
-  modelUrl?: string;
+  modelUrl?: string | null;
   className?: string;
 }
 
@@ -140,19 +140,19 @@ export default function ModelViewer({ modelUrl, className = "" }: ModelViewerPro
   );
 
   return (
-    <div className={`relative rounded-xl overflow-hidden bg-[#0a0a12] border border-[rgba(148,163,184,0.08)] ${className}`}>
+    <div className={`relative rounded-xl overflow-hidden bg-[#EDEFF2] border border-[#141413]/20 ${className}`}>
       {/* 3D Canvas */}
       <Canvas
         camera={{ position: [3, 2, 3], fov: 45 }}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
         className="!bg-transparent"
       >
-        {/* Zero-latency Studio Lighting (no external HDR CDN fetch) */}
-        <ambientLight intensity={0.75} />
-        <hemisphereLight args={["#ffffff", "#1e293b", 0.9]} />
-        <directionalLight position={[5, 6, 5]} intensity={1.35} castShadow />
-        <directionalLight position={[-5, 4, -4]} intensity={0.65} color="#93c5fd" />
-        <pointLight position={[0, 4, 3]} intensity={0.5} color="#a78bfa" />
+        {/* Daylight Studio Lighting */}
+        <ambientLight intensity={0.95} />
+        <hemisphereLight args={["#ffffff", "#D8D2C5", 1.1]} />
+        <directionalLight position={[5, 6, 5]} intensity={1.45} castShadow />
+        <directionalLight position={[-5, 4, -4]} intensity={0.75} color="#ffffff" />
+        <pointLight position={[0, 4, 3]} intensity={0.45} color="#FF6A1A" />
 
         <Suspense fallback={<PlaceholderModel wireframe={wireframe} />}>
           {/* Model */}
@@ -167,12 +167,12 @@ export default function ModelViewer({ modelUrl, className = "" }: ModelViewerPro
             <Grid
               args={[20, 20]}
               cellSize={0.5}
-              cellThickness={0.5}
-              cellColor="#1a1a2e"
+              cellThickness={0.6}
+              cellColor="#CBD5E1"
               sectionSize={2}
-              sectionThickness={1}
-              sectionColor="#2a2a4e"
-              fadeDistance={12}
+              sectionThickness={1.1}
+              sectionColor="#94A3B8"
+              fadeDistance={14}
               fadeStrength={1}
               followCamera={false}
               infiniteGrid
@@ -192,8 +192,8 @@ export default function ModelViewer({ modelUrl, className = "" }: ModelViewerPro
           {/* Gizmo */}
           <GizmoHelper alignment="bottom-right" margin={[60, 60]}>
             <GizmoViewport
-              axisColors={["#ef4444", "#22c55e", "#3b82f6"]}
-              labelColor="white"
+              axisColors={["#FF6A1A", "#16A34A", "#2563EB"]}
+              labelColor="#141413"
             />
           </GizmoHelper>
 
@@ -203,7 +203,7 @@ export default function ModelViewer({ modelUrl, className = "" }: ModelViewerPro
       </Canvas>
 
       {/* Controls Bar */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1.5 rounded-xl glass">
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-[#FAF8F2]/95 border-[1.5px] border-[#141413] shadow-[3px_3px_0px_#141413]">
         <ControlButton
           icon={autoRotate ? Pause : Play}
           label={autoRotate ? "Pause" : "Rotate"}
@@ -233,13 +233,13 @@ export default function ModelViewer({ modelUrl, className = "" }: ModelViewerPro
       {/* Model Stats Overlay */}
       {modelUrl && (
         <div className="absolute top-3 right-3 flex flex-col gap-1">
-          <div className="px-2.5 py-1 rounded-lg glass text-xs">
-            <span className="text-[#64748b]">Faces: </span>
-            <span className="text-[#f1f5f9] font-mono">{modelStats.faces.toLocaleString()}</span>
+          <div className="px-2.5 py-1 rounded-lg bg-[#FAF8F2]/95 border border-[#141413]/25 text-xs">
+            <span className="text-[#6E6C65]">Faces: </span>
+            <span className="text-[#141413] font-mono font-bold">{modelStats.faces.toLocaleString()}</span>
           </div>
-          <div className="px-2.5 py-1 rounded-lg glass text-xs">
-            <span className="text-[#64748b]">Vertices: </span>
-            <span className="text-[#f1f5f9] font-mono">{modelStats.vertices.toLocaleString()}</span>
+          <div className="px-2.5 py-1 rounded-lg bg-[#FAF8F2]/95 border border-[#141413]/25 text-xs">
+            <span className="text-[#6E6C65]">Vertices: </span>
+            <span className="text-[#141413] font-mono font-bold">{modelStats.vertices.toLocaleString()}</span>
           </div>
         </div>
       )}
@@ -262,10 +262,10 @@ function ControlButton({
     <button
       onClick={onClick}
       title={label}
-      className={`p-2 rounded-lg transition-all duration-200
+      className={`p-2 rounded-lg transition-all duration-200 cursor-pointer
         ${active
-          ? "bg-[rgba(99,102,241,0.2)] text-[#818cf8]"
-          : "text-[#64748b] hover:text-[#94a3b8] hover:bg-[rgba(148,163,184,0.05)]"
+          ? "bg-[#141413] text-[#FAF8F2]"
+          : "text-[#6E6C65] hover:text-[#141413] hover:bg-[#EDEFF2]"
         }`}
     >
       <Icon className="w-4 h-4" />

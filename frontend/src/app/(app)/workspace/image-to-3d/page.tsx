@@ -16,7 +16,7 @@ import {
   Layers,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { generate, getAccessToken, API_BASE } from "@/lib/api";
+import { generate, uploadFile } from "@/lib/api";
 
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
@@ -28,19 +28,6 @@ const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
 });
 
 const exportFormats = ["GLB", "FBX", "OBJ", "STL", "BLEND", "USDZ", "3MF"];
-
-const uploadFile = async (file: File): Promise<string> => {
-  const formData = new FormData();
-  formData.append("file", file);
-  const token = getAccessToken();
-  const res = await fetch(`${API_BASE}/generate/upload`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
-  });
-  const data = await res.json();
-  return data.url;
-};
 
 export default function ImageTo3DPage() {
   const [images, setImages] = useState<{ file: File; preview: string }[]>([]);
@@ -77,13 +64,6 @@ export default function ImageTo3DPage() {
   };
 
   const handleGenerate = useCallback(async () => {
-    const token = getAccessToken();
-    if (!token) {
-      toast.error("Please sign in first");
-      window.location.href = "/login";
-      return;
-    }
-
     if (images.length === 0) {
       toast.error("Please upload at least one image");
       return;

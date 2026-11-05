@@ -221,14 +221,30 @@ async function generateBuiltinCadOutputs(
   const stlStr = buildStlFromBoxes(boxes, "MorphixCADPart");
   const stepStr = `ISO-10303-21;\nHEADER;\nFILE_DESCRIPTION(('Morphix 3D Parametric CAD - ${prompt.replace(/'/g, "")}'),'2;1');\nENDSEC;\nDATA;\nENDSEC;\nEND-ISO-10303-21;`;
 
+  // Generate valid AutoCAD DXF with 2D top-view projection of all boxes
+  let dxfStr = "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n";
+  for (const b of boxes) {
+    const x1 = ((b.x - b.w / 2) * 20).toFixed(3);
+    const y1 = ((b.z - b.d / 2) * 20).toFixed(3);
+    const x2 = ((b.x + b.w / 2) * 20).toFixed(3);
+    const y2 = ((b.z + b.d / 2) * 20).toFixed(3);
+    dxfStr += `0\nLINE\n8\nCAD_GEOMETRY\n10\n${x1}\n20\n${y1}\n11\n${x2}\n21\n${y1}\n`;
+    dxfStr += `0\nLINE\n8\nCAD_GEOMETRY\n10\n${x2}\n20\n${y1}\n11\n${x2}\n21\n${y2}\n`;
+    dxfStr += `0\nLINE\n8\nCAD_GEOMETRY\n10\n${x2}\n20\n${y2}\n11\n${x1}\n21\n${y2}\n`;
+    dxfStr += `0\nLINE\n8\nCAD_GEOMETRY\n10\n${x1}\n20\n${y2}\n11\n${x1}\n21\n${y1}\n`;
+  }
+  dxfStr += "0\nENDSEC\n0\nEOF\n";
+
   const glbDataUri = `data:model/gltf-binary;base64,${glbBuf.toString("base64")}`;
   const stlDataUri = `data:model/stl;base64,${Buffer.from(stlStr).toString("base64")}`;
   const stepDataUri = `data:application/step;base64,${Buffer.from(stepStr).toString("base64")}`;
+  const dxfDataUri = `data:application/dxf;base64,${Buffer.from(dxfStr).toString("base64")}`;
 
   return {
     glb: glbDataUri,
     stl: stlDataUri,
     step: stepDataUri,
+    dxf: dxfDataUri,
     obj: stlDataUri,
   };
 }
@@ -257,12 +273,26 @@ export async function runMechanicalCAD(
       outputUrls = await generateBuiltinCadOutputs(generationId, prompt, partType, material);
     }
 
-    await updateJob(generationId, {
-      status: "COMPLETED",
-      progress: 100,
-      outputUrls,
-      completedAt: new Date(),
+    const gen = await prisma.generation.update({
+      where: { id: generationId },
+      data: {
+        status: "COMPLETED",
+        progress: 100,
+        outputUrls,
+        completedAt: new Date(),
+      },
     });
+
+    await prisma.asset.create({
+      data: {
+        userId: gen.userId,
+        generationId: gen.id,
+        name: prompt || "Mechanical CAD Component",
+        fileFormat: "GLB",
+        fileUrl: outputUrls.glb || outputUrls.step || "/samples/gear.glb",
+        isPublic: false,
+      },
+    }).catch(() => {});
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
     console.error("[MechanicalCAD] Fatal error:", msg);

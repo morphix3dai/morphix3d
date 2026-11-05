@@ -63,12 +63,6 @@ export default function AssetsPage() {
   const [converting, setConverting] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = getAccessToken();
-    if (!token) {
-      window.location.href = "/login";
-      return;
-    }
-
     generate.history(1, 50).then((data) => {
       const items: AssetItem[] = data.generations.map((gen: GenerationJob) => ({
         id: gen.id,
@@ -96,8 +90,7 @@ export default function AssetsPage() {
   const handleDelete = async (assetId: string) => {
     setDeleting(assetId);
     try {
-      await generate.status(assetId);
-      try { await assetsApi.delete(assetId); } catch {}
+      await assetsApi.delete(assetId);
       setAssets((prev) => prev.filter((a) => a.id !== assetId));
       toast.success("Asset deleted");
       if (selectedAsset?.id === assetId) setSelectedAsset(null);
@@ -110,11 +103,11 @@ export default function AssetsPage() {
   };
 
   const handleDownload = (asset: AssetItem) => {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:4000";
+    const backendUrl = "https://morphix3d-backend-production-508e.up.railway.app";
     if (asset.outputUrls) {
       const fileUrl = asset.outputUrls.glb || asset.outputUrls.obj || asset.outputUrls.stl || Object.values(asset.outputUrls)[0];
       if (fileUrl) {
-        const fullUrl = fileUrl.startsWith("http") ? fileUrl : `${backendUrl}${fileUrl}`;
+        const fullUrl = fileUrl.startsWith("http") || fileUrl.startsWith("data:") ? fileUrl : `${backendUrl}${fileUrl}`;
         const a = document.createElement("a");
         a.href = fullUrl;
         a.download = `${asset.name.replace(/[^a-zA-Z0-9]/g, "_")}.glb`;
@@ -129,13 +122,14 @@ export default function AssetsPage() {
   };
 
   const handleShare = async (asset: AssetItem) => {
+    const shareUrl = `${window.location.origin}/community/${asset.id}`;
     try {
       await assetsApi.update(asset.id, { isPublic: true });
       setAssets((prev) => prev.map((a) => a.id === asset.id ? { ...a, isPublic: true } : a));
-      navigator.clipboard.writeText(`${window.location.origin}/community/${asset.id}`);
-      toast.success("Model shared publicly! Link copied.");
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Model shared to Community Gallery! Link copied.");
     } catch {
-      navigator.clipboard.writeText(`${window.location.origin}/community/${asset.id}`);
+      await navigator.clipboard.writeText(shareUrl);
       toast.success("Share link copied!");
     }
   };

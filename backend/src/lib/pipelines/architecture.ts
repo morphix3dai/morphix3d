@@ -524,12 +524,27 @@ export async function runArchitecture(
       glb: glbDataUri,
     };
 
-    await updateJob(generationId, {
-      status: "COMPLETED",
-      progress: 100,
-      outputUrls,
-      completedAt: new Date(),
+    const gen = await prisma.generation.update({
+      where: { id: generationId },
+      data: {
+        status: "COMPLETED",
+        progress: 100,
+        outputUrls,
+        completedAt: new Date(),
+      },
     });
+
+    await prisma.asset.create({
+      data: {
+        userId: gen.userId,
+        generationId: gen.id,
+        name: prompt || "Architectural Floor Plan & Massing",
+        fileFormat: "GLB",
+        fileUrl: outputUrls.glb || outputUrls.svg || "/samples/castle.glb",
+        thumbnailUrl: outputUrls.preview || outputUrls.svg || null,
+        isPublic: false,
+      },
+    }).catch(() => {});
 
     console.log(`[Architecture] Generation ${generationId} complete (${floorPlan.rooms.length} rooms, ${floorPlan.floors} floors)`);
   } catch (err) {

@@ -35,6 +35,7 @@ const capabilities = [
     description:
       "Clinical blueprint on frosted paper. Real-time parametric sliders for tooth count, bore diameter, and wall thickness.",
     href: "/mechanical_cad_section.html",
+    studioHref: "/workspace/mechanical",
     items: [
       "Parametric involute gears & CNC brackets",
       "Shaded, Wireframe & Exploded orthographic views",
@@ -51,11 +52,12 @@ const capabilities = [
     description:
       "Warm architect's studio desk. Watch 2D drafting lines extrude into structural walls, furnished cutaways, and exteriors.",
     href: "/architecture_studio_section.html",
+    studioHref: "/workspace/architecture",
     items: [
       "4-stage interactive 2D-to-3D morphing",
       "Click any room to inspect live dimensions",
       "Toggle Roof & Furniture layers on/off",
-      "Export scaled PDF, AutoCAD DXF, USDZ & GLB",
+      "Export scaled PDF, AutoCAD DXF, OBJ & GLB",
     ],
     accent: "#2F5BFF",
     accentBg: "rgba(47, 91, 255, 0.10)",
@@ -67,6 +69,7 @@ const capabilities = [
     description:
       "Daylight sculpture atelier. Step through Prompt → Image → Quad Mesh → 4K PBR Texture with 65-bone auto-rigging.",
     href: "/creative_3d_darkroom.html",
+    studioHref: "/workspace/text-to-3d",
     items: [
       "4-stage transparent mesh synthesis pipeline",
       "Live 65-bone skeleton & T-Pose / Action toggle",
@@ -227,8 +230,7 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-7">
             {capabilities.map((cap, i) => (
-              <motion.a
-                href={cap.href}
+              <motion.div
                 key={cap.title}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -264,14 +266,23 @@ export default function LandingPage() {
                     ))}
                   </ul>
                 </div>
-                <div
-                  className="flex items-center justify-between px-4 py-3 bg-[#141413] text-[#F4F1E6] font-mono text-xs font-bold uppercase tracking-wider group-hover:bg-[#FF6A1A] group-hover:text-white transition-colors"
-                  style={{ boxShadow: `3px 3px 0px ${cap.accent}` }}
-                >
-                  <span>Launch Studio</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <div className="space-y-2">
+                  <Link
+                    href={cap.studioHref}
+                    className="flex items-center justify-between px-4 py-3 bg-[#141413] text-[#F4F1E6] font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#FF6A1A] hover:text-white transition-colors"
+                    style={{ boxShadow: `3px 3px 0px ${cap.accent}` }}
+                  >
+                    <span>Launch Live Studio</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                  <a
+                    href={cap.href}
+                    className="flex items-center justify-center py-2 px-3 bg-[#F4F1E6] border border-[#141413]/25 hover:border-[#141413] text-[11px] font-mono font-semibold text-[#575652] hover:text-[#141413] transition-colors"
+                  >
+                    Interactive Showcase Overview →
+                  </a>
                 </div>
-              </motion.a>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -402,7 +413,7 @@ export default function LandingPage() {
                   </ul>
                 </div>
                 <Link
-                  href="/register"
+                  href={plan.name === "Enterprise" ? "/contact" : plan.popular ? "/pricing" : "/workspace/text-to-3d"}
                   className={`flex items-center justify-center gap-2 py-3 px-4 border-[1.5px] border-[#141413] font-mono text-xs font-bold uppercase tracking-wider transition-all ${
                     plan.popular
                       ? "bg-[#141413] text-[#F4F1E6] shadow-[3px_3px_0px_#FF6A1A] hover:bg-[#FF6A1A] hover:text-white"

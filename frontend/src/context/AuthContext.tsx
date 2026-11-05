@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { auth as authApi, credits as creditsApi, getAccessToken, type User as UserType } from "@/lib/api";
+import { auth as authApi, credits as creditsApi, getAccessToken, ensureGuestSession, type User as UserType } from "@/lib/api";
 
 interface AuthContextType {
   user: UserType | null;
@@ -16,7 +16,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  credits: 0,
+  credits: 200,
   plan: "FREE",
   isLoading: true,
   isLoggedIn: false,
@@ -27,15 +27,19 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserType | null>(null);
-  const [credits, setCredits] = useState<number>(0);
+  const [credits, setCredits] = useState<number>(200);
   const [plan, setPlan] = useState<string>("FREE");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const refreshUser = useCallback(async () => {
-    const token = getAccessToken();
+    let token = getAccessToken();
+    if (!token) {
+      await ensureGuestSession();
+      token = getAccessToken();
+    }
     if (!token) {
       setUser(null);
-      setCredits(0);
+      setCredits(200);
       setPlan("FREE");
       setIsLoading(false);
       return;

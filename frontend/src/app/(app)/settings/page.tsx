@@ -29,8 +29,6 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const loadUser = async () => {
-      const token = getAccessToken();
-      if (!token) { setIsLoading(false); return; }
       try {
         const [userData, creditData, txData] = await Promise.all([
           auth.me(),

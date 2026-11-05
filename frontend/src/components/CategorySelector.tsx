@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Cog, Building2, Palette, ArrowRight } from "lucide-react";
@@ -10,40 +9,34 @@ const categories = [
     id: "mechanical",
     title: "Mechanical CAD",
     subtitle: "Engineering & Manufacturing",
-    description: "Design precision-engineered parts, gears, housings, brackets, and assemblies with parametric AI.",
+    description: "Design precision-engineered parts, gears, housings, brackets, and assemblies with parametric B-Rep AI.",
     icon: Cog,
     href: "/workspace/mechanical",
-    gradient: "from-[#00F0FF] to-[#0EA5E9]",
-    glowColor: "rgba(0, 240, 255, 0.18)",
-    borderColor: "rgba(0, 240, 255, 0.28)",
-    features: ["STEP Export", "Parametric", "CNC Ready"],
-    badge: "CAD",
+    accentBg: "bg-[#2563EB] text-white",
+    features: ["STEP Export", "Parametric B-Rep", "CNC Ready"],
+    badge: "01 · CAD",
   },
   {
     id: "architecture",
     title: "Architecture",
     subtitle: "Buildings & Interiors",
-    description: "Generate floor plans, 3D houses, room layouts, and interior designs from text descriptions.",
+    description: "Generate collision-free floor plans, 3D cutaway houses, room layouts, and BOQ specs from one sentence.",
     icon: Building2,
     href: "/workspace/architecture",
-    gradient: "from-[#7B2FFF] to-[#A855F7]",
-    glowColor: "rgba(123, 47, 255, 0.18)",
-    borderColor: "rgba(123, 47, 255, 0.28)",
-    features: ["Floor Plans", "3D Models", "PDF/DXF Export"],
-    badge: "ARCH",
+    accentBg: "bg-[#0D9488] text-white",
+    features: ["Floor Plans", "3D Cutaway", "PDF/DXF Export"],
+    badge: "02 · ARCH",
   },
   {
     id: "creative",
     title: "Creative 3D",
     subtitle: "Assets & Characters",
-    description: "Create game assets, characters, props, and organic 3D models from text prompts or images.",
+    description: "Synthesize game assets, characters, props, and 4K PBR quad meshes from text prompts or images.",
     icon: Palette,
     href: "/workspace/text-to-3d",
-    gradient: "from-[#FF2FD4] to-[#F43F5E]",
-    glowColor: "rgba(255, 47, 212, 0.18)",
-    borderColor: "rgba(255, 47, 212, 0.28)",
-    features: ["Text to 3D", "Image to 3D", "AI Texture"],
-    badge: "3D",
+    accentBg: "bg-[#FF6A1A] text-[#141413]",
+    features: ["Text to 3D", "Image to 3D", "4K PBR Texture"],
+    badge: "03 · 3D",
   },
 ];
 
@@ -54,111 +47,69 @@ interface CategorySelectorProps {
 
 export default function CategorySelector({ size = "lg", className = "" }: CategorySelectorProps) {
   const isLarge = size === "lg";
-  const [tilts, setTilts] = useState<Record<string, { rx: number; ry: number; gx: number; gy: number }>>({});
 
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-3 gap-5 ${className}`} style={{ perspective: "1100px" }}>
-      {categories.map((cat, i) => {
-        const t = tilts[cat.id] || { rx: 0, ry: 0, gx: 50, gy: 0 };
-        return (
-          <motion.div
-            key={cat.id}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.15, duration: 0.5 }}
-          >
-            <Link href={cat.href} className="block group">
-              <div
-                className={`relative overflow-hidden rounded-2xl border transition-all duration-200 group-hover:shadow-2xl ${
-                  isLarge ? "p-7" : "p-5"
-                }`}
-                style={{
-                  backgroundColor: "rgba(15, 15, 24, 0.85)",
-                  borderColor: cat.borderColor,
-                  boxShadow: `0 0 0 1px ${cat.borderColor}`,
-                  transform: `rotateX(${t.rx}deg) rotateY(${t.ry}deg) translateZ(0px)`,
-                  transformStyle: "preserve-3d",
-                }}
-                onMouseMove={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = (e.clientX - rect.left) / rect.width;
-                  const y = (e.clientY - rect.top) / rect.height;
-                  const ry = (x - 0.5) * 14;
-                  const rx = (0.5 - y) * 14;
-                  setTilts((prev) => ({
-                    ...prev,
-                    [cat.id]: { rx, ry, gx: x * 100, gy: y * 100 },
-                  }));
-                  e.currentTarget.style.boxShadow = `0 18px 45px ${cat.glowColor}, 0 0 0 1px ${cat.borderColor}`;
-                }}
-                onMouseLeave={(e) => {
-                  setTilts((prev) => ({
-                    ...prev,
-                    [cat.id]: { rx: 0, ry: 0, gx: 50, gy: 0 },
-                  }));
-                  e.currentTarget.style.boxShadow = `0 0 0 1px ${cat.borderColor}`;
-                }}
-              >
-                {/* Cursor-Tracking 3D Specular Spotlight */}
-                <div
-                  className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{
-                    background: `radial-gradient(circle at ${t.gx}% ${t.gy}%, ${cat.glowColor}, transparent 65%)`,
-                  }}
-                />
-
-                {/* Icon + Badge */}
-                <div className="relative z-10 flex items-start justify-between mb-4" style={{ transform: "translateZ(24px)" }}>
+    <div className={`grid grid-cols-1 md:grid-cols-3 gap-5 ${className}`}>
+      {categories.map((cat, i) => (
+        <motion.div
+          key={cat.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.1, duration: 0.4 }}
+        >
+          <Link href={cat.href} className="block group h-full">
+            <div
+              className={`h-full flex flex-col justify-between rounded-2xl bg-[#FAF8F2] border-[1.5px] border-[#141413] shadow-[5px_5px_0px_#141413] hover:-translate-y-1 transition-all duration-200 ${
+                isLarge ? "p-6" : "p-5"
+              }`}
+            >
+              <div>
+                <div className="flex items-start justify-between mb-4">
                   <div
-                    className={`${isLarge ? "w-14 h-14" : "w-10 h-10"} rounded-xl bg-gradient-to-br ${cat.gradient} 
-                      flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow`}
+                    className={`${isLarge ? "w-12 h-12" : "w-10 h-10"} rounded-xl ${cat.accentBg} border border-[#141413] flex items-center justify-center shadow-[2px_2px_0px_#141413]`}
                   >
-                    <cat.icon className={`${isLarge ? "w-7 h-7" : "w-5 h-5"} text-white`} />
+                    <cat.icon className={`${isLarge ? "w-6 h-6" : "w-5 h-5"}`} />
                   </div>
-                  <span
-                    className={`text-xs font-bold tracking-wider px-2.5 py-1 rounded-md bg-gradient-to-r ${cat.gradient} text-white`}
-                  >
+                  <span className="text-[11px] font-mono font-bold tracking-wider px-2.5 py-1 rounded bg-[#141413] text-[#FAF8F2]">
                     {cat.badge}
                   </span>
                 </div>
 
-                {/* Title & Subtitle */}
-                <div className="relative z-10 text-left" style={{ transform: "translateZ(18px)" }}>
-                  <h3
-                    className={`${
-                      isLarge ? "text-xl" : "text-lg"
-                    } font-bold text-white mb-0.5 group-hover:text-white transition-colors`}
-                  >
-                    {cat.title}
-                  </h3>
-                  <p className="text-xs font-medium text-[#64748b] mb-3 tracking-wide uppercase">{cat.subtitle}</p>
-                  <p className={`text-sm text-[#94a3b8] leading-relaxed ${isLarge ? "mb-5" : "mb-3"}`}>
-                    {cat.description}
-                  </p>
+                <h3
+                  className={`${isLarge ? "text-2xl" : "text-xl"} font-normal text-[#141413] mb-0.5`}
+                  style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+                >
+                  {cat.title}
+                </h3>
+                <p className="text-[11px] font-mono font-bold text-[#6E6C65] mb-3 tracking-wider uppercase">
+                  {cat.subtitle}
+                </p>
+                <p className={`text-sm text-[#4A4945] leading-relaxed ${isLarge ? "mb-5" : "mb-3"}`}>
+                  {cat.description}
+                </p>
+              </div>
 
-                  {/* Feature tags */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {cat.features.map((f) => (
-                      <span
-                        key={f}
-                        className="text-xs font-medium px-2.5 py-1 rounded-full bg-[rgba(255,255,255,0.05)] text-[#94a3b8] border border-[rgba(255,255,255,0.06)]"
-                      >
-                        {f}
-                      </span>
-                    ))}
-                  </div>
+              <div>
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {cat.features.map((f) => (
+                    <span
+                      key={f}
+                      className="text-[11px] font-mono font-semibold px-2.5 py-1 rounded-md bg-[#EDEFF2] text-[#141413] border border-[#141413]/20"
+                    >
+                      {f}
+                    </span>
+                  ))}
+                </div>
 
-                  {/* CTA */}
-                  <div className="flex items-center gap-2 text-sm font-semibold text-[#64748b] group-hover:text-white transition-colors">
-                    <span>Start Creating</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
+                <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#141413] group-hover:text-[#FF6A1A] transition-colors">
+                  <span>Launch Studio</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
-            </Link>
-          </motion.div>
-        );
-      })}
+            </div>
+          </Link>
+        </motion.div>
+      ))}
     </div>
   );
 }
