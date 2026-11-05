@@ -1,5 +1,5 @@
 # MORPHIX 3D (FORGE3D) — MASTER PROJECT STATE & MEMORY
-> **Last Updated:** October 25, 2026  
+> **Last Updated:** November 5, 2026  
 > **Status:** Production Live & Monitored  
 > **Purpose:** Permanent memory file for resuming development seamlessly, even after days or weeks away.
 
@@ -23,13 +23,14 @@
 - **Official Brand Name:** **Morphix 3D** (repo `forge3d`)
 - **Official Brand Logo:** **MARK 01 // THE IMPOSSIBLE RIBBON "M" (Option A — Resting on Top V-Surface)**
   - Isometric 3-slab folded `"M"` in `#141413` architectural ink with the `#FF6A1A` engineering-orange sphere resting directly on the top V-surface (`cx="50", cy="29", r="7.5"`), paired with `'Instrument Serif'` wordmark (`Morphix`).
+  - Browser tab favicon (`frontend/src/app/icon.svg`) is also set to Mark 01 Option A on a `#F4F1E6` rounded square.
 - **Hero Slogan:** **"Type it / See it — Just Morphix it"**
-- **Unified Site Theme (100% Cohesive Light Aesthetic):**
+- **Unified Site Theme (100% Cohesive Light Aesthetic Across Every Page):**
   - **Foundation:** Warm Architectural Drafting Paper (`#F4F1E6` / `#FAF8F2`) + Frosted Industrial Blueprint (`#EDEFF2`) + `#141413` architectural ink borders (`1.5px solid #141413`) and hard tactile shadows (`6px 6px 0px #141413`).
   - **The Tri-Engine Concept:**
     1. **Mechanical CAD:** Industrial catalog aesthetic, blueprint on frosted paper (`#EDEFF2`), `#FF6A1A` engineering orange accent, orthographic viewport, live parametric sliders (teeth, bore, thickness), STEP/STL/DXF/GLB exports, ISO 2768 tolerances.
     2. **Architecture Studio:** Warm architect's desk (`#F4EFE6`), `#2F5BFF` blue accent, serif typography, 4-stage scroll/toggle morph: *2D Floor Plan -> Extruded Walls -> Furnished Isometric Cutaway -> Rendered Exterior*, live sqft & room inspector, PDF/DXF/USDZ/GLB exports.
-    3. **Creative 3D Atelier:** Daylight sculpture atelier (`#F4F1E6` / `#EDEFF2`), `#6D4AFF` & `#FF6A1A` accents, 4-stage pipeline: *Prompt -> Image Depth -> Quad Wireframe -> 4K PBR*, turntable rotation, 65-bone auto-rigging skeleton overlay, GLB/FBX/OBJ/USDZ exports.
+    3. **Creative 3D Atelier:** Daylight sculpture atelier (`#F4F1E6` / `#FAF8F2` / `#EDEFF2`), `#6D4AFF` & `#FF6A1A` accents, 4-stage pipeline: *Prompt -> Image Depth -> Quad Wireframe -> 4K PBR*, turntable rotation, 65-bone auto-rigging skeleton overlay, GLB/FBX/OBJ/USDZ exports.
 
 ---
 
@@ -44,9 +45,7 @@ When a user clicks **"Generate"** in any studio workspace and reports that the b
      router.use(authMiddleware);
      ```
    - Every generation endpoint (`/api/generate/text-to-3d`, `/mechanical`, `/architecture`, etc.) strictly requires an `Authorization: Bearer <token>` header.
-   - When a visitor opens `https://3dmorphix.com/workspace/...` directly without logging in, `localStorage.getItem("forge3d_access_token")` is `null`.
-   - The backend immediately responds with **HTTP 401 Unauthorized**: `{ "error": "No token provided" }`.
-   - Previously, the frontend studio pages caught this error in a generic `catch {}` block and fell back to local canvas simulation without displaying an explicit *"Please log in to generate"* prompt.
+   - Auto-Session Provisioning in `frontend/src/lib/api.ts` now automatically provisions a studio session via `/api/auth/google` (with 200 free credits) whenever a visitor clicks Generate without an active token.
 
 2. **User Has 0 Credits (`402 Payment Required`):**
    - The database requires credit balance for generations:
@@ -54,18 +53,8 @@ When a user clicks **"Generate"** in any studio workspace and reports that the b
      - `MECHANICAL_CAD`: 5 credits
      - `ARCHITECTURE`: 8 credits
    - Newly registered accounts receive **200 free signup bonus credits** automatically via `backend/src/routes/auth.ts`.
-   - If an account has fewer credits than needed, the backend returns **HTTP 402**: `{ "error": "Insufficient credits" }`.
 
 3. **Vercel API URL Target:**
-   - In `frontend/src/lib/api.ts`:
-     ```typescript
-     const RAW_ENV_API = process.env.NEXT_PUBLIC_API_URL || "";
-     export const API_BASE =
-       RAW_ENV_API && !RAW_ENV_API.includes("onrender.com")
-         ? RAW_ENV_API
-         : "https://morphix3d-backend-production-508e.up.railway.app/api";
-     ```
-   - If `NEXT_PUBLIC_API_URL` is set to `http://localhost:4000/api` in Vercel environment variables, the browser tries to call `localhost` on the user's computer instead of Railway!
    - In Vercel Project Settings, `NEXT_PUBLIC_API_URL` MUST be `https://morphix3d-backend-production-508e.up.railway.app/api`.
 
 4. **Missing AI Keys on Railway Backend:**
@@ -77,20 +66,26 @@ When a user clicks **"Generate"** in any studio workspace and reports that the b
 ## 4. Architecture & Complete File Directory
 
 ### Frontend (`frontend/src/`)
+- **Brand Logo & Favicon:**
+  - `frontend/src/components/MorphixLogo.tsx` — Official Mark 01 Option A reusable component
+  - `frontend/src/app/icon.svg` — Official Mark 01 Option A browser favicon
 - **Main Landing Page:** `frontend/src/app/page.tsx`
   - Uses `Orbital3DHero.tsx` with 3D carousel and slogan *"Type it / See it — Just Morphix it"*.
-  - Uses `PhyloFooter.tsx` (unique editorial layout with engine links, system status, newsletter, copyright).
-- **Dedicated Standalone Studio Workspaces (Full-screen, No shared sidebar):**
+  - Uses `PhyloFooter.tsx` (editorial layout with engine links, system status, newsletter, copyright, and Mark 01 Option A).
+- **Dedicated Standalone Studio Workspaces (Full-screen, Unified Light Theme & Mark 01 Option A):**
   - `frontend/src/app/(app)/workspace/mechanical/page.tsx` — Mechanical CAD Create Studio
   - `frontend/src/app/(app)/workspace/architecture/page.tsx` — Architecture Create Studio
-  - `frontend/src/app/(app)/workspace/text-to-3d/page.tsx` — Creative 3D Darkroom Studio
-- **Dynamic App Layout:** `frontend/src/app/(app)/layout.tsx`
-  - Strips shared Navbar and Sidebar for `/workspace/mechanical`, `/workspace/architecture`, and `/workspace/text-to-3d`.
+  - `frontend/src/app/(app)/workspace/text-to-3d/page.tsx` — Creative 3D Daylight Atelier Studio
+- **Inner App & Sub-Tool Pages (100% Unified Warm Architectural Paper Light Theme):**
+  - `frontend/src/app/(app)/layout.tsx` & `frontend/src/components/Sidebar.tsx`
+  - `frontend/src/app/login/page.tsx`, `register/page.tsx`, `pricing/page.tsx`
+  - `frontend/src/app/(app)/dashboard/page.tsx`, `assets/page.tsx`, `community/page.tsx`, `settings/page.tsx`
+  - `frontend/src/app/(app)/workspace/image-to-3d/page.tsx`, `texture/page.tsx`, `remesh/page.tsx`, `rig/page.tsx`
 - **Public Showcase HTML Pages (`frontend/public/`):**
   - `orbital_3d_cards_demo.html` — Standalone Hero with interactive 3D orbital cards
   - `mechanical_cad_section.html` — Standalone Mechanical CAD showcase with "Start Creating" CTA
   - `architecture_studio_section.html` — Standalone Architecture showcase with "Start Creating" CTA
-  - `creative_3d_darkroom.html` — Standalone Creative 3D showcase with "Start Creating" CTA
+  - `creative_3d_darkroom.html` — Standalone Creative 3D Daylight Atelier showcase with "Start Creating" CTA
   - `morphix_editorial_footer.html` — Editorial footer prototype
 - **API Client:** `frontend/src/lib/api.ts` (Handles Auth, Generation polling, Uploads, Credits, Assets).
 
@@ -140,21 +135,18 @@ NEXT_PUBLIC_API_URL=https://morphix3d-backend-production-508e.up.railway.app/api
 ```powershell
 Invoke-WebRequest -Uri "https://morphix3d-backend-production-508e.up.railway.app/health" -UseBasicParsing
 ```
-*(Should return Status 200 with `service: "forge3d-backend"`)*
 
 ### 2. Run Local Frontend:
 ```powershell
 cd e:\AI\forge3d\frontend
 npm run dev
 ```
-*(Runs on `http://localhost:3000`)*
 
 ### 3. Run Local Backend:
 ```powershell
 cd e:\AI\forge3d\backend
 npm run dev
 ```
-*(Runs on `http://localhost:4000`)*
 
 ### 4. Deploy Updates to Live Website (`3dmorphix.com`):
 ```powershell
@@ -164,16 +156,3 @@ git commit -m "feat: description of changes"
 git push origin master
 git push origin master:main
 ```
-
----
-
-## 7. Completed Oct 28, 2026 — Backend Generation End-to-End Fix ✅
-
-1. **Auto-Session Provisioning (`frontend/src/lib/api.ts`):**
-   - Visitors clicking **Generate** in `/workspace/mechanical`, `/workspace/architecture`, or `/workspace/text-to-3d` without having logged in now automatically receive a real authenticated studio session via `/api/auth/google` (with 200 credits) so the backend never rejects with `401 Unauthorized` or `402 Payment Required`.
-   - Added automatic fallback from `localhost:4000` to the live Railway backend (`https://morphix3d-backend-production-508e.up.railway.app/api`).
-2. **Removed Blocked External HDR Fetch (`frontend/src/components/ModelViewer.tsx`):**
-   - Removed `<Environment preset="city" />` (which fetched from `raw.githubusercontent.com` and hung/blank-screened when GitHub raw CDN was throttled) and replaced with zero-latency 3-point studio lighting + automatic bounding-box scale normalization.
-3. **Studio Viewport & Export Upgrades:**
-   - All 3 studios parse prompt dimensions/parameters live, poll backend status every 1.2s, display the generated AI 2D Blueprint / 3D `.GLB` mesh immediately on completion, and download `.step`, `.stl`, `.dxf`, `.pdf`, `.glb` data URIs via `<a download>`.
-

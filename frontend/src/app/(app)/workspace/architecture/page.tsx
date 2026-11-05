@@ -496,8 +496,15 @@ export default function ArchitecturePage() {
         <div className="flex items-center gap-3">
           <a
             href="/architecture_studio_section.html"
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#1B1B1F] text-[#F4EFE6] font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#2F5BFF] transition-colors rounded-full"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#FAF7F1] border-[1.5px] border-[#1B1B1F] text-[#1B1B1F] font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#1B1B1F] hover:text-[#F4EFE6] transition-colors"
           >
+            <svg width="18" height="18" viewBox="0 0 100 100" fill="none">
+              <polygon points="16,28 34,18 34,74 16,84" fill="currentColor" />
+              <polygon points="66,28 84,18 84,74 66,84" fill="currentColor" />
+              <polygon points="34,18 50,36 50,56 34,38" fill="currentColor" opacity="0.78" />
+              <polygon points="66,28 50,36 50,56 66,48" fill="currentColor" />
+              <circle cx="50" cy="29" r="7.5" fill="#FF6A1A" />
+            </svg>
             <span>← Architecture Section</span>
           </a>
           <Link

@@ -14,11 +14,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     pathname === "/workspace/text-to-3d";
 
   if (isDedicatedStudio) {
-    return <div className="min-h-screen w-full">{children}</div>;
+    return <div className="min-h-screen w-full bg-[#F4F1E6] text-[#141413]">{children}</div>;
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#F4F1E6] text-[#141413]">
       <Navbar />
       <Sidebar />
       <main className="ml-[240px] pt-16 min-h-screen transition-all duration-300">

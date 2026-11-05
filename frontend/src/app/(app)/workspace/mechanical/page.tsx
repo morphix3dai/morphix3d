@@ -480,8 +480,15 @@ export default function MechanicalWorkspace() {
         <div className="flex items-center gap-3">
           <a
             href="/mechanical_cad_section.html"
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#1E2126] text-[#EDEFF2] font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#FF6A1A] transition-colors"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#FAF8F2] border-[1.5px] border-[#1E2126] text-[#1E2126] font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#1E2126] hover:text-[#EDEFF2] transition-colors"
           >
+            <svg width="18" height="18" viewBox="0 0 100 100" fill="none">
+              <polygon points="16,28 34,18 34,74 16,84" fill="currentColor" />
+              <polygon points="66,28 84,18 84,74 66,84" fill="currentColor" />
+              <polygon points="34,18 50,36 50,56 34,38" fill="currentColor" opacity="0.78" />
+              <polygon points="66,28 50,36 50,56 66,48" fill="currentColor" />
+              <circle cx="50" cy="29" r="7.5" fill="#FF6A1A" />
+            </svg>
             <span>← Mechanical Section</span>
           </a>
           <Link

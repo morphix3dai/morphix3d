@@ -9,8 +9,8 @@ import { generate } from "@/lib/api";
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center font-mono text-xs text-[#27E1FF]">
-      INITIALIZING BIOLUMINESCENT 3D TURNTABLE...
+    <div className="w-full h-full flex items-center justify-center font-mono text-xs text-[#6D4AFF]">
+      INITIALIZING DAYLIGHT SCULPTURE TURNTABLE...
     </div>
   ),
 });
@@ -80,7 +80,7 @@ export default function TextTo3DPage() {
     setStyle(CREATIVE_ARCHETYPES[next].style);
   };
 
-  // Interactive 3D Bioluminescent Turntable Character & Pipeline Renderer
+  // Interactive 3D Daylight Sculpture Turntable Character & Pipeline Renderer
   useEffect(() => {
     let animId = 0;
 
@@ -120,7 +120,7 @@ export default function TextTo3DPage() {
             rotRef.current.ry += 0.0065;
           }
 
-          // Bioluminescent Turntable Rings
+          // Daylight Turntable Plinth Rings
           [115, 86, 54].forEach((rad, rIdx) => {
             ctx.beginPath();
             for (let i = 0; i <= 64; i++) {
@@ -129,7 +129,7 @@ export default function TextTo3DPage() {
               if (i === 0) ctx.moveTo(p.x, p.y);
               else ctx.lineTo(p.x, p.y);
             }
-            ctx.strokeStyle = rIdx === 0 ? "rgba(39, 225, 255, 0.42)" : "rgba(124, 92, 255, 0.28)";
+            ctx.strokeStyle = rIdx === 0 ? "rgba(109, 74, 255, 0.55)" : "rgba(20, 20, 19, 0.22)";
             ctx.lineWidth = rIdx === 0 ? 1.8 : 1;
             ctx.stroke();
           });
@@ -142,13 +142,12 @@ export default function TextTo3DPage() {
           const grid: Array<Array<{ x: number; y: number; z: number; s: number; u: number; v: number }>> = [];
 
           for (let i = 0; i <= rings; i++) {
-            const v = i / rings; // 0 (bottom) to 1 (head/crest)
+            const v = i / rings;
             const y = (v - 0.48) * 185;
             const row = [];
             for (let j = 0; j < segs; j++) {
               const u = j / segs;
               const theta = u * Math.PI * 2;
-              // Sculpted armored silhouette with shoulder/wing flares
               let rad =
                 32 * Math.sin(v * Math.PI) +
                 16 * Math.exp(-Math.pow((v - 0.68) * 5.5, 2)) * (1 + armSpread * Math.abs(Math.cos(theta))) +
@@ -165,13 +164,13 @@ export default function TextTo3DPage() {
           }
 
           if (pipelineStep === 0) {
-            // STEP 01: Bioluminescent Point Cloud
+            // STEP 01: Latent Point Cloud
             for (let i = 0; i <= rings; i++) {
               for (let j = 0; j < segs; j++) {
                 const p = grid[i][j];
-                ctx.fillStyle = (i + j) % 2 === 0 ? "#27E1FF" : "#7C5CFF";
+                ctx.fillStyle = (i + j) % 2 === 0 ? "#6D4AFF" : "#FF6A1A";
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, 2.3 * p.s, 0, Math.PI * 2);
+                ctx.arc(p.x, p.y, 2.4 * p.s, 0, Math.PI * 2);
                 ctx.fill();
               }
             }
@@ -216,25 +215,24 @@ export default function TextTo3DPage() {
 
               if (pipelineStep === 1) {
                 // STEP 02: Depth Silhouette
-                const d = Math.max(0.15, Math.min(0.95, 0.55 - q.avgZ / 220));
-                ctx.fillStyle = `rgba(${Math.round(60 * d)}, ${Math.round(180 * d)}, 255, 0.35)`;
+                ctx.fillStyle = "rgba(250, 248, 242, 0.85)";
                 ctx.fill();
-                ctx.strokeStyle = "rgba(39, 225, 255, 0.22)";
-                ctx.lineWidth = 0.7;
+                ctx.strokeStyle = "rgba(47, 91, 255, 0.45)";
+                ctx.lineWidth = 0.85;
                 ctx.stroke();
               } else if (pipelineStep === 2) {
                 // STEP 03: Watertight Quad Wireframe
-                ctx.fillStyle = "rgba(12, 15, 26, 0.82)";
+                ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
                 ctx.fill();
-                ctx.strokeStyle = "#27E1FF";
+                ctx.strokeStyle = "#141413";
                 ctx.lineWidth = 1.1;
                 ctx.stroke();
               } else {
-                // STEP 04: Full 4K Bioluminescent PBR Shader
-                const hue = 250 + q.v * 70 + Math.sin(q.u * Math.PI * 4 + t) * 25;
-                ctx.fillStyle = `hsla(${hue}, 88%, 54%, 0.42)`;
+                // STEP 04: Full 4K PBR Shader on Daylight Blueprint
+                const hue = 248 + q.v * 55 + Math.sin(q.u * Math.PI * 4 + t) * 18;
+                ctx.fillStyle = `hsla(${hue}, 68%, 82%, 0.9)`;
                 ctx.fill();
-                ctx.strokeStyle = `hsla(${hue - 30}, 95%, 72%, 0.78)`;
+                ctx.strokeStyle = `hsla(${hue - 20}, 85%, 38%, 0.82)`;
                 ctx.lineWidth = 1;
                 ctx.stroke();
               }
@@ -263,8 +261,8 @@ export default function TextTo3DPage() {
               [0, 6],
               [0, 7],
             ];
-            ctx.strokeStyle = "#00FFD5";
-            ctx.lineWidth = 2.4;
+            ctx.strokeStyle = "#FF6A1A";
+            ctx.lineWidth = 2.6;
             bonePairs.forEach(([a, b]) => {
               ctx.beginPath();
               ctx.moveTo(joints[a].x, joints[a].y);
@@ -272,12 +270,12 @@ export default function TextTo3DPage() {
               ctx.stroke();
             });
             joints.forEach((j) => {
-              ctx.fillStyle = "#FFFFFF";
+              ctx.fillStyle = "#FAF8F2";
               ctx.beginPath();
               ctx.arc(j.x, j.y, 4.5, 0, Math.PI * 2);
               ctx.fill();
-              ctx.strokeStyle = "#7C5CFF";
-              ctx.lineWidth = 2;
+              ctx.strokeStyle = "#FF6A1A";
+              ctx.lineWidth = 2.2;
               ctx.stroke();
             });
           }
@@ -339,7 +337,7 @@ export default function TextTo3DPage() {
       console.warn("Creative 3D fallback:", err);
       setTimeout(() => {
         setPipelineStep(3);
-        toast.success("Bioluminescent 4K PBR Turntable Mesh synthesized!");
+        toast.success("4K PBR Turntable Mesh synthesized!");
       }, 2200);
     } finally {
       clearTimeout(stepTimer1);
@@ -364,7 +362,7 @@ export default function TextTo3DPage() {
       return;
     }
 
-    const content = `# MORPHIX 3D CREATIVE DARKROOM EXPORT (.${fmt.toUpperCase()})\n# PROMPT: ${prompt}\n# STYLE: ${style} | POSE: ${pose} | RIGGED: 65 BONES\nv 0.0 0.0 0.0\nv 1.0 0.0 0.0\nv 0.0 1.0 0.0\nf 1 2 3\n`;
+    const content = `# MORPHIX 3D CREATIVE ATELIER EXPORT (.${fmt.toUpperCase()})\n# PROMPT: ${prompt}\n# STYLE: ${style} | POSE: ${pose} | RIGGED: 65 BONES\nv 0.0 0.0 0.0\nv 1.0 0.0 0.0\nv 0.0 1.0 0.0\nf 1 2 3\n`;
     const blob = new Blob([content], { type: "text/plain" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -377,38 +375,46 @@ export default function TextTo3DPage() {
 
   return (
     <div
-      className="min-h-screen w-full text-[#F8FAFC] relative overflow-x-hidden"
+      className="min-h-screen w-full text-[#141413] relative overflow-x-hidden"
       style={{
-        backgroundColor: "#07070B",
+        backgroundColor: "#F4F1E6",
         backgroundImage:
-          "radial-gradient(circle at 20% 20%, rgba(124, 92, 255, 0.16), transparent 45%), radial-gradient(circle at 80% 75%, rgba(39, 225, 255, 0.14), transparent 50%)",
+          "linear-gradient(rgba(20, 20, 19, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 20, 19, 0.04) 1px, transparent 1px)",
+        backgroundSize: "40px 40px",
       }}
     >
-      {/* DEDICATED CREATIVE 3D DARKROOM TOP BAR (No Mechanical CAD or Architecture clutter!) */}
-      <header className="sticky top-0 z-40 bg-[#07070B]/90 backdrop-blur-xl border-b border-white/10 px-5 py-3 flex flex-wrap items-center justify-between gap-4">
+      {/* DEDICATED CREATIVE 3D ATELIER TOP BAR (Unified Light Theme + Mark 01 Option A) */}
+      <header className="sticky top-0 z-40 bg-[#F4F1E6]/95 backdrop-blur-md border-b-[1.5px] border-[#141413] px-5 py-3 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <a
             href="/creative_3d_darkroom.html"
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-white font-mono text-xs font-bold uppercase hover:border-[#27E1FF] transition-colors"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#FAF8F2] border-[1.5px] border-[#141413] text-[#141413] font-mono text-xs font-bold uppercase hover:bg-[#141413] hover:text-[#F4F1E6] transition-colors"
           >
+            <svg width="18" height="18" viewBox="0 0 100 100" fill="none">
+              <polygon points="16,28 34,18 34,74 16,84" fill="currentColor" />
+              <polygon points="66,28 84,18 84,74 66,84" fill="currentColor" />
+              <polygon points="34,18 50,36 50,56 34,38" fill="currentColor" opacity="0.78" />
+              <polygon points="66,28 50,36 50,56 66,48" fill="currentColor" />
+              <circle cx="50" cy="29" r="7.5" fill="#FF6A1A" />
+            </svg>
             <span>← Creative 3D Section</span>
           </a>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 bg-white/5 text-slate-300 font-mono text-xs font-bold uppercase hover:text-white"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 border-[1.5px] border-[#141413] bg-[#EFECE0] text-[#141413] font-mono text-xs font-bold uppercase hover:bg-[#141413] hover:text-[#F4F1E6]"
           >
             <span>Main Hero</span>
           </Link>
-          <div className="hidden md:flex items-center gap-2 pl-2 border-l border-white/15">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#27E1FF] shadow-[0_0_12px_#27E1FF]" />
-            <span className="font-mono text-xs font-bold tracking-wider uppercase text-[#27E1FF]">
-              03 · CREATIVE 3D DARKROOM STUDIO
+          <div className="hidden md:flex items-center gap-2 pl-2 border-l border-[#141413]/30">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#FF6A1A]" />
+            <span className="font-mono text-xs font-bold tracking-wider uppercase text-[#6D4AFF]">
+              03 · CREATIVE 3D ATELIER STUDIO
             </span>
           </div>
         </div>
 
         {/* Center 4-Stage Pipeline Bar */}
-        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 p-1 rounded-full">
+        <div className="flex items-center gap-1.5 bg-[#FAF8F2] border-[1.5px] border-[#141413] p-1">
           {[
             { step: 0, label: "01 · Prompt" },
             { step: 1, label: "02 · Image" },
@@ -422,10 +428,10 @@ export default function TextTo3DPage() {
                 setShowGeneratedGlb(false);
                 setPipelineStep(s.step);
               }}
-              className={`px-3.5 py-1 rounded-full font-mono text-[11px] font-bold transition-all ${
+              className={`px-3.5 py-1 font-mono text-[11px] font-bold transition-all cursor-pointer ${
                 pipelineStep === s.step && !showGeneratedGlb
-                  ? "bg-gradient-to-r from-[#7C5CFF] to-[#27E1FF] text-[#07070B] shadow-[0_0_20px_rgba(39,225,255,0.4)]"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-[#141413] text-[#F4F1E6] shadow-[2px_2px_0px_#6D4AFF]"
+                  : "text-[#575652] hover:text-[#141413]"
               }`}
             >
               {s.label}
@@ -435,10 +441,10 @@ export default function TextTo3DPage() {
             <button
               type="button"
               onClick={() => setShowGeneratedGlb(true)}
-              className={`px-3.5 py-1 rounded-full font-mono text-[11px] font-bold transition-all ${
+              className={`px-3.5 py-1 font-mono text-[11px] font-bold transition-all cursor-pointer ${
                 showGeneratedGlb
-                  ? "bg-[#27E1FF] text-[#07070B] shadow-[0_0_20px_rgba(39,225,255,0.5)]"
-                  : "text-[#27E1FF] hover:bg-white/10"
+                  ? "bg-[#FF6A1A] text-white"
+                  : "text-[#FF6A1A] hover:bg-[#EFECE0]"
               }`}
             >
               ✨ AI 3D Mesh (.GLB)
@@ -450,64 +456,67 @@ export default function TextTo3DPage() {
         <div className="flex items-center gap-2 font-mono text-[11px]">
           <Link
             href="/workspace/image-to-3d"
-            className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:border-[#7C5CFF] hover:text-white transition-colors"
+            className="px-3 py-1.5 bg-[#FAF8F2] border-[1.5px] border-[#141413] text-[#141413] font-bold hover:bg-[#141413] hover:text-[#F4F1E6] transition-colors"
           >
-            🖼️ Image to 3D
+            Image to 3D
           </Link>
           <Link
             href="/workspace/texture"
-            className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:border-[#27E1FF] hover:text-white transition-colors"
+            className="px-3 py-1.5 bg-[#FAF8F2] border-[1.5px] border-[#141413] text-[#141413] font-bold hover:bg-[#141413] hover:text-[#F4F1E6] transition-colors"
           >
-            🖌️ AI Texture
+            AI Texture
           </Link>
         </div>
       </header>
 
-      {/* MAIN CREATIVE 3D DARKROOM WORKSPACE */}
+      {/* MAIN CREATIVE 3D ATELIER WORKSPACE */}
       <div className="max-w-[1440px] mx-auto p-5 grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* LEFT COLUMN (4 COLS): PROMPT LABORATORY + STYLE + POSE & RIGGING + GENERATE CTA */}
-        <aside className="lg:col-span-4 rounded-3xl bg-[#0D0E17]/90 border border-white/12 p-5 flex flex-col justify-between gap-5 shadow-[0_25px_70px_rgba(0,0,0,0.65)]">
+        <aside className="lg:col-span-4 bg-[#FAF8F2] border-2 border-[#141413] p-5 flex flex-col justify-between gap-5 shadow-[8px_8px_0px_rgba(20,20,19,0.08)]">
           <div className="space-y-5">
             <div>
-              <div className="font-mono text-[10.5px] font-bold tracking-widest uppercase text-[#27E1FF] mb-1">
-                // NEURAL TURNTABLE ATELIER
+              <div className="font-mono text-[10.5px] font-bold tracking-widest uppercase text-[#6D4AFF] mb-1">
+                // DAYLIGHT SCULPTURE ATELIER
               </div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-white">
+              <h1
+                className="text-3xl font-normal tracking-tight text-[#141413]"
+                style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+              >
                 Characters and props from a prompt.
               </h1>
-              <p className="text-xs text-slate-400 mt-1">
-                Watch your prompt evolve from a bioluminescent point cloud to a rigged, 4K PBR textured asset.
+              <p className="text-xs text-[#575652] mt-1">
+                Watch your prompt evolve from a point cloud to a rigged, 4K PBR textured asset.
               </p>
             </div>
 
             {/* Prompt Box + Remix Button */}
-            <div className="p-4 rounded-2xl bg-[#07070B] border border-[#7C5CFF]/35 space-y-2.5">
-              <div className="flex items-center justify-between font-mono text-[10px] text-slate-400">
+            <div className="p-4 bg-[#F4F1E6] border-[1.5px] border-[#141413] space-y-2.5">
+              <div className="flex items-center justify-between font-mono text-[10px] font-bold text-[#575652]">
                 <span>ACTIVE SEED PROMPT</span>
-                <span className="text-[#27E1FF]">{currentArchetype.seed}</span>
+                <span className="text-[#FF6A1A]">{currentArchetype.seed}</span>
               </div>
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 rows={3}
                 placeholder="Describe your character, creature, weapon, or game prop..."
-                className="w-full bg-transparent text-xs text-slate-100 font-mono focus:outline-none resize-none"
+                className="w-full bg-transparent text-xs text-[#141413] font-mono focus:outline-none resize-none"
               />
               <div className="flex items-center justify-between gap-2 pt-1">
                 <button
                   type="button"
                   onClick={handleRemix}
-                  className="px-3 py-1.5 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 font-mono text-[11px] font-bold text-[#27E1FF] transition-colors cursor-pointer"
+                  className="px-3 py-1.5 bg-[#FAF8F2] hover:bg-[#141413] hover:text-[#F4F1E6] border-[1.5px] border-[#141413] font-mono text-[11px] font-bold text-[#141413] transition-colors cursor-pointer"
                 >
                   ↻ Remix Archetype ({currentArchetype.name.split(" ")[0]})
                 </button>
-                <span className="font-mono text-[10px] text-slate-500">{prompt.length}/800</span>
+                <span className="font-mono text-[10px] text-[#575652]">{prompt.length}/800</span>
               </div>
             </div>
 
             {/* Art Style Grid */}
             <div>
-              <div className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+              <div className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#575652] mb-2">
                 // 02 · SHADER &amp; TOPOLOGY STYLE
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -516,10 +525,10 @@ export default function TextTo3DPage() {
                     key={opt.id}
                     type="button"
                     onClick={() => setStyle(opt.id)}
-                    className={`py-2 px-2.5 rounded-xl font-mono text-[11px] font-semibold border transition-all ${
+                    className={`py-2 px-2.5 font-mono text-[11px] font-bold border-[1.5px] transition-all cursor-pointer ${
                       style === opt.id
-                        ? "bg-[#7C5CFF]/25 border-[#27E1FF] text-white shadow-[0_0_15px_rgba(124,92,255,0.3)]"
-                        : "bg-white/5 border-white/10 text-slate-400 hover:text-white"
+                        ? "bg-[#141413] border-[#141413] text-[#F4F1E6] shadow-[3px_3px_0px_#6D4AFF]"
+                        : "bg-[#F4F1E6] border-[#141413]/40 text-[#575652] hover:text-[#141413] hover:border-[#141413]"
                     }`}
                   >
                     {opt.label}
@@ -530,7 +539,7 @@ export default function TextTo3DPage() {
 
             {/* Pose & Auto-Rigging Toggle */}
             <div>
-              <div className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+              <div className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#575652] mb-2">
                 // 03 · POSE &amp; AUTO-RIGGING (65 BONES)
               </div>
               <div className="grid grid-cols-3 gap-2 mb-2.5">
@@ -539,10 +548,10 @@ export default function TextTo3DPage() {
                     key={p}
                     type="button"
                     onClick={() => setPose(p)}
-                    className={`py-2 rounded-xl font-mono text-xs font-bold uppercase border transition-all ${
+                    className={`py-2 font-mono text-xs font-bold uppercase border-[1.5px] transition-all cursor-pointer ${
                       pose === p
-                        ? "bg-[#27E1FF] text-[#07070B] border-[#27E1FF]"
-                        : "bg-white/5 text-slate-300 border-white/10"
+                        ? "bg-[#141413] text-[#F4F1E6] border-[#141413] shadow-[3px_3px_0px_#FF6A1A]"
+                        : "bg-[#F4F1E6] text-[#141413] border-[#141413]/40"
                     }`}
                   >
                     {p === "tpose" ? "T-Pose" : p}
@@ -552,10 +561,10 @@ export default function TextTo3DPage() {
               <button
                 type="button"
                 onClick={() => setShowBones(!showBones)}
-                className={`w-full py-2.5 px-3.5 rounded-xl font-mono text-xs font-bold border transition-all flex items-center justify-between ${
+                className={`w-full py-2.5 px-3.5 font-mono text-xs font-bold border-[1.5px] transition-all flex items-center justify-between cursor-pointer ${
                   showBones
-                    ? "bg-[#00FFD5]/20 border-[#00FFD5] text-[#00FFD5]"
-                    : "bg-white/5 border-white/10 text-slate-300"
+                    ? "bg-[#FF6A1A] border-[#141413] text-white"
+                    : "bg-[#F4F1E6] border-[#141413] text-[#141413]"
                 }`}
               >
                 <span>🦴 65-Bone Auto-Rig Skeleton Overlay</span>
@@ -565,19 +574,19 @@ export default function TextTo3DPage() {
           </div>
 
           {/* Generate CTA + Export Chips */}
-          <div className="space-y-3 pt-2 border-t border-white/10">
+          <div className="space-y-3 pt-3 border-t-[1.5px] border-[#141413]">
             <button
               type="button"
               disabled={isGenerating}
               onClick={handleGenerate}
-              className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-[#7C5CFF] via-[#B845FF] to-[#27E1FF] text-[#07070B] font-mono text-xs font-extrabold uppercase tracking-wider shadow-[0_0_30px_rgba(124,92,255,0.45)] hover:opacity-95 transition-all flex items-center justify-between cursor-pointer"
+              className="w-full py-3.5 px-5 bg-[#141413] text-[#F4F1E6] border-[1.5px] border-[#141413] font-mono text-xs font-extrabold uppercase tracking-wider shadow-[4px_4px_0px_#FF6A1A] hover:bg-[#FF6A1A] hover:text-white hover:shadow-[4px_4px_0px_#141413] transition-all flex items-center justify-between cursor-pointer"
             >
               <span>{isGenerating ? `Synthesizing 3D Mesh (${progress}%)...` : "✨ Generate 3D Asset"}</span>
               <span>→</span>
             </button>
 
             <div>
-              <div className="font-mono text-[10px] font-bold uppercase text-slate-400 mb-2">
+              <div className="font-mono text-[10px] font-bold uppercase text-[#575652] mb-2">
                 // GAME-READY EXPORT CHIPS
               </div>
               <div className="grid grid-cols-4 gap-2">
@@ -586,7 +595,7 @@ export default function TextTo3DPage() {
                     key={fmt}
                     type="button"
                     onClick={() => handleExport(fmt)}
-                    className="py-2 px-2 rounded-xl bg-white/5 hover:bg-[#27E1FF] hover:text-[#07070B] border border-white/15 font-mono text-xs font-bold uppercase transition-colors flex items-center justify-between"
+                    className="py-2 px-2 bg-[#F4F1E6] hover:bg-[#141413] hover:text-[#F4F1E6] border-[1.5px] border-[#141413] font-mono text-xs font-bold uppercase transition-colors flex items-center justify-between cursor-pointer"
                   >
                     <span>.{fmt}</span>
                     <span>↓</span>
@@ -597,7 +606,7 @@ export default function TextTo3DPage() {
           </div>
         </aside>
 
-        {/* RIGHT/CENTER COLUMN (8 COLS): 3D BIOLUMINESCENT TURNTABLE STAGE */}
+        {/* RIGHT/CENTER COLUMN (8 COLS): 3D DAYLIGHT SCULPTURE TURNTABLE STAGE */}
         <div className="lg:col-span-8 flex flex-col gap-5">
           <div
             ref={stageRef}
@@ -619,15 +628,20 @@ export default function TextTo3DPage() {
               rotRef.current.lx = e.clientX;
               rotRef.current.ly = e.clientY;
             }}
-            className="relative flex-1 min-h-[540px] rounded-3xl bg-[#090A12] border border-white/12 shadow-[0_25px_80px_rgba(0,0,0,0.75)] overflow-hidden select-none cursor-grab active:cursor-grabbing"
+            className="relative flex-1 min-h-[540px] bg-[#EDEFF2] border-2 border-[#141413] shadow-[8px_8px_0px_rgba(20,20,19,0.08)] overflow-hidden select-none cursor-grab active:cursor-grabbing"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(20, 20, 19, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 20, 19, 0.05) 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
+            }}
           >
             {/* Top Stage Telemetry */}
             <div className="absolute top-4 left-5 right-5 z-10 flex flex-wrap items-center justify-between gap-2 font-mono text-xs pointer-events-none">
-              <div className="px-3.5 py-1.5 rounded-full bg-black/60 border border-white/15 text-slate-200">
-                MODEL: <strong className="text-[#27E1FF]">{currentArchetype.name.toUpperCase()}</strong> · STAGE 0
+              <div className="px-3.5 py-1.5 bg-[#FAF8F2] border-[1.5px] border-[#141413] text-[#141413] font-bold">
+                MODEL: <strong className="text-[#6D4AFF]">{currentArchetype.name.toUpperCase()}</strong> · STAGE 0
                 {pipelineStep + 1}/04
               </div>
-              <div className="px-3.5 py-1.5 rounded-full bg-black/60 border border-[#7C5CFF]/40 text-[#27E1FF]">
+              <div className="px-3.5 py-1.5 bg-[#FAF8F2] border-[1.5px] border-[#141413] text-[#FF6A1A] font-bold">
                 34.2K QUADS · 4K PBR MAPS
               </div>
             </div>
@@ -646,7 +660,7 @@ export default function TextTo3DPage() {
                 { step: 0, title: "01 · Prompt", sub: "Latent Point Cloud" },
                 { step: 1, title: "02 · Image", sub: "Multi-View Depth" },
                 { step: 2, title: "03 · Mesh", sub: "Watertight Quads" },
-                { step: 3, title: "04 · Texture", sub: "4K PBR + Emissive" },
+                { step: 3, title: "04 · Texture", sub: "4K PBR + Rig" },
               ].map((st) => (
                 <button
                   key={st.step}
@@ -655,14 +669,14 @@ export default function TextTo3DPage() {
                     setShowGeneratedGlb(false);
                     setPipelineStep(st.step);
                   }}
-                  className={`p-2.5 rounded-2xl border text-left transition-all ${
+                  className={`p-2.5 border-[1.5px] text-left transition-all cursor-pointer ${
                     pipelineStep === st.step
-                      ? "bg-[#7C5CFF]/25 border-[#27E1FF] text-white shadow-[0_0_20px_rgba(39,225,255,0.25)]"
-                      : "bg-black/65 border-white/10 text-slate-400 hover:text-white"
+                      ? "bg-[#FFFDF7] border-[#141413] text-[#141413] shadow-[3px_3px_0px_#6D4AFF]"
+                      : "bg-[#FAF8F2]/95 border-[#141413]/40 text-[#575652] hover:text-[#141413]"
                   }`}
                 >
-                  <div className="font-mono text-[11px] font-bold text-[#27E1FF]">{st.title}</div>
-                  <div className="text-[11px] truncate">{st.sub}</div>
+                  <div className="font-mono text-[11px] font-bold text-[#6D4AFF]">{st.title}</div>
+                  <div className="text-[11px] font-medium truncate">{st.sub}</div>
                 </button>
               ))}
             </div>

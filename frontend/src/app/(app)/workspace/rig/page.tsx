@@ -4,13 +4,13 @@ import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useDropzone } from "react-dropzone";
-import { Bone, Upload, Sparkles, Download, Loader2, Check, Play } from "lucide-react";
+import { Bone, Upload, Download, Loader2, Check } from "lucide-react";
 import toast from "react-hot-toast";
 import { generate, getAccessToken } from "@/lib/api";
 
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
-  loading: () => <div className="w-full h-full bg-[#0a0a12] rounded-xl animate-pulse" />,
+  loading: () => <div className="w-full h-full bg-[#EDEFF2] rounded-xl animate-pulse border border-[#141413]/20" />,
 });
 
 const characterTypes = [
@@ -34,9 +34,9 @@ export default function RigPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isDone, setIsDone] = useState(false);
-  const [jobId, setJobId] = useState<string | null>(null);
+  const [, setJobId] = useState<string | null>(null);
   const [outputUrls, setOutputUrls] = useState<Record<string, string> | null>(null);
-  const [jobData, setJobData] = useState<any>(null);
+  const [jobData, setJobData] = useState<{ metadata?: Record<string, string | number> } | null>(null);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (files) => setModelFile(files[0] || null),
@@ -44,7 +44,7 @@ export default function RigPage() {
   });
 
   const toggleAnim = (id: string) => {
-    setSelectedAnims((prev) => prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]);
+    setSelectedAnims((prev) => (prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]));
   };
 
   const uploadFile = async (file: File): Promise<string> => {
@@ -63,11 +63,20 @@ export default function RigPage() {
   };
 
   const handleRig = useCallback(async () => {
-    if (!modelFile) { toast.error("Upload a model first"); return; }
+    if (!modelFile) {
+      toast.error("Upload a model first");
+      return;
+    }
     const token = getAccessToken();
-    if (!token) { toast.error("Please sign in first"); window.location.href = "/login"; return; }
+    if (!token) {
+      toast.error("Please sign in first");
+      window.location.href = "/login";
+      return;
+    }
 
-    setIsProcessing(true); setProgress(0); setIsDone(false);
+    setIsProcessing(true);
+    setProgress(0);
+    setIsDone(false);
 
     try {
       toast.loading("Uploading model...", { id: "upload" });
@@ -87,14 +96,14 @@ export default function RigPage() {
             setIsProcessing(false);
             setIsDone(true);
             if (status.outputUrls) setOutputUrls(status.outputUrls);
-            setJobData(status);
+            setJobData(status as unknown as { metadata?: Record<string, string | number> });
             toast.success("Rigging complete!");
           } else if (status.status === "FAILED") {
             clearInterval(pollInterval);
             setIsProcessing(false);
             toast.error(status.errorMessage || "Rigging failed");
           }
-        } catch { /* keep polling */ }
+        } catch {}
       }, 2000);
     } catch (err: unknown) {
       toast.dismiss("upload");
@@ -105,31 +114,45 @@ export default function RigPage() {
   }, [modelFile, charType, selectedAnims]);
 
   return (
-    <div className="h-[calc(100vh-64px)] flex">
-      <div className="w-[380px] flex-shrink-0 border-r border-[rgba(148,163,184,0.07)] overflow-y-auto">
+    <div className="h-[calc(100vh-64px)] flex bg-[#F4F1E6] text-[#141413]">
+      <div className="w-[380px] flex-shrink-0 border-r-[1.5px] border-[#141413] bg-[#FAF8F2] overflow-y-auto">
         <div className="p-5 space-y-5">
           <div>
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <Bone className="w-5 h-5 text-[#f59e0b]" /> Auto Rigging
+            <h1
+              className="text-2xl font-normal flex items-center gap-2 text-[#141413]"
+              style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+            >
+              <Bone className="w-5 h-5 text-[#FF6A1A]" /> Auto Rigging
             </h1>
-            <p className="text-sm text-[#64748b] mt-1">Add skeleton and animations to your character</p>
+            <p className="text-sm text-[#4A4945] mt-1">Add skeleton and motion cycles to your character</p>
           </div>
 
           {/* Upload */}
           <div>
             <label className="section-label block mb-2">Upload Character Model</label>
             {!modelFile ? (
-              <div {...getRootProps()} className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${isDragActive ? "border-[#6366f1] bg-[rgba(99,102,241,0.05)]" : "border-[rgba(148,163,184,0.1)] hover:border-[rgba(99,102,241,0.3)] bg-[#0f0f18]"}`}>
+              <div
+                {...getRootProps()}
+                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+                  isDragActive
+                    ? "border-[#FF6A1A] bg-[#FF6A1A]/10"
+                    : "border-[#141413]/40 hover:border-[#141413] bg-[#F4F1E6]"
+                }`}
+              >
                 <input {...getInputProps()} />
-                <Upload className="w-8 h-8 text-[#64748b] mx-auto mb-2" />
-                <p className="text-sm text-[#94a3b8]">Upload character mesh</p>
-                <p className="text-xs text-[#64748b] mt-1">A-Pose or T-Pose recommended</p>
+                <Upload className="w-8 h-8 text-[#4A4945] mx-auto mb-2" />
+                <p className="text-sm font-semibold text-[#141413]">Upload character mesh</p>
+                <p className="text-xs font-mono text-[#6E6C65] mt-1">A-Pose or T-Pose recommended</p>
               </div>
             ) : (
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-[#12121a] border border-[rgba(148,163,184,0.06)]">
-                <Bone className="w-5 h-5 text-[#f59e0b]" />
-                <div className="flex-1 min-w-0"><div className="text-sm font-medium truncate">{modelFile.name}</div></div>
-                <button onClick={() => setModelFile(null)} className="text-xs text-[#64748b] hover:text-[#ef4444]">Remove</button>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white border-[1.5px] border-[#141413]">
+                <Bone className="w-5 h-5 text-[#FF6A1A]" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-[#141413] truncate">{modelFile.name}</div>
+                </div>
+                <button onClick={() => setModelFile(null)} className="text-xs font-bold text-[#6E6C65] hover:text-[#DC2626]">
+                  Remove
+                </button>
               </div>
             )}
           </div>
@@ -139,10 +162,18 @@ export default function RigPage() {
             <label className="section-label block mb-2">Character Type</label>
             <div className="grid grid-cols-2 gap-2">
               {characterTypes.map((ct) => (
-                <button key={ct.value} onClick={() => setCharType(ct.value)} className={`p-3 rounded-lg border text-left transition-all ${charType === ct.value ? "border-[rgba(99,102,241,0.5)] bg-[rgba(99,102,241,0.1)]" : "border-[rgba(148,163,184,0.06)] bg-[#12121a]"}`}>
+                <button
+                  key={ct.value}
+                  onClick={() => setCharType(ct.value)}
+                  className={`p-3 rounded-lg border-[1.5px] text-left transition-all cursor-pointer ${
+                    charType === ct.value
+                      ? "border-[#141413] bg-[#FF6A1A]/15 shadow-[2px_2px_0px_#141413]"
+                      : "border-[#141413]/25 bg-white hover:bg-[#EDEFF2]"
+                  }`}
+                >
                   <div className="text-lg mb-1">{ct.emoji}</div>
-                  <div className="text-sm font-medium">{ct.label}</div>
-                  <div className="text-xs text-[#64748b]">{ct.desc}</div>
+                  <div className="text-sm font-bold text-[#141413]">{ct.label}</div>
+                  <div className="text-xs text-[#6E6C65]">{ct.desc}</div>
                 </button>
               ))}
             </div>
@@ -153,29 +184,74 @@ export default function RigPage() {
             <label className="section-label block mb-2">Animations</label>
             <div className="grid grid-cols-3 gap-1.5">
               {animations.map((anim) => (
-                <button key={anim.id} onClick={() => toggleAnim(anim.id)} className={`flex flex-col items-center gap-1 p-2.5 rounded-lg border text-xs font-medium transition-all ${selectedAnims.includes(anim.id) ? "border-[rgba(99,102,241,0.5)] bg-[rgba(99,102,241,0.1)] text-white" : "border-[rgba(148,163,184,0.06)] bg-[#12121a] text-[#64748b]"}`}>
-                  <span className="text-base">{anim.icon}</span><span>{anim.label}</span>
+                <button
+                  key={anim.id}
+                  onClick={() => toggleAnim(anim.id)}
+                  className={`flex flex-col items-center gap-1 p-2.5 rounded-lg border-[1.5px] text-xs font-bold transition-all cursor-pointer ${
+                    selectedAnims.includes(anim.id)
+                      ? "border-[#141413] bg-[#FF6A1A]/15 text-[#141413] shadow-[2px_2px_0px_#141413]"
+                      : "border-[#141413]/20 bg-white text-[#4A4945] hover:bg-[#EDEFF2]"
+                  }`}
+                >
+                  <span className="text-base">{anim.icon}</span>
+                  <span>{anim.label}</span>
                 </button>
               ))}
             </div>
-            <p className="text-xs text-[#64748b] mt-2">{selectedAnims.length} animation{selectedAnims.length !== 1 ? "s" : ""} selected</p>
+            <p className="text-xs font-mono text-[#6E6C65] mt-2">
+              {selectedAnims.length} animation{selectedAnims.length !== 1 ? "s" : ""} selected
+            </p>
           </div>
 
-          <button onClick={handleRig} disabled={isProcessing || !modelFile} className={`w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all ${isProcessing ? "bg-[#1e1e38] text-[#94a3b8]" : "btn-primary"} ${!modelFile ? "opacity-50 cursor-not-allowed" : ""}`}>
-            {isProcessing ? <><Loader2 className="w-4 h-4 animate-spin" /> Rigging... {Math.min(Math.round(progress), 100)}%</> : <><Bone className="w-4 h-4" /> Auto Rig <span className="ml-1 text-xs opacity-70">(10 credits)</span></>}
+          <button
+            onClick={handleRig}
+            disabled={isProcessing || !modelFile}
+            className={`w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+              isProcessing ? "bg-[#EDEFF2] text-[#6E6C65] border border-[#141413]/30" : "btn-primary"
+            } ${!modelFile ? "opacity-50 cursor-not-allowed" : ""}`}
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Rigging... {Math.min(Math.round(progress), 100)}%
+              </>
+            ) : (
+              <>
+                <Bone className="w-4 h-4" /> Auto Rig <span className="ml-1 text-xs opacity-75">(8 credits)</span>
+              </>
+            )}
           </button>
 
-          {isProcessing && <div className="w-full h-1.5 rounded-full bg-[#1a1a2e] overflow-hidden"><motion.div className="h-full rounded-full bg-gradient-to-r from-[#f59e0b] to-[#ef4444]" animate={{ width: `${Math.min(progress, 100)}%` }} /></div>}
+          {isProcessing && (
+            <div className="w-full h-2 rounded-full bg-[#EDEFF2] border border-[#141413]/30 overflow-hidden">
+              <motion.div className="h-full rounded-full bg-[#FF6A1A]" animate={{ width: `${Math.min(progress, 100)}%` }} />
+            </div>
+          )}
 
           {isDone && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-xl bg-[rgba(16,185,129,0.05)] border border-[rgba(16,185,129,0.15)]">
-              <div className="flex items-center gap-2 mb-3"><Check className="w-4 h-4 text-[#10b981]" /><span className="text-sm font-medium text-[#10b981]">Rigging Complete!</span></div>
-              <div className="text-xs text-[#94a3b8] mb-3">Skeleton: {jobData?.metadata?.bones || 65} bones • {jobData?.metadata?.animations || selectedAnims.length} animations applied</div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-xl bg-[#16A34A]/10 border-[1.5px] border-[#16A34A]"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <Check className="w-4 h-4 text-[#16A34A]" />
+                <span className="text-sm font-bold text-[#16A34A]">Rigging Complete!</span>
+              </div>
+              <div className="text-xs font-mono text-[#141413] mb-3">
+                Skeleton: {jobData?.metadata?.bones || 65} bones • {jobData?.metadata?.animations || selectedAnims.length} animations applied
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 {["glb", "fbx_unity", "fbx_unreal", "fbx", "obj"].map((fmt) => {
                   const url = outputUrls?.[fmt];
                   return url ? (
-                    <a key={fmt} href={url} download target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-[#12121a] border border-[rgba(148,163,184,0.06)] text-xs font-mono text-[#94a3b8] hover:border-[rgba(99,102,241,0.3)] hover:text-white transition-all flex items-center">
+                    <a
+                      key={fmt}
+                      href={url}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-white border border-[#141413] text-xs font-mono font-bold text-[#141413] hover:bg-[#FF6A1A] transition-all flex items-center"
+                    >
                       <Download className="w-3 h-3 mr-1" />.{fmt}
                     </a>
                   ) : null;
@@ -185,7 +261,9 @@ export default function RigPage() {
           )}
         </div>
       </div>
-      <div className="flex-1 p-4"><ModelViewer modelUrl={outputUrls?.glb} className="w-full h-full" /></div>
+      <div className="flex-1 p-4 bg-[#EDEFF2]">
+        <ModelViewer modelUrl={outputUrls?.glb} className="w-full h-full" />
+      </div>
     </div>
   );
 }

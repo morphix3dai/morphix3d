@@ -1,9 +1,10 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
+import PhyloFooter from "@/components/PhyloFooter";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Check, Sparkles, Zap, CreditCard } from "lucide-react";
+import { Check, Zap, CreditCard } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getAccessToken } from "@/lib/api";
 import RazorpayCheckout, { CREDIT_PLANS } from "@/components/RazorpayCheckout";
@@ -65,14 +66,14 @@ const plans = [
 ];
 
 const creditCosts = [
-  { feature: "Text to 3D",   credits: 10,  icon: "✨" },
-  { feature: "Image to 3D",  credits: 10,  icon: "🖼️" },
-  { feature: "AI Texturing",  credits: 5,   icon: "🎨" },
-  { feature: "Smart Remesh",  credits: 3,   icon: "⬡" },
-  { feature: "Auto Rigging",  credits: 8,   icon: "🦴" },
-  { feature: "Mechanical CAD",credits: 5,   icon: "⚙️" },
-  { feature: "Architecture",  credits: 8,   icon: "🏛️" },
-  { feature: "3D Viewer",     credits: 0,   icon: "👁️" },
+  { feature: "Text to 3D", credits: 10, icon: "✨" },
+  { feature: "Image to 3D", credits: 10, icon: "🖼️" },
+  { feature: "AI Texturing", credits: 5, icon: "🎨" },
+  { feature: "Smart Remesh", credits: 3, icon: "⬡" },
+  { feature: "Auto Rigging", credits: 8, icon: "🦴" },
+  { feature: "Mechanical CAD", credits: 5, icon: "⚙️" },
+  { feature: "Architecture", credits: 8, icon: "🏛️" },
+  { feature: "3D Viewer", credits: 0, icon: "👁️" },
 ];
 
 export default function PricingPage() {
@@ -80,7 +81,7 @@ export default function PricingPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(undefined);
-  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [, setCreditBalance] = useState<number | null>(null);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -114,19 +115,24 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#F4F1E6] text-[#141413]">
       <Navbar />
       <div className="pt-28 pb-20 px-4">
         <div className="max-w-6xl mx-auto">
-
           {/* Header */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-            <p className="section-label mb-3">Pricing</p>
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-              Simple, <span className="gradient-text">Transparent</span> Pricing
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FAF8F2] border-[1.5px] border-[#141413] text-[#141413] text-[10px] font-mono uppercase tracking-[0.2em] mb-4">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A1A]" />
+              SECTION 03 // STUDIO CATALOG &amp; PRICING
+            </div>
+            <h1
+              className="text-4xl lg:text-6xl font-normal mb-4 text-[#141413]"
+              style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+            >
+              Simple, <span className="italic text-[#FF6A1A]">Transparent</span> Pricing
             </h1>
-            <p className="text-[#94a3b8] max-w-xl mx-auto text-lg">
-              Start free. Pay only for what you create.
+            <p className="text-[#4A4945] max-w-xl mx-auto text-lg">
+              Start free with 200 studio credits. Pay only for what you engineer.
             </p>
           </motion.div>
 
@@ -138,34 +144,41 @@ export default function PricingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className={`relative p-6 rounded-2xl border transition-all hover:scale-[1.02] ${
+                className={`relative p-7 rounded-2xl border-2 transition-all hover:-translate-y-1 ${
                   plan.popular
-                    ? "bg-gradient-to-b from-[rgba(99,102,241,0.08)] to-[#12121a] border-[rgba(99,102,241,0.3)] shadow-[0_0_40px_rgba(99,102,241,0.1)]"
-                    : "bg-[#12121a] border-[rgba(148,163,184,0.06)]"
+                    ? "bg-[#FAF8F2] border-[#141413] shadow-[8px_8px_0px_#FF6A1A]"
+                    : "bg-[#FAF8F2] border-[#141413] shadow-[6px_6px_0px_#141413]"
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-xs font-semibold text-white">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#FF6A1A] border-[1.5px] border-[#141413] text-[10px] font-mono uppercase tracking-widest font-bold text-[#141413]">
                     Most Popular
                   </div>
                 )}
-                <h3 className="text-xl font-semibold mb-1">{plan.name}</h3>
+                <h3
+                  className="text-2xl font-normal text-[#141413] mb-1"
+                  style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+                >
+                  {plan.name}
+                </h3>
                 <div className="mb-1">
-                  <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="text-[#64748b] text-sm">{plan.period}</span>
+                  <span className="text-4xl font-bold text-[#141413]">{plan.price}</span>
+                  <span className="text-[#6E6C65] text-sm">{plan.period}</span>
                 </div>
-                <p className="text-sm text-[#818cf8] font-medium mb-6">{plan.credits}</p>
+                <p className="text-xs font-mono font-bold text-[#FF6A1A] uppercase tracking-wider mb-6">
+                  {plan.credits}
+                </p>
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm text-[#94a3b8]">
-                      <Check className="w-4 h-4 text-[#10b981] flex-shrink-0" />
+                    <li key={f} className="flex items-center gap-2.5 text-sm text-[#4A4945]">
+                      <Check className="w-4 h-4 text-[#16A34A] flex-shrink-0" />
                       {f}
                     </li>
                   ))}
                 </ul>
                 <button
                   onClick={() => handlePlanCta(plan)}
-                  className={`block w-full text-center py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  className={`block w-full text-center py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
                     plan.popular ? "btn-primary" : "btn-secondary"
                   }`}
                 >
@@ -183,11 +196,16 @@ export default function PricingPage() {
             className="mb-16"
           >
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-                <CreditCard className="w-6 h-6 text-[#6366f1]" />
+              <h2
+                className="text-3xl font-normal mb-2 flex items-center justify-center gap-2 text-[#141413]"
+                style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+              >
+                <CreditCard className="w-6 h-6 text-[#FF6A1A]" />
                 Buy Credits à la carte
               </h2>
-              <p className="text-[#94a3b8] text-sm">Need more credits? Top up anytime — no subscription required.</p>
+              <p className="text-[#4A4945] text-sm">
+                Need more credits? Top up anytime — no subscription required.
+              </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
               {CREDIT_PLANS.filter((p) => p.id !== "pro_monthly").map((pack, i) => (
@@ -197,21 +215,25 @@ export default function PricingPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + i * 0.05 }}
                   onClick={() => openCreditPurchase(pack.id)}
-                  className={`relative p-4 rounded-xl border transition-all text-center hover:scale-[1.03] hover:border-[rgba(99,102,241,0.4)] ${
+                  className={`relative p-5 rounded-xl border-[1.5px] border-[#141413] transition-all text-center hover:-translate-y-1 cursor-pointer ${
                     pack.popular
-                      ? "border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.04)]"
-                      : "border-[rgba(148,163,184,0.08)] bg-[#12121a]"
+                      ? "bg-[#FAF8F2] shadow-[5px_5px_0px_#16A34A]"
+                      : "bg-[#FAF8F2] shadow-[4px_4px_0px_#141413]"
                   }`}
                 >
                   {pack.badge && (
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-[#10b981] text-[9px] font-bold text-white whitespace-nowrap">
+                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-[#16A34A] border border-[#141413] text-[9px] font-mono font-bold text-white whitespace-nowrap">
                       {pack.badge}
                     </div>
                   )}
-                  <div className="text-2xl font-bold text-white mb-0.5">{pack.credits.toLocaleString()}</div>
-                  <div className="text-xs text-[#64748b] mb-2">credits</div>
-                  <div className="text-base font-semibold text-[#818cf8]">₹{pack.amount}</div>
-                  <div className="text-[10px] text-[#475569] mt-1">₹{(pack.amount / pack.credits).toFixed(2)}/cr</div>
+                  <div className="text-2xl font-bold text-[#141413] mb-0.5">
+                    {pack.credits.toLocaleString()}
+                  </div>
+                  <div className="text-xs font-mono uppercase text-[#6E6C65] mb-2">credits</div>
+                  <div className="text-base font-bold text-[#FF6A1A]">₹{pack.amount}</div>
+                  <div className="text-[10px] font-mono text-[#6E6C65] mt-1">
+                    ₹{(pack.amount / pack.credits).toFixed(2)}/cr
+                  </div>
                 </motion.button>
               ))}
             </div>
@@ -222,25 +244,25 @@ export default function PricingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="max-w-lg mx-auto p-6 rounded-2xl bg-[#12121a] border border-[rgba(148,163,184,0.06)]"
+            className="max-w-lg mx-auto p-6 rounded-2xl bg-[#FAF8F2] border-2 border-[#141413] shadow-[6px_6px_0px_#141413]"
           >
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-[#f59e0b]" /> Credit Costs per Feature
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-[#141413]">
+              <Zap className="w-5 h-5 text-[#FF6A1A]" /> Credit Costs per Feature
             </h3>
             <div className="space-y-1">
               {creditCosts.map((item) => (
                 <div
                   key={item.feature}
-                  className="flex items-center justify-between py-2.5 border-b border-[rgba(148,163,184,0.05)] last:border-0"
+                  className="flex items-center justify-between py-2.5 border-b border-[#141413]/15 last:border-0"
                 >
-                  <span className="text-sm text-[#94a3b8] flex items-center gap-2">
+                  <span className="text-sm font-medium text-[#141413] flex items-center gap-2">
                     <span>{item.icon}</span> {item.feature}
                   </span>
-                  <span className="text-sm font-mono font-semibold">
+                  <span className="text-sm font-mono font-bold">
                     {item.credits === 0 ? (
-                      <span className="text-[#10b981]">Free</span>
+                      <span className="text-[#16A34A]">Free</span>
                     ) : (
-                      <span className="text-[#818cf8]">{item.credits} credits</span>
+                      <span className="text-[#FF6A1A]">{item.credits} credits</span>
                     )}
                   </span>
                 </div>
@@ -249,6 +271,8 @@ export default function PricingPage() {
           </motion.div>
         </div>
       </div>
+
+      <PhyloFooter />
 
       {/* Razorpay Checkout Modal */}
       <RazorpayCheckout

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import {
   FolderOpen, Search, Grid3x3, List, Download, Trash2, Share2,
-  Eye, Sparkles, Loader2, X, Check, ExternalLink,
+  Eye, Sparkles, Loader2, X, Check,
 } from "lucide-react";
 import { assets as assetsApi, generate, getAccessToken } from "@/lib/api";
 import type { GenerationJob } from "@/lib/api";
@@ -15,8 +15,8 @@ import { convertGlbToFormat } from "@/lib/exporters";
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-[#0a0a12] rounded-xl animate-pulse flex items-center justify-center">
-      <Sparkles className="w-8 h-8 text-[#6366f1] animate-spin" />
+    <div className="w-full h-full bg-[#EDEFF2] rounded-xl animate-pulse flex items-center justify-center border border-[#141413]/20">
+      <Sparkles className="w-8 h-8 text-[#FF6A1A] animate-spin" />
     </div>
   ),
 });
@@ -59,10 +59,9 @@ export default function AssetsPage() {
   const [loading, setLoading] = useState(true);
   const [assets, setAssets] = useState<AssetItem[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<AssetItem | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [, setDeleting] = useState<string | null>(null);
   const [converting, setConverting] = useState<string | null>(null);
 
-  // Fetch real assets from backend
   useEffect(() => {
     const token = getAccessToken();
     if (!token) {
@@ -70,7 +69,6 @@ export default function AssetsPage() {
       return;
     }
 
-    // Fetch generation history (which has all models)
     generate.history(1, 50).then((data) => {
       const items: AssetItem[] = data.generations.map((gen: GenerationJob) => ({
         id: gen.id,
@@ -98,14 +96,12 @@ export default function AssetsPage() {
   const handleDelete = async (assetId: string) => {
     setDeleting(assetId);
     try {
-      await generate.status(assetId); // verify it exists
-      // Try to delete via assets API if asset record exists
-      try { await assetsApi.delete(assetId); } catch { /* may not have asset record yet */ }
+      await generate.status(assetId);
+      try { await assetsApi.delete(assetId); } catch {}
       setAssets((prev) => prev.filter((a) => a.id !== assetId));
       toast.success("Asset deleted");
       if (selectedAsset?.id === assetId) setSelectedAsset(null);
     } catch {
-      // Just remove from local state if backend fails
       setAssets((prev) => prev.filter((a) => a.id !== assetId));
       toast.success("Asset removed");
     } finally {
@@ -116,7 +112,6 @@ export default function AssetsPage() {
   const handleDownload = (asset: AssetItem) => {
     const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:4000";
     if (asset.outputUrls) {
-      // Find the first available file URL
       const fileUrl = asset.outputUrls.glb || asset.outputUrls.obj || asset.outputUrls.stl || Object.values(asset.outputUrls)[0];
       if (fileUrl) {
         const fullUrl = fileUrl.startsWith("http") ? fileUrl : `${backendUrl}${fileUrl}`;
@@ -193,26 +188,29 @@ export default function AssetsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-        <Loader2 className="w-8 h-8 text-[#6366f1] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#FF6A1A] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
+    <div className="p-6 max-w-6xl mx-auto space-y-6 text-[#141413]">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <FolderOpen className="w-6 h-6 text-[#818cf8]" /> My Assets
+          <h1
+            className="text-3xl font-normal flex items-center gap-2 text-[#141413]"
+            style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+          >
+            <FolderOpen className="w-6 h-6 text-[#FF6A1A]" /> My Assets
           </h1>
-          <p className="text-sm text-[#64748b] mt-1">{filtered.length} model{filtered.length !== 1 ? "s" : ""} generated</p>
+          <p className="text-sm text-[#4A4945] mt-1">{filtered.length} model{filtered.length !== 1 ? "s" : ""} generated</p>
         </div>
       </div>
 
       {/* Toolbar */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748b]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6E6C65]" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search assets..." className="input-field pl-10 py-2.5 text-sm" />
         </div>
         <select value={filter} onChange={(e) => setFilter(e.target.value)} className="input-field w-auto py-2.5 text-sm pr-8 appearance-none cursor-pointer">
@@ -223,11 +221,11 @@ export default function AssetsPage() {
           <option value="remesh">Remesh</option>
           <option value="rig">Rigging</option>
         </select>
-        <div className="flex border border-[rgba(148,163,184,0.1)] rounded-lg overflow-hidden ml-auto">
-          <button onClick={() => setView("grid")} className={`p-2.5 ${view === "grid" ? "bg-[rgba(99,102,241,0.15)] text-[#818cf8]" : "text-[#64748b] hover:text-white"}`}>
+        <div className="flex border-[1.5px] border-[#141413] rounded-lg overflow-hidden ml-auto bg-[#FAF8F2]">
+          <button onClick={() => setView("grid")} className={`p-2.5 cursor-pointer ${view === "grid" ? "bg-[#141413] text-[#FAF8F2]" : "text-[#4A4945] hover:text-[#141413]"}`}>
             <Grid3x3 className="w-4 h-4" />
           </button>
-          <button onClick={() => setView("list")} className={`p-2.5 ${view === "list" ? "bg-[rgba(99,102,241,0.15)] text-[#818cf8]" : "text-[#64748b] hover:text-white"}`}>
+          <button onClick={() => setView("list")} className={`p-2.5 cursor-pointer ${view === "list" ? "bg-[#141413] text-[#FAF8F2]" : "text-[#4A4945] hover:text-[#141413]"}`}>
             <List className="w-4 h-4" />
           </button>
         </div>
@@ -235,10 +233,10 @@ export default function AssetsPage() {
 
       {/* Empty State */}
       {filtered.length === 0 && !loading && (
-        <div className="p-12 rounded-xl bg-[#12121a] border border-[rgba(148,163,184,0.06)] text-center">
-          <Sparkles className="w-12 h-12 text-[#1e1e38] mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-1">No models yet</h3>
-          <p className="text-sm text-[#64748b] mb-4">Generate your first 3D model to see it here</p>
+        <div className="p-12 rounded-2xl bg-[#FAF8F2] border-2 border-[#141413] shadow-[6px_6px_0px_#141413] text-center">
+          <Sparkles className="w-12 h-12 text-[#FF6A1A] mx-auto mb-4" />
+          <h3 className="text-xl font-bold mb-1 text-[#141413]">No models yet</h3>
+          <p className="text-sm text-[#4A4945] mb-5">Generate your first 3D model to see it in your studio vault</p>
           <a href="/workspace/text-to-3d" className="btn-primary text-sm inline-flex items-center gap-2">
             <Sparkles className="w-4 h-4" /> Create Your First Model
           </a>
@@ -249,42 +247,47 @@ export default function AssetsPage() {
       {view === "grid" && filtered.length > 0 && (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((asset, i) => (
-            <motion.div key={asset.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-              className="group rounded-xl bg-[#12121a] border border-[rgba(148,163,184,0.06)] overflow-hidden card-hover cursor-pointer"
-              onClick={() => setSelectedAsset(asset)}>
+            <motion.div
+              key={asset.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="group rounded-xl bg-[#FAF8F2] border-[1.5px] border-[#141413] shadow-[4px_4px_0px_#141413] overflow-hidden hover:-translate-y-1 transition-all cursor-pointer"
+              onClick={() => setSelectedAsset(asset)}
+            >
               {/* Preview */}
-              <div className="h-40 bg-[#0a0a12] relative flex items-center justify-center">
+              <div className="h-40 bg-[#EDEFF2] border-b border-[#141413]/20 relative flex items-center justify-center">
                 <div className="text-center">
-                  <Sparkles className="w-8 h-8 text-[#1e1e38] mx-auto mb-1" />
-                  <span className="text-[10px] text-[#334155] font-mono">3D MODEL</span>
+                  <Sparkles className="w-8 h-8 text-[#6E6C65] mx-auto mb-1" />
+                  <span className="text-[10px] text-[#4A4945] font-mono font-bold">3D MODEL</span>
                 </div>
-                {asset.isPublic && <span className="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-semibold bg-[rgba(16,185,129,0.15)] text-[#10b981]">Public</span>}
-                <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-semibold bg-[rgba(99,102,241,0.15)] text-[#818cf8]">
-                  <Check className="w-3 h-3 inline mr-0.5" />COMPLETED
+                {asset.isPublic && <span className="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#16A34A] text-white">Public</span>}
+                <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#141413] text-[#FAF8F2]">
+                  <Check className="w-3 h-3 inline mr-0.5 text-[#FF6A1A]" />COMPLETED
                 </div>
                 {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-[rgba(0,0,0,0.7)] flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={(e) => { e.stopPropagation(); setSelectedAsset(asset); }} className="p-2.5 rounded-lg bg-[rgba(99,102,241,0.3)] hover:bg-[rgba(99,102,241,0.5)] text-white transition-colors" title="View 3D Model">
+                <div className="absolute inset-0 bg-[#141413]/75 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={(e) => { e.stopPropagation(); setSelectedAsset(asset); }} className="p-2.5 rounded-lg bg-[#FAF8F2] text-[#141413] hover:bg-[#FF6A1A] transition-colors" title="View 3D Model">
                     <Eye className="w-5 h-5" />
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); handleDownload(asset); }} className="p-2.5 rounded-lg bg-[rgba(16,185,129,0.3)] hover:bg-[rgba(16,185,129,0.5)] text-white transition-colors" title="Download">
+                  <button onClick={(e) => { e.stopPropagation(); handleDownload(asset); }} className="p-2.5 rounded-lg bg-[#FAF8F2] text-[#141413] hover:bg-[#16A34A] hover:text-white transition-colors" title="Download">
                     <Download className="w-5 h-5" />
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); handleShare(asset); }} className="p-2.5 rounded-lg bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] text-white transition-colors" title="Share">
+                  <button onClick={(e) => { e.stopPropagation(); handleShare(asset); }} className="p-2.5 rounded-lg bg-[#FAF8F2] text-[#141413] hover:bg-[#2F5BFF] hover:text-white transition-colors" title="Share">
                     <Share2 className="w-5 h-5" />
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); handleDelete(asset.id); }} className="p-2.5 rounded-lg bg-[rgba(239,68,68,0.2)] hover:bg-[rgba(239,68,68,0.4)] text-white transition-colors" title="Delete">
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(asset.id); }} className="p-2.5 rounded-lg bg-[#FAF8F2] text-[#DC2626] hover:bg-[#DC2626] hover:text-white transition-colors" title="Delete">
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
               </div>
-              <div className="p-3">
-                <div className="font-medium text-sm truncate">{asset.name}</div>
+              <div className="p-3.5">
+                <div className="font-bold text-sm truncate text-[#141413]">{asset.name}</div>
                 <div className="flex items-center justify-between mt-1">
-                  <span className="text-xs text-[#64748b]">{asset.type}</span>
-                  <span className="text-xs font-mono text-[#94a3b8] px-1.5 py-0.5 rounded bg-[#1a1a2e]">.glb</span>
+                  <span className="text-xs font-mono text-[#6E6C65]">{asset.type}</span>
+                  <span className="text-xs font-mono font-bold text-[#141413] px-1.5 py-0.5 rounded bg-[#EDEFF2] border border-[#141413]/20">.glb</span>
                 </div>
-                <div className="text-xs text-[#475569] mt-1">{asset.size} • {asset.date}</div>
+                <div className="text-xs font-mono text-[#6E6C65] mt-1">{asset.size} • {asset.date}</div>
               </div>
             </motion.div>
           ))}
@@ -293,29 +296,34 @@ export default function AssetsPage() {
 
       {/* List View */}
       {view === "list" && filtered.length > 0 && (
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           {filtered.map((asset, i) => (
-            <motion.div key={asset.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+            <motion.div
+              key={asset.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.03 }}
               onClick={() => setSelectedAsset(asset)}
-              className="flex items-center gap-4 p-3 rounded-xl bg-[#12121a] border border-[rgba(148,163,184,0.06)] hover:border-[rgba(99,102,241,0.2)] transition-colors cursor-pointer">
-              <div className="w-10 h-10 rounded-lg bg-[#0a0a12] flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-4 h-4 text-[#6366f1]" />
+              className="flex items-center gap-4 p-3.5 rounded-xl bg-[#FAF8F2] border-[1.5px] border-[#141413] hover:bg-[#EDEFF2] transition-colors cursor-pointer"
+            >
+              <div className="w-10 h-10 rounded-lg bg-[#EDEFF2] border border-[#141413]/20 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-4 h-4 text-[#FF6A1A]" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-sm truncate">{asset.name}</div>
-                <div className="text-xs text-[#64748b]">{asset.type} • {asset.style}</div>
+                <div className="font-bold text-sm truncate text-[#141413]">{asset.name}</div>
+                <div className="text-xs font-mono text-[#6E6C65]">{asset.type} • {asset.style}</div>
               </div>
-              <span className="text-xs font-mono text-[#94a3b8] px-1.5 py-0.5 rounded bg-[#1a1a2e]">.glb</span>
-              <span className="text-xs text-[#64748b] w-16 text-right">{asset.size}</span>
-              <span className="text-xs text-[#64748b] w-20 text-right">{asset.date}</span>
+              <span className="text-xs font-mono font-bold text-[#141413] px-1.5 py-0.5 rounded bg-[#EDEFF2] border border-[#141413]/20">.glb</span>
+              <span className="text-xs font-mono text-[#6E6C65] w-16 text-right">{asset.size}</span>
+              <span className="text-xs font-mono text-[#6E6C65] w-20 text-right">{asset.date}</span>
               <div className="flex items-center gap-1">
-                <button onClick={(e) => { e.stopPropagation(); handleDownload(asset); }} className="p-1.5 rounded-lg text-[#64748b] hover:text-[#10b981] hover:bg-[#1a1a2e]" title="Download">
+                <button onClick={(e) => { e.stopPropagation(); handleDownload(asset); }} className="p-1.5 rounded-lg text-[#4A4945] hover:text-[#16A34A] hover:bg-white" title="Download">
                   <Download className="w-3.5 h-3.5" />
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); handleShare(asset); }} className="p-1.5 rounded-lg text-[#64748b] hover:text-white hover:bg-[#1a1a2e]" title="Share">
+                <button onClick={(e) => { e.stopPropagation(); handleShare(asset); }} className="p-1.5 rounded-lg text-[#4A4945] hover:text-[#141413] hover:bg-white" title="Share">
                   <Share2 className="w-3.5 h-3.5" />
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); handleDelete(asset.id); }} className="p-1.5 rounded-lg text-[#64748b] hover:text-[#ef4444] hover:bg-[#1a1a2e]" title="Delete">
+                <button onClick={(e) => { e.stopPropagation(); handleDelete(asset.id); }} className="p-1.5 rounded-lg text-[#4A4945] hover:text-[#DC2626] hover:bg-white" title="Delete">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -324,30 +332,28 @@ export default function AssetsPage() {
         </div>
       )}
 
-      {/* ================================================ */}
       {/* Asset Detail Modal with 3D Viewer */}
-      {/* ================================================ */}
       <AnimatePresence>
         {selectedAsset && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-[rgba(0,0,0,0.8)] flex items-center justify-center p-6"
+            className="fixed inset-0 z-[100] bg-[#141413]/70 backdrop-blur-sm flex items-center justify-center p-6"
             onClick={() => setSelectedAsset(null)}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-5xl max-h-[90vh] rounded-2xl bg-[#12121a] border border-[rgba(148,163,184,0.1)] shadow-2xl overflow-hidden"
+              className="w-full max-w-5xl max-h-[90vh] rounded-2xl bg-[#FAF8F2] border-2 border-[#141413] shadow-[10px_10px_0px_#141413] overflow-hidden text-[#141413]"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(148,163,184,0.07)]">
+              <div className="flex items-center justify-between px-6 py-4 border-b-[1.5px] border-[#141413] bg-[#F4F1E6]">
                 <div>
-                  <h2 className="text-lg font-bold">{selectedAsset.name}</h2>
-                  <p className="text-xs text-[#64748b] mt-0.5">
+                  <h2 className="text-lg font-bold text-[#141413]">{selectedAsset.name}</h2>
+                  <p className="text-xs font-mono text-[#6E6C65] mt-0.5">
                     {selectedAsset.type} • {selectedAsset.size} • {selectedAsset.date}
                   </p>
                 </div>
@@ -358,7 +364,7 @@ export default function AssetsPage() {
                   <button onClick={() => handleShare(selectedAsset)} className="btn-secondary text-sm flex items-center gap-2 px-4 py-2">
                     <Share2 className="w-4 h-4" /> Share
                   </button>
-                  <button onClick={() => setSelectedAsset(null)} className="p-2 rounded-lg text-[#64748b] hover:text-white hover:bg-[#1a1a2e] transition-colors">
+                  <button onClick={() => setSelectedAsset(null)} className="p-2 rounded-lg text-[#4A4945] hover:text-[#141413] hover:bg-[#EDEFF2] transition-colors">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -367,12 +373,12 @@ export default function AssetsPage() {
               {/* Content */}
               <div className="flex h-[65vh]">
                 {/* 3D Viewer */}
-                <div className="flex-1 p-4">
+                <div className="flex-1 p-4 bg-[#EDEFF2]">
                   <ModelViewer className="w-full h-full" modelUrl={selectedAsset.outputUrls?.glb || selectedAsset.outputUrls?.obj} />
                 </div>
 
                 {/* Details Sidebar */}
-                <div className="w-[280px] border-l border-[rgba(148,163,184,0.07)] p-5 overflow-y-auto space-y-5">
+                <div className="w-[280px] border-l-[1.5px] border-[#141413] bg-[#FAF8F2] p-5 overflow-y-auto space-y-5">
                   <div>
                     <h3 className="section-label mb-2">Model Info</h3>
                     <div className="space-y-2">
@@ -383,8 +389,8 @@ export default function AssetsPage() {
                         { label: "Created", value: selectedAsset.date },
                       ].map((item) => (
                         <div key={item.label} className="flex justify-between text-sm">
-                          <span className="text-[#64748b]">{item.label}</span>
-                          <span className="font-medium">{item.value}</span>
+                          <span className="text-[#6E6C65]">{item.label}</span>
+                          <span className="font-bold text-[#141413]">{item.value}</span>
                         </div>
                       ))}
                     </div>
@@ -393,7 +399,7 @@ export default function AssetsPage() {
                   {selectedAsset.prompt && (
                     <div>
                       <h3 className="section-label mb-2">Prompt Used</h3>
-                      <p className="text-sm text-[#94a3b8] bg-[#0a0a12] rounded-lg p-3 leading-relaxed">
+                      <p className="text-sm text-[#141413] bg-[#F4F1E6] border border-[#141413]/20 rounded-lg p-3 leading-relaxed">
                         &ldquo;{selectedAsset.prompt}&rdquo;
                       </p>
                     </div>
@@ -413,10 +419,10 @@ export default function AssetsPage() {
                             key={fmt}
                             disabled={converting === fmt}
                             onClick={() => handleFormatExport(fmt)}
-                            className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#0a0a12] border text-xs font-mono transition-all ${
+                            className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-mono font-bold transition-all ${
                               isAvailable
-                                ? "border-[rgba(148,163,184,0.06)] text-[#94a3b8] hover:border-[rgba(99,102,241,0.3)] hover:text-white"
-                                : "border-transparent text-[#475569] cursor-not-allowed opacity-50"
+                                ? "bg-white border-[#141413] text-[#141413] hover:bg-[#FF6A1A]"
+                                : "bg-[#EDEFF2] border-[#141413]/20 text-[#6E6C65] cursor-not-allowed opacity-50"
                             }`}
                           >
                             {converting === fmt ? (
@@ -434,12 +440,16 @@ export default function AssetsPage() {
                   <div>
                     <h3 className="section-label mb-2">Actions</h3>
                     <div className="space-y-1.5">
-                      <button onClick={() => handleShare(selectedAsset)}
-                        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-[#94a3b8] hover:text-white hover:bg-[#1a1a2e] transition-colors">
+                      <button
+                        onClick={() => handleShare(selectedAsset)}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold text-[#141413] hover:bg-[#EDEFF2] transition-colors"
+                      >
                         <Share2 className="w-4 h-4" /> Copy Share Link
                       </button>
-                      <button onClick={() => { handleDelete(selectedAsset.id); }}
-                        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-[#ef4444] hover:bg-[rgba(239,68,68,0.1)] transition-colors">
+                      <button
+                        onClick={() => { handleDelete(selectedAsset.id); }}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold text-[#DC2626] hover:bg-[#DC2626]/10 transition-colors"
+                      >
                         <Trash2 className="w-4 h-4" /> Delete Model
                       </button>
                     </div>
