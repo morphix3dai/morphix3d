@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { generate } from "@/lib/api";
+import StudioVideoGuide from "@/components/StudioVideoGuide";
 
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
@@ -484,8 +485,12 @@ export default function TextTo3DPage() {
           )}
         </div>
 
-        {/* Right Creative 3D Sub-Tools */}
-        <div className="flex items-center gap-2 font-mono text-[11px]">
+        {/* Right Creative 3D Sub-Tools + Video Guide */}
+        <div className="flex items-center gap-2 flex-wrap font-mono text-[11px]">
+          <StudioVideoGuide
+            studio="text-to-3d"
+            onSelectPrompt={(text) => setPrompt(text)}
+          />
           <Link
             href="/workspace/image-to-3d"
             className="px-3 py-1.5 bg-[#FAF8F2] border-[1.5px] border-[#141413] text-[#141413] font-bold hover:bg-[#141413] hover:text-[#F4F1E6] transition-colors"

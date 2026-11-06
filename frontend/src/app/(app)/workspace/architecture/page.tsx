@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { generate } from "@/lib/api";
+import StudioVideoGuide from "@/components/StudioVideoGuide";
 
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
@@ -637,8 +638,25 @@ export default function ArchitecturePage() {
           ))}
         </div>
 
-        {/* Right Roof & Furniture Toggles */}
-        <div className="flex items-center gap-2">
+        {/* Right Roof & Furniture Toggles + Video Guide */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <StudioVideoGuide
+            studio="architecture"
+            onSelectPrompt={(text) => {
+              setPrompt(text);
+              const p = parseArchPrompt(text);
+              if (p.hasSqft) setSqft(p.nextSqft);
+              if (p.hasBed) setBedrooms(p.nextBed);
+              if (p.hasFloors) setFloors(p.nextFloors);
+              const updated = buildRoomsFromPrompt(
+                text,
+                p.hasSqft ? p.nextSqft : sqft,
+                p.hasBed ? p.nextBed : bedrooms
+              );
+              setRooms(updated);
+              roomsRef.current = updated.map((r) => ({ ...r }));
+            }}
+          />
           <button
             type="button"
             onClick={() => setRoofOn(!roofOn)}

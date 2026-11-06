@@ -7,6 +7,7 @@ import { useDropzone } from "react-dropzone";
 import { Hexagon, Upload, Loader2, Check, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 import { generate, uploadFile } from "@/lib/api";
+import StudioVideoGuide from "@/components/StudioVideoGuide";
 
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
@@ -81,14 +82,15 @@ export default function RemeshPage() {
     <div className="min-h-[calc(100vh-64px)] lg:h-[calc(100vh-64px)] w-full max-w-full overflow-x-hidden flex flex-col lg:flex-row bg-[#F4F1E6] text-[#141413]">
       <div className="w-full lg:w-[380px] flex-shrink-0 border-b-[1.5px] lg:border-b-0 lg:border-r-[1.5px] border-[#141413] bg-[#FAF8F2] overflow-y-auto">
         <div className="p-5 space-y-5">
-          <div>
+          <div className="space-y-2.5">
             <h1
               className="text-2xl font-normal flex items-center gap-2 text-[#141413]"
               style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
             >
               <Hexagon className="w-5 h-5 text-[#16A34A]" /> Smart Remesh
             </h1>
-            <p className="text-sm text-[#4A4945] mt-1">Optimize polygon count and fix mesh topology issues</p>
+            <p className="text-sm text-[#4A4945]">Optimize polygon count and fix mesh topology issues</p>
+            <StudioVideoGuide studio="remesh" />
           </div>
 
           {/* Upload */}

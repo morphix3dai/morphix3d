@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { generate, uploadFile } from "@/lib/api";
+import StudioVideoGuide from "@/components/StudioVideoGuide";
 
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
@@ -107,7 +108,7 @@ export default function ImageTo3DPage() {
       {/* Left Panel */}
       <div className="w-full lg:w-[380px] flex-shrink-0 border-b-[1.5px] lg:border-b-0 lg:border-r-[1.5px] border-[#141413] bg-[#FAF8F2] overflow-y-auto">
         <div className="p-5 space-y-5">
-          <div>
+          <div className="space-y-2.5">
             <h1
               className="text-2xl font-normal flex items-center gap-2 text-[#141413]"
               style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
@@ -115,7 +116,8 @@ export default function ImageTo3DPage() {
               <ImageIcon className="w-5 h-5 text-[#FF6A1A]" />
               Image to 3D
             </h1>
-            <p className="text-sm text-[#4A4945] mt-1">Upload an image to reconstruct a 3D model</p>
+            <p className="text-sm text-[#4A4945]">Upload an image to reconstruct a 3D model</p>
+            <StudioVideoGuide studio="image-to-3d" />
           </div>
 
           {/* Mode Toggle */}

@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { generate } from "@/lib/api";
+import StudioVideoGuide from "@/components/StudioVideoGuide";
 
 const ModelViewer = dynamic(() => import("@/components/ModelViewer"), {
   ssr: false,
@@ -583,8 +584,20 @@ export default function MechanicalWorkspace() {
           )}
         </div>
 
-        {/* Right CNC Tolerance Badge */}
-        <div className="flex items-center gap-3">
+        {/* Right CNC Tolerance Badge + Video Guide */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <StudioVideoGuide
+            studio="mechanical"
+            onSelectPrompt={(text) => {
+              setPrompt(text);
+              const p = parsePromptSpecs(text);
+              setPartType(p.nextPartType);
+              if (p.hasTeeth) setTeeth(p.nextTeeth);
+              if (p.hasBore) setHoleDia(p.nextBore);
+              if (p.hasThick) setThickness(p.nextThick);
+              setMaterial(p.nextMat);
+            }}
+          />
           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-[#1E2126] font-mono text-[11px] font-bold shadow-[2px_2px_0px_#1E2126]">
             <span className="w-2 h-2 rounded-full bg-[#FF6A1A]" />
             <span>CNC-READY · ISO 2768-fH (±0.02 mm)</span>
