@@ -79,12 +79,20 @@ app.use("/api/generate", apiLimiter, generateRoutes);
 app.use("/api/credits", apiLimiter, creditsRoutes);
 app.use("/api/assets", apiLimiter, assetsRoutes);
 
-// Health check
-app.get(["/", "/health", "/api/health"], (_req, res) => {
+// Health check & API index
+app.get(["/", "/health", "/api", "/api/health"], (_req, res) => {
   res.json({
     status: "ok",
-    service: "forge3d-backend",
+    service: "morphix3d-backend",
     version: "1.0.0",
+    paymentGateway: config.razorpay.keyId ? "razorpay_active" : "sandbox",
+    endpoints: {
+      health: "/api/health",
+      auth: ["/api/auth/register", "/api/auth/login", "/api/auth/google", "/api/auth/me"],
+      credits: ["/api/credits/balance", "/api/credits/history", "/api/credits/purchase", "/api/credits/verify", "/api/credits/webhook"],
+      generate: ["/api/generate/mechanical", "/api/generate/architecture", "/api/generate/text-to-3d", "/api/generate/image-to-3d", "/api/generate/texture", "/api/generate/remesh", "/api/generate/rig"],
+      assets: ["/api/assets", "/api/assets/community/gallery"],
+    },
     timestamp: new Date().toISOString(),
   });
 });
