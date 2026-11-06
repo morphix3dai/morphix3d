@@ -2,7 +2,7 @@ import Link from "next/link";
 import MorphixLogo from "@/components/MorphixLogo";
 
 export const metadata = {
-  title: "Contact & FAQ | Morphix 3D",
+  title: "Contact & FAQ",
   description: "Contact support, billing, and frequently asked questions at Morphix 3D (3dmorphix.com).",
 };
 

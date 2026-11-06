@@ -2,7 +2,7 @@ import Link from "next/link";
 import MorphixLogo from "@/components/MorphixLogo";
 
 export const metadata = {
-  title: "Privacy Policy | Morphix 3D",
+  title: "Privacy Policy",
   description: "Privacy Policy for Morphix 3D (3dmorphix.com).",
 };
 

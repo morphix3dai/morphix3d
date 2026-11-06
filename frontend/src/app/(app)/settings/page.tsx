@@ -74,27 +74,20 @@ export default function SettingsPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-        <Loader2 className="w-8 h-8 text-[#FF6A1A] animate-spin" />
-      </div>
-    );
-  }
-
   const planLabel = plan === "ENTERPRISE" ? "Enterprise" : plan === "PRO" ? "Pro Plan" : "Free Plan";
   const planCredits = plan === "ENTERPRISE" ? "10,000" : plan === "PRO" ? "2,000" : "200";
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6 text-[#141413]">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6 text-[#141413]">
       <h1
         className="text-3xl font-normal flex items-center gap-2 text-[#141413]"
         style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
       >
         <Settings className="w-6 h-6 text-[#FF6A1A]" /> Settings
+        {isLoading && <Loader2 className="w-4 h-4 text-[#FF6A1A] animate-spin ml-2" />}
       </h1>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col sm:flex-row gap-6">
         {/* Tabs */}
         <div className="w-48 flex-shrink-0 space-y-1.5">
           {tabs.map((tab) => (

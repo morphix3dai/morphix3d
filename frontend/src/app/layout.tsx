@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
@@ -10,6 +10,13 @@ const inter = Inter({
 });
 
 const SITE_URL = "https://3dmorphix.com";
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#F4F1E6" },
+    { media: "(prefers-color-scheme: light)", color: "#F4F1E6" },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -76,11 +83,7 @@ export const metadata: Metadata = {
     shortcut: "/favicon-16x16.png",
     apple: "/apple-touch-icon.png",
   },
-  manifest: "/site.webmanifest",
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0f" },
-    { media: "(prefers-color-scheme: light)", color: "#0a0a0f" },
-  ],
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -89,17 +92,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans antialiased`}>
+    <html lang="en">
+      <body className={`${inter.variable} font-sans antialiased bg-[#F4F1E6] text-[#141413]`}>
         <AuthProvider>
           {children}
           <Toaster
             position="bottom-right"
             toastOptions={{
               style: {
-                background: "#1e1e38",
-                color: "#f1f5f9",
-                border: "1px solid rgba(148, 163, 184, 0.1)",
+                background: "#FAF8F2",
+                color: "#141413",
+                border: "1.5px solid #141413",
                 borderRadius: "12px",
               },
             }}

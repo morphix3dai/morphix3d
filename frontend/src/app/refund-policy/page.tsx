@@ -2,7 +2,7 @@ import Link from "next/link";
 import MorphixLogo from "@/components/MorphixLogo";
 
 export const metadata = {
-  title: "Refund & Cancellation Policy | Morphix 3D",
+  title: "Refund & Cancellation Policy",
   description: "Refund and Cancellation Policy for Morphix 3D (3dmorphix.com).",
 };
 

@@ -408,26 +408,31 @@ export default function ArchitecturePage() {
     }
   };
 
+  const parseArchPrompt = (text: string) => {
+    const sqftMatch = text.match(/(\d{3,4})\s*(?:sq\s*ft|sqft|sf)/i);
+    const nextSqft = sqftMatch ? Math.max(800, Math.min(3600, parseInt(sqftMatch[1], 10))) : sqft;
+
+    const bedMatch = text.match(/(\d)\s*(?:-|\s)?(?:bed|bhk|br)/i);
+    const nextBed = bedMatch ? Math.max(1, Math.min(4, parseInt(bedMatch[1], 10))) : bedrooms;
+
+    const isTwoFloor = /g\s*\+\s*1|2\s*(?:-|\s)?(?:floor|story|storey|level)|duplex|villa/i.test(text);
+    const nextFloors = isTwoFloor ? 2 : floors;
+
+    return { nextSqft, nextBed, nextFloors, hasSqft: !!sqftMatch, hasBed: !!bedMatch, hasFloors: isTwoFloor };
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim()) {
       toast.error("Please enter an architectural brief");
       return;
     }
 
-    // Parse explicit spatial program from prompt
-    const sqftMatch = prompt.match(/(\d{3,4})\s*(?:sq\s*ft|sqft|sf)/i);
-    const nextSqft = sqftMatch ? Math.max(800, Math.min(3600, parseInt(sqftMatch[1], 10))) : sqft;
-    if (sqftMatch) setSqft(nextSqft);
+    const parsed = parseArchPrompt(prompt);
+    setSqft(parsed.nextSqft);
+    setBedrooms(parsed.nextBed);
+    if (parsed.hasFloors) setFloors(2);
 
-    const bedMatch = prompt.match(/(\d)\s*(?:-|\s)?(?:bed|bhk|br)/i);
-    const nextBed = bedMatch ? Math.max(1, Math.min(4, parseInt(bedMatch[1], 10))) : bedrooms;
-    if (bedMatch) setBedrooms(nextBed);
-
-    const isTwoFloor = /g\s*\+\s*1|2\s*(?:-|\s)?(?:floor|story|storey|level)|duplex|villa/i.test(prompt);
-    const nextFloors = isTwoFloor ? 2 : floors;
-    if (isTwoFloor) setFloors(2);
-
-    const updatedRooms = buildRoomsFromPrompt(prompt, nextSqft, nextBed);
+    const updatedRooms = buildRoomsFromPrompt(prompt, parsed.nextSqft, parsed.nextBed);
     setRooms(updatedRooms);
     roomsRef.current = updatedRooms.map((r) => ({ ...r }));
 
@@ -442,9 +447,9 @@ export default function ArchitecturePage() {
       const job = await generate.architecture({
         prompt,
         houseStyle: style,
-        sqft: nextSqft,
-        floors: nextFloors,
-        rooms: { bedroom: nextBed, bathroom: Math.max(1, nextBed - 1), kitchen: 1, garage: 1, garden: 1 },
+        sqft: parsed.nextSqft,
+        floors: parsed.nextFloors,
+        rooms: { bedroom: parsed.nextBed, bathroom: Math.max(1, parsed.nextBed - 1), kitchen: 1, garage: 1, garden: 1 },
       });
 
       const jobId = (job as { jobId?: string }).jobId;
@@ -490,8 +495,12 @@ export default function ArchitecturePage() {
   };
 
   const handleExport = (fmt: "pdf" | "dxf" | "usdz" | "glb") => {
+    const parsed = parseArchPrompt(prompt);
+    const activeSqft = parsed.hasSqft ? parsed.nextSqft : sqft;
+    const activeFloors = parsed.hasFloors ? parsed.nextFloors : floors;
+
     const ext = fmt === "pdf" && previewSvg?.startsWith("data:image/svg") ? "svg" : fmt === "usdz" ? "obj" : fmt;
-    const filename = `morphix_architecture_${sqft}sqft.${ext}`;
+    const filename = `morphix_architecture_${activeSqft}sqft.${ext}`;
     const remoteUrl = outputUrls?.[fmt] || (fmt === "pdf" ? previewSvg : fmt === "glb" ? outputUrls?.glb : null);
     if (remoteUrl) {
       const a = document.createElement("a");
@@ -521,8 +530,8 @@ export default function ArchitecturePage() {
     } else if (fmt === "usdz" || fmt === "glb") {
       // Export valid Wavefront .OBJ 3D architectural massing mesh
       let vIdx = 1;
-      let obj = `# MORPHIX 3D ARCHITECTURAL BIM MASSING (.OBJ)\n# BRIEF: ${prompt}\n# AREA: ${sqft} SQ FT | FLOORS: ${floors}\n`;
-      const h = floors * 30;
+      let obj = `# MORPHIX 3D ARCHITECTURAL BIM MASSING (.OBJ)\n# BRIEF: ${prompt}\n# AREA: ${activeSqft} SQ FT | FLOORS: ${activeFloors}\n`;
+      const h = activeFloors * 30;
       for (const r of roomsRef.current) {
         const x1 = (r.x * 0.1).toFixed(3);
         const z1 = (r.z * 0.1).toFixed(3);
@@ -552,9 +561,9 @@ export default function ArchitecturePage() {
     const blob = new Blob([content], { type: "text/plain" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `morphix_architecture_${sqft}sqft.${fmt === "pdf" ? "svg" : ext}`;
+    a.download = `morphix_architecture_${activeSqft}sqft.${fmt === "pdf" ? "svg" : ext}`;
     a.click();
-    toast.success(`Exported .${(fmt === "pdf" ? "svg" : ext).toUpperCase()} (${sqft.toLocaleString()} sq ft)`);
+    toast.success(`Exported .${(fmt === "pdf" ? "svg" : ext).toUpperCase()} (${activeSqft.toLocaleString()} sq ft)`);
   };
 
   const selectedRoom = rooms[selectedRoomIdx] || rooms[0] || INITIAL_ROOMS[0];
@@ -714,8 +723,19 @@ export default function ArchitecturePage() {
                   // 01 · ARCHITECTURAL BRIEF
                 </div>
                 <textarea
+                  aria-label="Architectural Brief Prompt"
                   value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setPrompt(val);
+                    const p = parseArchPrompt(val);
+                    if (p.hasSqft) setSqft(p.nextSqft);
+                    if (p.hasBed) setBedrooms(p.nextBed);
+                    if (p.hasFloors) setFloors(p.nextFloors);
+                    const updated = buildRoomsFromPrompt(val, p.hasSqft ? p.nextSqft : sqft, p.hasBed ? p.nextBed : bedrooms);
+                    setRooms(updated);
+                    roomsRef.current = updated.map((r) => ({ ...r }));
+                  }}
                   rows={3}
                   placeholder="3-bedroom house, 1200 sq ft, courtyard, north-facing living room..."
                   className="w-full p-3 bg-[#F4EFE6] border border-[#1B1B1F]/25 font-mono text-xs text-[#1B1B1F] focus:outline-none focus:border-[#2F5BFF]"
@@ -751,10 +771,12 @@ export default function ArchitecturePage() {
 
                 <div>
                   <div className="flex justify-between font-mono text-xs mb-1">
-                    <span>Plot / Floor Area</span>
+                    <label htmlFor="arch-sqft-slider">Plot / Floor Area</label>
                     <span className="font-bold text-[#2F5BFF]">{sqft.toLocaleString()} sq ft</span>
                   </div>
                   <input
+                    id="arch-sqft-slider"
+                    aria-label="Plot or Floor Area"
                     type="range"
                     min={800}
                     max={3600}

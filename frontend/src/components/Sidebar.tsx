@@ -73,7 +73,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`fixed left-0 top-16 bottom-0 z-40 transition-all duration-300 ease-in-out 
+      className={`hidden md:block fixed left-0 top-16 bottom-0 z-40 transition-all duration-300 ease-in-out 
         ${collapsed ? "w-[68px]" : "w-[240px]"}
         bg-[#FAF8F2] border-r-[1.5px] border-[#141413] text-[#141413]`}
     >

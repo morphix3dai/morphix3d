@@ -2,7 +2,7 @@ import Link from "next/link";
 import MorphixLogo from "@/components/MorphixLogo";
 
 export const metadata = {
-  title: "Terms & Conditions | Morphix 3D",
+  title: "Terms & Conditions",
   description: "Terms and Conditions for using Morphix 3D (3dmorphix.com) AI 3D generation services.",
 };
 

@@ -18,10 +18,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F1E6] text-[#141413]">
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-[#F4F1E6] text-[#141413]">
       <Navbar />
       <Sidebar />
-      <main className="ml-[240px] pt-16 min-h-screen transition-all duration-300">
+      <main className="ml-0 md:ml-[240px] pt-16 min-h-screen max-w-full overflow-x-hidden transition-all duration-300">
         {children}
       </main>
     </div>

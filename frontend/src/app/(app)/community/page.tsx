@@ -223,7 +223,7 @@ export default function CommunityPage() {
   });
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6 text-[#141413]">
+    <div className="p-4 sm:p-6 max-w-6xl w-full overflow-x-hidden mx-auto space-y-6 text-[#141413]">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1
@@ -236,7 +236,7 @@ export default function CommunityPage() {
             Explore 3D models, parametric CAD assemblies, and architectural blueprints created with Morphix 3D
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {["ALL", "MECHANICAL CAD", "ARCHITECTURE", "CREATIVE 3D"].map((cat) => (
             <button
               key={cat}
@@ -264,12 +264,12 @@ export default function CommunityPage() {
             className="input-field pl-10 py-2.5 text-sm"
           />
         </div>
-        <div className="flex border-[1.5px] border-[#141413] rounded-lg overflow-hidden ml-auto bg-[#FAF8F2]">
+        <div className="flex flex-wrap border-[1.5px] border-[#141413] rounded-lg overflow-hidden bg-[#FAF8F2]">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-sm font-bold transition-colors cursor-pointer ${
+              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
                 activeTab === tab.id ? "bg-[#141413] text-[#FAF8F2]" : "text-[#4A4945] hover:text-[#141413]"
               }`}
             >

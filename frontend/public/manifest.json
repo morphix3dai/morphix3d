@@ -1,0 +1,16 @@
+{
+  "name": "Morphix 3D — AI-Powered 3D Studio",
+  "short_name": "Morphix 3D",
+  "description": "Precision Mechanical CAD, Architecture 3D Floor Plans, and Creative 3D Mesh Generation from Text & Images.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F1E6",
+  "theme_color": "#FF6A1A",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

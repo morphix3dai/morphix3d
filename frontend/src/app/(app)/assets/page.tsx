@@ -179,16 +179,8 @@ export default function AssetsPage() {
     toast.error(`${fmt} format not available for this model`);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-        <Loader2 className="w-8 h-8 text-[#FF6A1A] animate-spin" />
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6 text-[#141413]">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6 text-[#141413]">
       <div className="flex items-center justify-between">
         <div>
           <h1
@@ -196,6 +188,7 @@ export default function AssetsPage() {
             style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
           >
             <FolderOpen className="w-6 h-6 text-[#FF6A1A]" /> My Assets
+            {loading && <Loader2 className="w-4 h-4 text-[#FF6A1A] animate-spin ml-2" />}
           </h1>
           <p className="text-sm text-[#4A4945] mt-1">{filtered.length} model{filtered.length !== 1 ? "s" : ""} generated</p>
         </div>
@@ -205,9 +198,9 @@ export default function AssetsPage() {
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6E6C65]" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search assets..." className="input-field pl-10 py-2.5 text-sm" />
+          <input aria-label="Search assets" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search assets..." className="input-field pl-10 py-2.5 text-sm" />
         </div>
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="input-field w-auto py-2.5 text-sm pr-8 appearance-none cursor-pointer">
+        <select aria-label="Filter assets by type" value={filter} onChange={(e) => setFilter(e.target.value)} className="input-field w-auto py-2.5 text-sm pr-8 appearance-none cursor-pointer">
           <option value="all">All Types</option>
           <option value="text">Text to 3D</option>
           <option value="image">Image to 3D</option>
@@ -216,10 +209,10 @@ export default function AssetsPage() {
           <option value="rig">Rigging</option>
         </select>
         <div className="flex border-[1.5px] border-[#141413] rounded-lg overflow-hidden ml-auto bg-[#FAF8F2]">
-          <button onClick={() => setView("grid")} className={`p-2.5 cursor-pointer ${view === "grid" ? "bg-[#141413] text-[#FAF8F2]" : "text-[#4A4945] hover:text-[#141413]"}`}>
+          <button aria-label="Grid view" onClick={() => setView("grid")} className={`p-2.5 cursor-pointer ${view === "grid" ? "bg-[#141413] text-[#FAF8F2]" : "text-[#4A4945] hover:text-[#141413]"}`}>
             <Grid3x3 className="w-4 h-4" />
           </button>
-          <button onClick={() => setView("list")} className={`p-2.5 cursor-pointer ${view === "list" ? "bg-[#141413] text-[#FAF8F2]" : "text-[#4A4945] hover:text-[#141413]"}`}>
+          <button aria-label="List view" onClick={() => setView("list")} className={`p-2.5 cursor-pointer ${view === "list" ? "bg-[#141413] text-[#FAF8F2]" : "text-[#4A4945] hover:text-[#141413]"}`}>
             <List className="w-4 h-4" />
           </button>
         </div>

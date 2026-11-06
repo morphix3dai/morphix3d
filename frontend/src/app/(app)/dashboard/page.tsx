@@ -52,14 +52,6 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-        <Loader2 className="w-8 h-8 text-[#FF6A1A] animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6 text-[#141413]">
       {/* Welcome */}

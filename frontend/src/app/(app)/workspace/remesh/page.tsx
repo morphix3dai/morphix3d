@@ -78,8 +78,8 @@ export default function RemeshPage() {
   const formatPoly = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(0)}K` : n.toString());
 
   return (
-    <div className="h-[calc(100vh-64px)] flex bg-[#F4F1E6] text-[#141413]">
-      <div className="w-[380px] flex-shrink-0 border-r-[1.5px] border-[#141413] bg-[#FAF8F2] overflow-y-auto">
+    <div className="min-h-[calc(100vh-64px)] lg:h-[calc(100vh-64px)] w-full max-w-full overflow-x-hidden flex flex-col lg:flex-row bg-[#F4F1E6] text-[#141413]">
+      <div className="w-full lg:w-[380px] flex-shrink-0 border-b-[1.5px] lg:border-b-0 lg:border-r-[1.5px] border-[#141413] bg-[#FAF8F2] overflow-y-auto">
         <div className="p-5 space-y-5">
           <div>
             <h1
@@ -123,8 +123,10 @@ export default function RemeshPage() {
 
           {/* Polygon Count Slider */}
           <div>
-            <label className="section-label block mb-2">Target Polygon Count</label>
+            <label htmlFor="remesh-poly-slider" className="section-label block mb-2">Target Polygon Count</label>
             <input
+              id="remesh-poly-slider"
+              aria-label="Target Polygon Count"
               type="range"
               min={1000}
               max={300000}
@@ -271,7 +273,7 @@ export default function RemeshPage() {
           )}
         </div>
       </div>
-      <div className="flex-1 p-4 bg-[#EDEFF2]">
+      <div className="flex-1 min-h-[380px] lg:min-h-0 p-4 bg-[#EDEFF2] overflow-hidden">
         <ModelViewer modelUrl={outputUrls?.glb} className="w-full h-full" />
       </div>
     </div>

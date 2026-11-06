@@ -358,39 +358,48 @@ export default function MechanicalWorkspace() {
     return () => cancelAnimationFrame(animId);
   }, [teeth, holeDia, thickness, partType, viewMode, pitchDia, units]);
 
+  const parsePromptSpecs = (text: string) => {
+    const lower = text.toLowerCase();
+    let nextPartType = partType;
+    if (lower.includes("bracket") || lower.includes("mount") || lower.includes("plate") || lower.includes("flange")) {
+      nextPartType = "bracket";
+    } else if (lower.includes("gear") || lower.includes("pinion") || lower.includes("sprocket") || lower.includes("tooth") || lower.includes("teeth")) {
+      nextPartType = "gear";
+    }
+
+    const teethMatch = text.match(/(\d{1,2})\s*(?:-|\s)?(?:tooth|teeth|t\b|z\b)/i);
+    const nextTeeth = teethMatch ? Math.max(10, Math.min(34, parseInt(teethMatch[1], 10))) : teeth;
+
+    const boreMatch = text.match(/(?:Ø|bore|hole|dia(?:meter)?)\s*:?\s*(\d{1,2}(?:\.\d+)?)/i);
+    const nextBore = boreMatch ? Math.max(8, Math.min(32, Math.round(parseFloat(boreMatch[1])))) : holeDia;
+
+    const thickMatch =
+      text.match(/(\d{1,2}(?:\.\d+)?)\s*(?:mm|in)?\s*(?:thick|face|width)/i) ||
+      text.match(/(?:thickness|width|depth)\s*:?\s*(\d{1,2}(?:\.\d+)?)/i);
+    const nextThick = thickMatch ? Math.max(8, Math.min(36, Math.round(parseFloat(thickMatch[1])))) : thickness;
+
+    let nextMat = material;
+    if (lower.includes("titanium") || lower.includes("ti-6al")) nextMat = MATERIALS[2];
+    else if (lower.includes("aluminum") || lower.includes("6061") || lower.includes("7075")) nextMat = MATERIALS[1];
+    else if (lower.includes("brass") || lower.includes("bronze")) nextMat = MATERIALS[4];
+    else if (lower.includes("stainless") || lower.includes("316l")) nextMat = MATERIALS[3];
+    else if (lower.includes("steel") || lower.includes("4140")) nextMat = MATERIALS[0];
+
+    return { nextPartType, nextTeeth, nextBore, nextThick, nextMat, hasTeeth: !!teethMatch, hasBore: !!boreMatch, hasThick: !!thickMatch };
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim()) {
       toast.error("Please enter a mechanical part description");
       return;
     }
 
-    // Parse explicit dimensions/archetype from user prompt so live B-Rep updates immediately
-    const lower = prompt.toLowerCase();
-    let nextPartType = partType;
-    if (lower.includes("bracket") || lower.includes("mount") || lower.includes("plate") || lower.includes("flange")) {
-      nextPartType = "bracket";
-      setPartType("bracket");
-    } else if (lower.includes("gear") || lower.includes("pinion") || lower.includes("sprocket") || lower.includes("tooth") || lower.includes("teeth")) {
-      nextPartType = "gear";
-      setPartType("gear");
-    }
-
-    const teethMatch = prompt.match(/(\d{1,2})\s*(?:-|\s)?(?:tooth|teeth|t\b|z\b)/i);
-    const nextTeeth = teethMatch ? Math.max(10, Math.min(34, parseInt(teethMatch[1], 10))) : teeth;
-    if (teethMatch) setTeeth(nextTeeth);
-
-    const boreMatch = prompt.match(/(?:Ø|bore|hole|dia(?:meter)?)\s*:?\s*(\d{1,2}(?:\.\d+)?)/i);
-    const nextBore = boreMatch ? Math.max(8, Math.min(32, Math.round(parseFloat(boreMatch[1])))) : holeDia;
-    if (boreMatch) setHoleDia(nextBore);
-
-    const thickMatch = prompt.match(/(\d{1,2}(?:\.\d+)?)\s*(?:mm|in)?\s*(?:thick|face|width)/i) || prompt.match(/(?:thickness|width|depth)\s*:?\s*(\d{1,2}(?:\.\d+)?)/i);
-    const nextThick = thickMatch ? Math.max(8, Math.min(36, Math.round(parseFloat(thickMatch[1])))) : thickness;
-    if (thickMatch) setThickness(nextThick);
-
-    if (lower.includes("titanium") || lower.includes("ti-6al")) setMaterial("titanium");
-    else if (lower.includes("aluminum") || lower.includes("6061") || lower.includes("7075")) setMaterial("aluminum");
-    else if (lower.includes("brass") || lower.includes("bronze")) setMaterial("brass");
-    else if (lower.includes("steel") || lower.includes("4140") || lower.includes("316l")) setMaterial("steel");
+    const parsed = parsePromptSpecs(prompt);
+    setPartType(parsed.nextPartType);
+    setTeeth(parsed.nextTeeth);
+    setHoleDia(parsed.nextBore);
+    setThickness(parsed.nextThick);
+    setMaterial(parsed.nextMat);
 
     setGenerating(true);
     setProgress(12);
@@ -398,9 +407,9 @@ export default function MechanicalWorkspace() {
 
     try {
       const { jobId } = await generate.mechanical({
-        prompt: `${prompt} | Teeth/Features: ${nextTeeth}, Bore: Ø${nextBore}mm, Thickness: ${nextThick}mm`,
-        partType: nextPartType,
-        material,
+        prompt: `${prompt} | Teeth/Features: ${parsed.nextTeeth}, Bore: Ø${parsed.nextBore}mm, Thickness: ${parsed.nextThick}mm`,
+        partType: parsed.nextPartType,
+        material: parsed.nextMat,
         units,
       });
 
@@ -438,7 +447,13 @@ export default function MechanicalWorkspace() {
   };
 
   const handleExport = (fmt: "step" | "stl" | "dxf" | "glb") => {
-    const filename = `morphix_${partType}_${teeth}T_bore${holeDia}mm.${fmt}`;
+    const parsed = parsePromptSpecs(prompt);
+    const activePart = parsed.nextPartType;
+    const activeTeeth = parsed.hasTeeth ? parsed.nextTeeth : teeth;
+    const activeBore = parsed.hasBore ? parsed.nextBore : holeDia;
+    const activeThick = parsed.hasThick ? parsed.nextThick : thickness;
+
+    const filename = `morphix_${activePart}_${activeTeeth}T_bore${activeBore}mm.${fmt}`;
     const remoteUrl = outputUrls?.[fmt] || (fmt === "glb" ? outputUrls?.glb : undefined);
     if (remoteUrl) {
       const a = document.createElement("a");
@@ -453,32 +468,32 @@ export default function MechanicalWorkspace() {
 
     const timestamp = new Date().toISOString();
     let content = "";
-    const rPitch = (teeth * 2.5) / 2;
+    const rPitch = (activeTeeth * 2.5) / 2;
     const rOuter = rPitch + 2.5;
-    const rBore = holeDia / 2;
+    const rBore = activeBore / 2;
 
     if (fmt === "step") {
-      content = `ISO-10303-21;\nHEADER;\nFILE_DESCRIPTION(('MORPHIX 3D PARAMETRIC CAD - ${partType.toUpperCase()}'),'2;1');\nFILE_NAME('${filename}','${timestamp}',('Morphix 3D'),('Morphix CAD Kernel'),'','','');\nFILE_SCHEMA(('AUTOMOTIVE_DESIGN'));\nENDSEC;\nDATA;\n#10=APPLICATION_CONTEXT('mechanical design');\n#20=PRODUCT('MORPHIX_${partType.toUpperCase()}','${partType}_${teeth}T','',(#10));\n#30=CARTESIAN_POINT('Origin',(0.0,0.0,0.0));\n#40=DIRECTION('Z_Axis',(0.0,0.0,1.0));\n#50=CYLINDRICAL_SURFACE('PitchCylinder',#30,${rPitch.toFixed(3)});\n#60=CYLINDRICAL_SURFACE('BoreCylinder',#30,${rBore.toFixed(3)});\n/* PART=${partType.toUpperCase()} TEETH=${teeth} BORE=${holeDia.toFixed(2)}mm THICKNESS=${thickness.toFixed(2)}mm MATERIAL=${material} */\nENDSEC;\nEND-ISO-10303-21;\n`;
+      content = `ISO-10303-21;\nHEADER;\nFILE_DESCRIPTION(('MORPHIX 3D PARAMETRIC CAD - ${activePart.toUpperCase()}'),'2;1');\nFILE_NAME('${filename}','${timestamp}',('Morphix 3D'),('Morphix CAD Kernel'),'','','');\nFILE_SCHEMA(('AUTOMOTIVE_DESIGN'));\nENDSEC;\nDATA;\n#10=APPLICATION_CONTEXT('mechanical design');\n#20=PRODUCT('MORPHIX_${activePart.toUpperCase()}','${activePart}_${activeTeeth}T','',(#10));\n#30=CARTESIAN_POINT('Origin',(0.0,0.0,0.0));\n#40=DIRECTION('Z_Axis',(0.0,0.0,1.0));\n#50=CYLINDRICAL_SURFACE('PitchCylinder',#30,${rPitch.toFixed(3)});\n#60=CYLINDRICAL_SURFACE('BoreCylinder',#30,${rBore.toFixed(3)});\n/* PART=${activePart.toUpperCase()} TEETH=${activeTeeth} BORE=${activeBore.toFixed(2)}mm THICKNESS=${activeThick.toFixed(2)}mm MATERIAL=${parsed.nextMat} */\nENDSEC;\nEND-ISO-10303-21;\n`;
     } else if (fmt === "stl") {
       let facets = "";
-      for (let i = 0; i < teeth; i++) {
-        const a1 = (i / teeth) * Math.PI * 2;
-        const a2 = ((i + 0.5) / teeth) * Math.PI * 2;
+      for (let i = 0; i < activeTeeth; i++) {
+        const a1 = (i / activeTeeth) * Math.PI * 2;
+        const a2 = ((i + 0.5) / activeTeeth) * Math.PI * 2;
         const x1 = (Math.cos(a1) * rOuter).toFixed(3);
         const y1 = (Math.sin(a1) * rOuter).toFixed(3);
         const x2 = (Math.cos(a2) * rOuter).toFixed(3);
         const y2 = (Math.sin(a2) * rOuter).toFixed(3);
-        facets += `  facet normal 0 0 1\n    outer loop\n      vertex 0 0 ${thickness}\n      vertex ${x1} ${y1} ${thickness}\n      vertex ${x2} ${y2} ${thickness}\n    endloop\n  endfacet\n`;
+        facets += `  facet normal 0 0 1\n    outer loop\n      vertex 0 0 ${activeThick}\n      vertex ${x1} ${y1} ${activeThick}\n      vertex ${x2} ${y2} ${activeThick}\n    endloop\n  endfacet\n`;
         facets += `  facet normal 0 0 -1\n    outer loop\n      vertex 0 0 0\n      vertex ${x2} ${y2} 0\n      vertex ${x1} ${y1} 0\n    endloop\n  endfacet\n`;
       }
-      content = `solid morphix_${partType}\n${facets}endsolid morphix_${partType}\n`;
+      content = `solid morphix_${activePart}\n${facets}endsolid morphix_${activePart}\n`;
     } else {
       // Real AutoCAD DXF with outer, pitch, bore circles & involute gear tooth lines
       let entities = `0\nCIRCLE\n8\nOUTER_DIA\n10\n0.0\n20\n0.0\n40\n${rOuter.toFixed(3)}\n`;
       entities += `0\nCIRCLE\n8\nPITCH_DIA\n10\n0.0\n20\n0.0\n40\n${rPitch.toFixed(3)}\n`;
       entities += `0\nCIRCLE\n8\nBORE_DIA\n10\n0.0\n20\n0.0\n40\n${rBore.toFixed(3)}\n`;
-      for (let i = 0; i < teeth; i++) {
-        const a = (i / teeth) * Math.PI * 2;
+      for (let i = 0; i < activeTeeth; i++) {
+        const a = (i / activeTeeth) * Math.PI * 2;
         const x1 = (Math.cos(a) * (rPitch - 2.2)).toFixed(3);
         const y1 = (Math.sin(a) * (rPitch - 2.2)).toFixed(3);
         const x2 = (Math.cos(a) * rOuter).toFixed(3);
@@ -492,7 +507,7 @@ export default function MechanicalWorkspace() {
     a.href = URL.createObjectURL(blob);
     a.download = filename;
     a.click();
-    toast.success(`Exported .${fmt.toUpperCase()} (${teeth}Z · Ø${holeDia}.00 ${units})`);
+    toast.success(`Exported .${fmt.toUpperCase()} (${activeTeeth}Z · Ø${activeBore}.00 ${units})`);
   };
 
   return (
@@ -530,9 +545,9 @@ export default function MechanicalWorkspace() {
           </Link>
           <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-[#1E2126]/20">
             <span className="w-2.5 h-2.5 bg-[#FF6A1A] inline-block" />
-            <span className="font-mono text-xs font-extrabold tracking-wider uppercase">
+            <h1 className="font-mono text-xs font-extrabold tracking-wider uppercase m-0">
               MORPHIX // MECHANICAL CAD CREATE STUDIO
-            </span>
+            </h1>
           </div>
         </div>
 
@@ -589,8 +604,18 @@ export default function MechanicalWorkspace() {
                 <span className="text-[#FF6A1A]">B-REP KERNEL</span>
               </div>
               <textarea
+                aria-label="Mechanical CAD Part Specification Prompt"
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPrompt(val);
+                  const p = parsePromptSpecs(val);
+                  setPartType(p.nextPartType);
+                  if (p.hasTeeth) setTeeth(p.nextTeeth);
+                  if (p.hasBore) setHoleDia(p.nextBore);
+                  if (p.hasThick) setThickness(p.nextThick);
+                  setMaterial(p.nextMat);
+                }}
                 rows={3}
                 placeholder="Describe your gear, bracket, housing, flange, or shaft with exact dimensions..."
                 className="w-full p-3 bg-white border border-[#1E2126]/35 font-mono text-xs text-[#1E2126] focus:outline-none focus:border-[#FF6A1A]"
@@ -651,8 +676,10 @@ export default function MechanicalWorkspace() {
 
               <div className="grid grid-cols-3 gap-2 pt-1">
                 <div className="col-span-2">
-                  <label className="block font-mono text-[10px] uppercase text-[#68707E] mb-1">Material Grade</label>
+                  <label htmlFor="cad-material-select" className="block font-mono text-[10px] uppercase text-[#68707E] mb-1">Material Grade</label>
                   <select
+                    id="cad-material-select"
+                    aria-label="Material Grade"
                     value={material}
                     onChange={(e) => setMaterial(e.target.value)}
                     className="w-full p-2 bg-white border border-[#1E2126]/30 font-mono text-xs font-semibold"
@@ -693,12 +720,14 @@ export default function MechanicalWorkspace() {
 
               <div>
                 <div className="flex justify-between font-mono text-xs font-semibold mb-1.5">
-                  <span>{partType === "gear" ? "Teeth Count (Z)" : "Flange Rib Factor"}</span>
+                  <label htmlFor="cad-teeth-slider">{partType === "gear" ? "Teeth Count (Z)" : "Flange Rib Factor"}</label>
                   <span className="px-2 py-0.5 bg-white border border-[#1E2126]/25 text-[#FF6A1A] font-bold">
                     {teeth} {partType === "gear" ? "Z" : "mm"}
                   </span>
                 </div>
                 <input
+                  id="cad-teeth-slider"
+                  aria-label="Teeth Count or Flange Rib Factor"
                   type="range"
                   min={10}
                   max={34}
@@ -710,12 +739,14 @@ export default function MechanicalWorkspace() {
 
               <div>
                 <div className="flex justify-between font-mono text-xs font-semibold mb-1.5">
-                  <span>Hole / Bore Diameter</span>
+                  <label htmlFor="cad-bore-slider">Hole / Bore Diameter</label>
                   <span className="px-2 py-0.5 bg-white border border-[#1E2126]/25 text-[#FF6A1A] font-bold">
                     Ø {holeDia.toFixed(2)} {units} +0.05
                   </span>
                 </div>
                 <input
+                  id="cad-bore-slider"
+                  aria-label="Hole or Bore Diameter"
                   type="range"
                   min={8}
                   max={32}
@@ -727,12 +758,14 @@ export default function MechanicalWorkspace() {
 
               <div>
                 <div className="flex justify-between font-mono text-xs font-semibold mb-1.5">
-                  <span>Face Thickness</span>
+                  <label htmlFor="cad-thickness-slider">Face Thickness</label>
                   <span className="px-2 py-0.5 bg-white border border-[#1E2126]/25 text-[#FF6A1A] font-bold">
                     {thickness.toFixed(2)} {units}
                   </span>
                 </div>
                 <input
+                  id="cad-thickness-slider"
+                  aria-label="Face Thickness"
                   type="range"
                   min={8}
                   max={36}
