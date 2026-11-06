@@ -26,6 +26,19 @@ const navLinks = [
   { href: "/pricing", label: "Pricing" },
 ];
 
+const mobileStudioLinks = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/workspace/mechanical", label: "⚙️ Text to CAD Studio" },
+  { href: "/workspace/architecture", label: "🏛️ Floor Plan AI Studio" },
+  { href: "/workspace/text-to-3d", label: "🎨 Text to 3D Studio" },
+  { href: "/workspace/image-to-3d", label: "🖼️ Image to 3D" },
+  { href: "/workspace/texture", label: "🖌️ AI Texturing" },
+  { href: "/workspace/remesh", label: "⬡ Smart Remesh" },
+  { href: "/workspace/rig", label: "🦴 Auto Rigging" },
+  { href: "/assets", label: "📁 My Assets" },
+  { href: "/settings", label: "⚙️ Account Settings" },
+];
+
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -178,16 +191,19 @@ export default function Navbar() {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="md:hidden border-t-[1.5px] border-[#141413] bg-[#FAF8F2]"
+          className="md:hidden border-t-[1.5px] border-[#141413] bg-[#FAF8F2] max-h-[82vh] overflow-y-auto"
         >
           <div className="px-4 py-4 space-y-1">
+            <div className="px-2 pb-1 text-[10px] font-mono font-bold uppercase tracking-widest text-[#6E6C65]">
+              // PLATFORM SHOWCASES
+            </div>
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 prefetch={link.href.endsWith(".html") ? false : undefined}
                 onClick={() => setMobileOpen(false)}
-                className={`block px-4 py-3 text-sm font-medium transition-colors ${
+                className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
                   pathname === link.href
                     ? "text-[#141413] bg-[#EFECE0] font-semibold border border-[#141413]"
                     : "text-[#575652] hover:text-[#141413] hover:bg-[#EFECE0]"
@@ -196,6 +212,28 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            <hr className="border-[#141413]/20 my-2.5" />
+            <div className="px-2 pb-1 text-[10px] font-mono font-bold uppercase tracking-widest text-[#FF6A1A]">
+              // LIVE 3D WORKSPACES &amp; LIBRARY
+            </div>
+            <div className="grid grid-cols-2 gap-1.5 pb-1">
+              {mobileStudioLinks.map((sLink) => (
+                <Link
+                  key={sLink.href}
+                  href={sLink.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`px-3 py-2 text-xs font-mono font-bold border transition-colors truncate ${
+                    pathname === sLink.href
+                      ? "bg-[#141413] text-[#FAF8F2] border-[#141413]"
+                      : "bg-[#F4F1E6] text-[#141413] border-[#141413]/25 hover:bg-[#EFECE0]"
+                  }`}
+                >
+                  {sLink.label}
+                </Link>
+              ))}
+            </div>
+
             <hr className="border-[#141413]/20 my-2" />
             {isLoggedIn ? (
               <>
@@ -204,13 +242,13 @@ export default function Navbar() {
                     setMobileOpen(false);
                     setCheckoutOpen(true);
                   }}
-                  className="block w-full px-4 py-3 text-sm font-mono font-bold text-[#FF6A1A] hover:bg-[#EFECE0] text-left"
+                  className="block w-full px-4 py-3 text-sm font-mono font-bold text-[#FF6A1A] hover:bg-[#EFECE0] text-left cursor-pointer"
                 >
-                  + Buy Credits
+                  + Buy Credits ({creditBalance ?? "..."} available)
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="block px-4 py-3 text-sm font-mono font-bold text-[#141413] hover:bg-[#EFECE0] w-full text-left"
+                  className="block px-4 py-3 text-sm font-mono font-bold text-[#141413] hover:bg-[#EFECE0] w-full text-left cursor-pointer"
                 >
                   Sign Out
                 </button>
@@ -219,12 +257,14 @@ export default function Navbar() {
               <div className="grid gap-2 pt-2">
                 <Link
                   href="/login"
+                  onClick={() => setMobileOpen(false)}
                   className="block px-4 py-2.5 border-[1.5px] border-[#141413] bg-[#FAF8F2] text-center font-mono text-xs font-bold uppercase text-[#141413]"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/register"
+                  onClick={() => setMobileOpen(false)}
                   className="block px-4 py-2.5 border-[1.5px] border-[#141413] bg-[#141413] text-[#F4F1E6] font-mono text-xs font-bold uppercase text-center shadow-[3px_3px_0px_#FF6A1A]"
                 >
                   Start Creating Free →

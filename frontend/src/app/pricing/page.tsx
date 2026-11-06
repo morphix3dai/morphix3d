@@ -142,41 +142,43 @@ export default function PricingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className={`relative p-7 rounded-2xl border-2 transition-all hover:-translate-y-1 ${
+                className={`relative p-7 rounded-2xl border-2 transition-all hover:-translate-y-1 flex flex-col justify-between ${
                   plan.popular
                     ? "bg-[#FAF8F2] border-[#141413] shadow-[8px_8px_0px_#FF6A1A]"
                     : "bg-[#FAF8F2] border-[#141413] shadow-[6px_6px_0px_#141413]"
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#FF6A1A] border-[1.5px] border-[#141413] text-[10px] font-mono uppercase tracking-widest font-bold text-[#141413]">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#FF6A1A] border-[1.5px] border-[#141413] text-[10px] font-mono uppercase tracking-widest font-bold text-white">
                     Most Popular
                   </div>
                 )}
-                <h3
-                  className="text-2xl font-normal text-[#141413] mb-1"
-                  style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
-                >
-                  {plan.name}
-                </h3>
-                <div className="mb-1">
-                  <span className="text-4xl font-bold text-[#141413]">{plan.price}</span>
-                  <span className="text-[#6E6C65] text-sm">{plan.period}</span>
+                <div>
+                  <h3
+                    className="text-2xl font-normal text-[#141413] mb-1"
+                    style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+                  >
+                    {plan.name}
+                  </h3>
+                  <div className="mb-1">
+                    <span className="text-4xl font-bold text-[#141413]">{plan.price}</span>
+                    <span className="text-[#6E6C65] text-sm">{plan.period}</span>
+                  </div>
+                  <p className="text-xs font-mono font-bold text-[#FF6A1A] uppercase tracking-wider mb-6">
+                    {plan.credits}
+                  </p>
+                  <ul className="space-y-3 mb-8">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-center gap-2.5 text-sm text-[#4A4945]">
+                        <Check className="w-4 h-4 text-[#16A34A] flex-shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <p className="text-xs font-mono font-bold text-[#FF6A1A] uppercase tracking-wider mb-6">
-                  {plan.credits}
-                </p>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm text-[#4A4945]">
-                      <Check className="w-4 h-4 text-[#16A34A] flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
                 <button
                   onClick={() => handlePlanCta(plan)}
-                  className={`block w-full text-center py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                  className={`w-full text-center py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
                     plan.popular ? "btn-primary" : "btn-secondary"
                   }`}
                 >

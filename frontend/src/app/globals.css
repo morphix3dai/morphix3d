@@ -131,6 +131,10 @@ body {
 }
 
 .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background: #141413;
   color: #F4F1E6;
   font-weight: 700;
@@ -140,6 +144,7 @@ body {
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 .btn-primary:hover {
   background: #FF6A1A;
@@ -149,12 +154,17 @@ body {
 }
 
 .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background: #FAF8F2;
   color: #141413;
   font-weight: 600;
   padding: 10px 22px;
   border: 1.5px solid #141413;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 .btn-secondary:hover {
   background: #141413;

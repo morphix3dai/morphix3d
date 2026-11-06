@@ -358,14 +358,14 @@ export default function AssetsPage() {
               </div>
 
               {/* Content */}
-              <div className="flex h-[65vh]">
+              <div className="flex flex-col lg:flex-row h-auto max-h-[75vh] lg:h-[65vh] overflow-y-auto lg:overflow-hidden">
                 {/* 3D Viewer */}
-                <div className="flex-1 p-4 bg-[#EDEFF2]">
-                  <ModelViewer className="w-full h-full" modelUrl={selectedAsset.outputUrls?.glb || selectedAsset.outputUrls?.obj} />
+                <div className="flex-1 min-h-[280px] lg:min-h-0 p-4 bg-[#EDEFF2]">
+                  <ModelViewer className="w-full h-full min-h-[260px]" modelUrl={selectedAsset.outputUrls?.glb || selectedAsset.outputUrls?.obj} />
                 </div>
 
                 {/* Details Sidebar */}
-                <div className="w-[280px] border-l-[1.5px] border-[#141413] bg-[#FAF8F2] p-5 overflow-y-auto space-y-5">
+                <div className="w-full lg:w-[280px] border-t-[1.5px] lg:border-t-0 lg:border-l-[1.5px] border-[#141413] bg-[#FAF8F2] p-5 overflow-y-auto space-y-5">
                   <div>
                     <h3 className="section-label mb-2">Model Info</h3>
                     <div className="space-y-2">

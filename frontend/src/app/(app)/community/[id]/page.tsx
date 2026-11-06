@@ -82,9 +82,12 @@ export default function CommunityAssetDetailPage() {
   }
 
   const validModelUrl =
-    asset?.fileUrl && (asset.fileUrl.startsWith("http") || asset.fileUrl.startsWith("data:"))
+    asset?.fileUrl &&
+    (asset.fileUrl.startsWith("http") ||
+      asset.fileUrl.startsWith("data:") ||
+      asset.fileUrl.startsWith("/"))
       ? asset.fileUrl
-      : asset?.outputUrls?.glb || asset?.generation?.outputUrls?.glb || null;
+      : asset?.outputUrls?.glb || asset?.generation?.outputUrls?.glb || "/samples/dragon.glb";
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6 text-[#141413]">
@@ -107,7 +110,7 @@ export default function CommunityAssetDetailPage() {
           </button>
           <button
             onClick={handleDownload}
-            className="px-4 py-2 rounded-lg border-[1.5px] border-[#141413] bg-[#FF6A1A] hover:bg-[#E85A0C] text-xs font-bold text-[#141413] shadow-[3px_3px_0px_#141413] flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 rounded-lg border-[1.5px] border-[#141413] bg-[#FF6A1A] hover:bg-[#E85A0C] text-xs font-bold text-white shadow-[3px_3px_0px_#141413] flex items-center gap-1.5 cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" /> Download 3D Asset
           </button>

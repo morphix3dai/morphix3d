@@ -4,7 +4,7 @@ import { prisma } from "../lib/prisma";
 import { authMiddleware } from "../middleware/auth";
 import { config } from "../config";
 import { GenerationType } from "@prisma/client";
-import { runTextTo3D, runImageTo3D, runTexture } from "../lib/pipelines/creative3d";
+import { runTextTo3D, runImageTo3D, runTexture, runRemesh, runRig } from "../lib/pipelines/creative3d";
 import { runMechanicalCAD } from "../lib/pipelines/mechanical";
 import { runArchitecture } from "../lib/pipelines/architecture";
 
@@ -228,7 +228,14 @@ router.post("/remesh", async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    simulateGeneration(generation.id); // TODO: implement real remesh pipeline
+    runRemesh(
+      generation.id,
+      modelUrl || "/samples/dragon.glb",
+      Number(polyCount) || 50000,
+      topology || "triangle",
+      Boolean(autoFix ?? true),
+      Boolean(printCheck ?? false)
+    ).catch(console.error);
 
     res.status(201).json({ jobId: generation.id, status: "QUEUED", creditsUsed: creditResult.creditsUsed });
   } catch (error) {
@@ -263,7 +270,12 @@ router.post("/rig", async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    simulateGeneration(generation.id);
+    runRig(
+      generation.id,
+      modelUrl || "/samples/dragon.glb",
+      charType || "biped",
+      Array.isArray(animations) ? animations : ["idle", "walk"]
+    ).catch(console.error);
 
     res.status(201).json({ jobId: generation.id, status: "QUEUED", creditsUsed: creditResult.creditsUsed });
   } catch (error) {

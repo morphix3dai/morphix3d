@@ -52,7 +52,7 @@ export const metadata: Metadata = {
       "Generate stunning 3D models from text or images. Free 200 credits on signup. No credit card required.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: "Morphix 3D Platform Preview",
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     title: "Morphix 3D — AI-Powered 3D Model Generation",
     description:
       "Generate stunning 3D models from text or images. Free 200 credits on signup.",
-    images: ["/og-image.png"],
+    images: ["/opengraph-image"],
     creator: "@morphix3d",
   },
   robots: {
@@ -79,9 +79,9 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
   },
   manifest: "/manifest.json",
 };

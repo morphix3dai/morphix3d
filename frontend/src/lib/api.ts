@@ -266,7 +266,7 @@ export const auth = {
     }),
 
   forgotPassword: (data: { email: string }) =>
-    apiFetch<{ message: string }>("/auth/forgot-password", {
+    apiFetch<{ message: string; resetUrl?: string }>("/auth/forgot-password", {
       method: "POST",
       body: JSON.stringify(data),
     }),

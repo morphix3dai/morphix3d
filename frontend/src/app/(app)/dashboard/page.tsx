@@ -13,11 +13,11 @@ import CategorySelector from "@/components/CategorySelector";
 import { useAuth } from "@/context/AuthContext";
 
 const quickActions = [
-  { icon: Cog, label: "Mechanical CAD", href: "/workspace/mechanical", accent: "bg-[#2F5BFF] text-white", credits: 5, badge: "CAD" },
-  { icon: Building2, label: "Architecture", href: "/workspace/architecture", accent: "bg-[#FF6A1A] text-[#141413]", credits: 8, badge: "ARCH" },
+  { icon: Cog, label: "Mechanical CAD", href: "/workspace/mechanical", accent: "bg-[#FF6A1A] text-white", credits: 5, badge: "CAD" },
+  { icon: Building2, label: "Architecture", href: "/workspace/architecture", accent: "bg-[#2F5BFF] text-white", credits: 8, badge: "ARCH" },
   { icon: Palette, label: "Creative 3D", href: "/workspace/text-to-3d", accent: "bg-[#6D4AFF] text-white", credits: 10, badge: "3D" },
   { icon: ImageIcon, label: "Image to 3D", href: "/workspace/image-to-3d", accent: "bg-[#141413] text-[#FAF8F2]", credits: 10 },
-  { icon: Paintbrush, label: "AI Texture", href: "/workspace/texture", accent: "bg-[#FF6A1A] text-[#141413]", credits: 5 },
+  { icon: Paintbrush, label: "AI Texture", href: "/workspace/texture", accent: "bg-[#FF6A1A] text-white", credits: 5 },
 ];
 
 function timeAgo(dateStr: string): string {

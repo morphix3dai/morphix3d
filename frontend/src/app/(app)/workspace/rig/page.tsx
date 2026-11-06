@@ -215,7 +215,7 @@ export default function RigPage() {
                 <span className="text-sm font-bold text-[#16A34A]">Rigging Complete!</span>
               </div>
               <div className="text-xs font-mono text-[#141413] mb-3">
-                Skeleton: {jobData?.metadata?.bones || 65} bones • {jobData?.metadata?.animations || selectedAnims.length} animations applied
+                Skeleton: {outputUrls?.bones || jobData?.metadata?.bones || 65} bones • {outputUrls?.animations || jobData?.metadata?.animations || selectedAnims.length} animations applied
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {["glb", "fbx_unity", "fbx_unreal", "fbx", "obj"].map((fmt) => {

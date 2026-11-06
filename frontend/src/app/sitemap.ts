@@ -5,13 +5,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const staticPages = [
     { url: baseUrl, changeFrequency: "weekly" as const, priority: 1.0 },
+    { url: `${baseUrl}/mechanical_cad_section.html`, changeFrequency: "weekly" as const, priority: 0.9 },
+    { url: `${baseUrl}/architecture_studio_section.html`, changeFrequency: "weekly" as const, priority: 0.9 },
+    { url: `${baseUrl}/creative_3d_darkroom.html`, changeFrequency: "weekly" as const, priority: 0.9 },
+    { url: `${baseUrl}/community`, changeFrequency: "daily" as const, priority: 0.9 },
+    { url: `${baseUrl}/pricing`, changeFrequency: "weekly" as const, priority: 0.9 },
     { url: `${baseUrl}/login`, changeFrequency: "monthly" as const, priority: 0.5 },
     { url: `${baseUrl}/register`, changeFrequency: "monthly" as const, priority: 0.7 },
-    { url: `${baseUrl}/pricing`, changeFrequency: "weekly" as const, priority: 0.9 },
+    { url: `${baseUrl}/contact`, changeFrequency: "yearly" as const, priority: 0.5 },
     { url: `${baseUrl}/terms`, changeFrequency: "yearly" as const, priority: 0.4 },
     { url: `${baseUrl}/privacy`, changeFrequency: "yearly" as const, priority: 0.4 },
     { url: `${baseUrl}/refund-policy`, changeFrequency: "yearly" as const, priority: 0.4 },
-    { url: `${baseUrl}/contact`, changeFrequency: "yearly" as const, priority: 0.5 },
   ];
 
   const workspacePages = [

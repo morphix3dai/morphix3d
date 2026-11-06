@@ -304,10 +304,10 @@ export default function CommunityPage() {
               cat === "MECHANICAL CAD" ? Cog : cat === "ARCHITECTURE" ? Building2 : Palette;
             const badgeColor =
               cat === "MECHANICAL CAD"
-                ? "bg-[#2563EB] text-white"
+                ? "bg-[#FF6A1A] text-white"
                 : cat === "ARCHITECTURE"
-                ? "bg-[#0D9488] text-white"
-                : "bg-[#FF6A1A] text-[#141413]";
+                ? "bg-[#2F5BFF] text-white"
+                : "bg-[#6D4AFF] text-white";
 
             return (
               <motion.div
@@ -435,7 +435,9 @@ export default function CommunityPage() {
               <ModelViewer
                 modelUrl={
                   inspectItem.fileUrl &&
-                  (inspectItem.fileUrl.startsWith("http") || inspectItem.fileUrl.startsWith("data:"))
+                  (inspectItem.fileUrl.startsWith("http") ||
+                    inspectItem.fileUrl.startsWith("data:") ||
+                    inspectItem.fileUrl.startsWith("/"))
                     ? inspectItem.fileUrl
                     : null
                 }
@@ -460,7 +462,7 @@ export default function CommunityPage() {
                 </button>
                 <button
                   onClick={() => handleDownload(inspectItem)}
-                  className="px-4 py-2 rounded-lg border-[1.5px] border-[#141413] bg-[#FF6A1A] hover:bg-[#E85A0C] text-xs font-bold text-[#141413] shadow-[3px_3px_0px_#141413] flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 rounded-lg border-[1.5px] border-[#141413] bg-[#FF6A1A] hover:bg-[#E85A0C] text-xs font-bold text-white shadow-[3px_3px_0px_#141413] flex items-center gap-1.5 cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" /> Download 3D File
                 </button>

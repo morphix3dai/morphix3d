@@ -262,6 +262,8 @@ router.post("/forgot-password", async (req: Request, res: Response): Promise<voi
     // Always respond with success for security (don't reveal if email exists)
     const user = await prisma.user.findUnique({ where: { email } });
 
+    let fallbackResetUrl: string | undefined;
+
     if (user) {
       // Generate a secure reset token (random hex)
       const crypto = await import("crypto");
@@ -281,9 +283,15 @@ router.post("/forgot-password", async (req: Request, res: Response): Promise<voi
 
       // Send email via Resend (falls back to console.log in dev when key is absent)
       await sendPasswordResetEmail(email, resetUrl);
+      if (!config.resendApiKey) {
+        fallbackResetUrl = resetUrl;
+      }
     }
 
-    res.json({ message: "If that email is registered, a reset link has been sent." });
+    res.json({
+      message: "If that email is registered, a reset link has been sent.",
+      ...(fallbackResetUrl ? { resetUrl: fallbackResetUrl } : {}),
+    });
   } catch (error) {
     console.error("Forgot password error:", error);
     res.status(500).json({ error: "Internal server error" });

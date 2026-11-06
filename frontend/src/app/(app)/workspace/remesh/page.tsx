@@ -226,13 +226,13 @@ export default function RemeshPage() {
                   <div className="p-2 rounded-lg bg-white border border-[#141413]/20">
                     <span className="text-[#6E6C65]">Original:</span>{" "}
                     <span className="font-mono font-bold text-[#141413]">
-                      {String(jobData?.metadata?.originalPolygons || "125K")}
+                      {String(outputUrls?.originalPolygons || jobData?.metadata?.originalPolygons || "125K")}
                     </span>
                   </div>
                   <div className="p-2 rounded-lg bg-white border border-[#141413]/20">
                     <span className="text-[#6E6C65]">Optimized:</span>{" "}
                     <span className="font-mono font-bold text-[#16A34A]">
-                      {String(jobData?.metadata?.optimizedPolygons || formatPoly(polyCount))}
+                      {String(outputUrls?.optimizedPolygons || jobData?.metadata?.optimizedPolygons || formatPoly(polyCount))}
                     </span>
                   </div>
                 </div>

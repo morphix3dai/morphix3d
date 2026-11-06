@@ -117,7 +117,7 @@ function ResetPasswordForm() {
               </p>
               <Link
                 href="/login"
-                className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-[#FF6A1A] text-[#141413] border-[1.5px] border-[#141413] shadow-[3px_3px_0px_#141413] hover:bg-[#E85A0C] transition-colors"
+                className="btn-primary w-full py-3 rounded-xl text-sm"
               >
                 Sign In Now <ArrowRight className="w-4 h-4" />
               </Link>
@@ -213,7 +213,7 @@ function ResetPasswordForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-[#FF6A1A] text-[#141413] border-[1.5px] border-[#141413] shadow-[3px_3px_0px_#141413] hover:bg-[#E85A0C] transition-colors disabled:opacity-50 cursor-pointer"
+                className="btn-primary w-full py-3 rounded-xl text-sm disabled:opacity-50"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Update Password <ArrowRight className="w-4 h-4" /></>}
               </button>

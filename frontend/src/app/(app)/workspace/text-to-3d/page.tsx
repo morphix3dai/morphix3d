@@ -687,7 +687,7 @@ export default function TextTo3DPage() {
             )}
 
             {/* Bottom Pipeline Progress Strip */}
-            <div className="absolute bottom-4 left-5 right-5 z-10 grid grid-cols-4 gap-2">
+            <div className="absolute bottom-4 left-5 right-5 z-10 grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
                 { step: 0, title: "01 · Prompt", sub: "Latent Point Cloud" },
                 { step: 1, title: "02 · Image", sub: "Multi-View Depth" },

@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
+  const [forgotResetUrl, setForgotResetUrl] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
@@ -58,8 +59,10 @@ export default function LoginPage() {
     e.preventDefault();
     if (!forgotEmail.trim()) return;
     setForgotLoading(true);
+    setForgotResetUrl(null);
     try {
-      await auth.forgotPassword({ email: forgotEmail });
+      const res = await auth.forgotPassword({ email: forgotEmail });
+      if (res.resetUrl) setForgotResetUrl(res.resetUrl);
       setForgotSent(true);
     } catch {
       setForgotSent(true);
@@ -293,9 +296,17 @@ export default function LoginPage() {
                       If <span className="text-[#141413] font-semibold">{forgotEmail}</span> is registered, you&apos;ll
                       receive a password reset link shortly.
                     </p>
+                    {forgotResetUrl && (
+                      <a
+                        href={forgotResetUrl}
+                        className="block w-full py-2.5 mb-2.5 bg-[#141413] text-[#FAF8F2] border-[1.5px] border-[#141413] shadow-[3px_3px_0px_#FF6A1A] font-mono text-xs font-bold uppercase hover:bg-[#FF6A1A] hover:text-white transition-colors"
+                      >
+                        Open Direct Password Reset Link →
+                      </a>
+                    )}
                     <button
                       onClick={() => setShowForgot(false)}
-                      className="btn-secondary w-full py-2.5 font-mono text-xs uppercase"
+                      className="btn-secondary w-full py-2.5 font-mono text-xs uppercase cursor-pointer"
                     >
                       Back to Sign In
                     </button>
