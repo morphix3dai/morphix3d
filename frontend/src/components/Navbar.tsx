@@ -51,6 +51,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={link.href.endsWith(".html") ? false : undefined}
                 className={`relative px-3.5 py-2 text-sm font-medium transition-colors ${
                   pathname === link.href
                     ? "text-[#141413] font-semibold"
@@ -80,6 +81,7 @@ export default function Navbar() {
                   <span className="text-xs font-mono text-[#575652]">credits</span>
                   <button
                     onClick={() => setCheckoutOpen(true)}
+                    aria-label="Buy credits"
                     className="ml-1 w-5 h-5 bg-[#FF6A1A] text-white hover:bg-[#141413] flex items-center justify-center transition-colors"
                     title="Buy credits"
                   >
@@ -91,6 +93,7 @@ export default function Navbar() {
                 <div className="relative">
                   <button
                     onClick={() => setProfileOpen(!profileOpen)}
+                    aria-label="Open account menu"
                     className="flex items-center gap-2 px-3 py-1.5 bg-[#FAF8F2] border-[1.5px] border-[#141413] hover:bg-[#EFECE0] transition-colors"
                   >
                     <div className="w-7 h-7 bg-[#141413] text-[#F4F1E6] flex items-center justify-center text-xs font-mono font-bold">
@@ -162,6 +165,7 @@ export default function Navbar() {
           {/* Mobile Toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle navigation menu"
             className="md:hidden p-2 text-[#141413] hover:bg-[#EFECE0]"
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -181,6 +185,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={link.href.endsWith(".html") ? false : undefined}
                 onClick={() => setMobileOpen(false)}
                 className={`block px-4 py-3 text-sm font-medium transition-colors ${
                   pathname === link.href

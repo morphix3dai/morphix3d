@@ -155,6 +155,7 @@ export default function Sidebar() {
         {/* Collapse Toggle */}
         <button
           onClick={() => setCollapsed(!collapsed)}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className="flex items-center justify-center h-10 border-t-[1.5px] border-[#141413] text-[#4A4945] hover:text-[#141413] hover:bg-[#EDEFF2] transition-colors cursor-pointer"
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}

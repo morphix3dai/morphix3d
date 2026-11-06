@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Check, Zap, CreditCard } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getAccessToken } from "@/lib/api";
+import toast from "react-hot-toast";
+import { ensureGuestSession } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import RazorpayCheckout, { CREDIT_PLANS } from "@/components/RazorpayCheckout";
 
 const plans = [
@@ -78,38 +80,30 @@ const creditCosts = [
 
 export default function PricingPage() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, credits: creditBalance, plan: currentPlan, updateCredits } = useAuth();
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(undefined);
-  const [, setCreditBalance] = useState<number | null>(null);
 
   useEffect(() => {
-    const token = getAccessToken();
-    setIsLoggedIn(!!token);
+    ensureGuestSession().catch(() => {});
   }, []);
 
-  function handlePlanCta(plan: typeof plans[0]) {
+  async function handlePlanCta(plan: typeof plans[0]) {
     if (plan.isEnterprise) {
-      window.location.href = "mailto:enterprise@morphix.ai?subject=Enterprise%20Plan";
+      router.push("/contact");
       return;
     }
-    if (!isLoggedIn) {
-      router.push("/register");
-      return;
-    }
+    await ensureGuestSession().catch(() => {});
     if (plan.planId) {
       setSelectedPlanId(plan.planId);
       setCheckoutOpen(true);
     } else {
-      router.push("/dashboard");
+      router.push("/workspace/mechanical");
     }
   }
 
-  function openCreditPurchase(planId?: string) {
-    if (!isLoggedIn) {
-      router.push("/register");
-      return;
-    }
+  async function openCreditPurchase(planId?: string) {
+    await ensureGuestSession().catch(() => {});
     setSelectedPlanId(planId);
     setCheckoutOpen(true);
   }
@@ -134,6 +128,10 @@ export default function PricingPage() {
             <p className="text-[#4A4945] max-w-xl mx-auto text-lg">
               Start free with 200 studio credits. Pay only for what you engineer.
             </p>
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FAF8F2] border border-[#141413]/30 text-xs font-mono text-[#141413]">
+              <Zap className="w-3.5 h-3.5 text-[#FF6A1A]" />
+              Current Balance: <span className="font-bold text-[#FF6A1A]">{creditBalance.toLocaleString()} Credits</span> ({currentPlan} Plan)
+            </div>
           </motion.div>
 
           {/* Plans */}
@@ -279,9 +277,11 @@ export default function PricingPage() {
         isOpen={checkoutOpen}
         onClose={() => setCheckoutOpen(false)}
         onSuccess={(creditsAdded, newBalance) => {
-          setCreditBalance(newBalance);
-          console.log(`Payment successful: +${creditsAdded} credits, balance: ${newBalance}`);
+          updateCredits(newBalance);
+          toast.success(`Payment successful! +${creditsAdded.toLocaleString()} credits added.`);
         }}
+        userEmail={user?.email}
+        userName={user?.name || undefined}
         defaultPlan={selectedPlanId}
       />
     </div>

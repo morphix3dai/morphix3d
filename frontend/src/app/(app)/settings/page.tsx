@@ -26,6 +26,7 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [selectedCheckoutPlan, setSelectedCheckoutPlan] = useState<string | undefined>("credits_500");
 
   useEffect(() => {
     const loadUser = async () => {
@@ -151,14 +152,20 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => setCheckoutOpen(true)}
+                        onClick={() => {
+                          setSelectedCheckoutPlan("credits_500");
+                          setCheckoutOpen(true);
+                        }}
                         className="btn-secondary text-sm flex items-center gap-1.5"
                       >
                         <Plus className="w-3.5 h-3.5" /> Buy Credits
                       </button>
                       {plan === "FREE" && (
                         <button
-                          onClick={() => setCheckoutOpen(true)}
+                          onClick={() => {
+                            setSelectedCheckoutPlan("pro_monthly");
+                            setCheckoutOpen(true);
+                          }}
                           className="btn-primary text-sm"
                         >
                           Upgrade to Pro
@@ -241,13 +248,15 @@ export default function SettingsPage() {
       <RazorpayCheckout
         isOpen={checkoutOpen}
         onClose={() => setCheckoutOpen(false)}
-        onSuccess={(creditsAdded, newBalance) => {
+        onSuccess={(creditsAdded, newBalance, newPlan) => {
           setCreditBalance(newBalance);
-          toast.success(`+${creditsAdded} credits added to your account!`);
+          if (newPlan) setPlan(newPlan);
+          toast.success(`+${creditsAdded.toLocaleString()} credits added to your account!`);
           credits.history(1, 10).then((d) => setTransactions(d.transactions)).catch(() => {});
         }}
         userEmail={email}
         userName={name}
+        defaultPlan={selectedCheckoutPlan}
       />
     </div>
   );

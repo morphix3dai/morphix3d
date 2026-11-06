@@ -399,6 +399,26 @@ export const credits = {
       "/credits/purchase",
       { method: "POST", body: JSON.stringify({ plan }) }
     ),
+
+  verify: (data: {
+    razorpayPaymentId: string;
+    razorpayOrderId: string;
+    razorpaySignature: string;
+    credits: number;
+    plan: string;
+  }) =>
+    apiFetch<{
+      success: boolean;
+      newBalance: number;
+      plan: string;
+      creditsAdded: number;
+      orderId?: string;
+      paymentId?: string;
+      alreadyProcessed?: boolean;
+    }>("/credits/verify", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 };
 
 // ==========================================
