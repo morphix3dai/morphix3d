@@ -87,6 +87,19 @@ app.get(["/", "/health", "/api", "/api/health"], (_req, res) => {
     service: "morphix3d-backend",
     version: "1.0.0",
     paymentGateway: config.razorpay.keyId ? "razorpay_active" : "sandbox",
+    aiEngines: {
+      mechanical: process.env.ZOO_API_TOKEN || process.env.ZOO_API_KEY ? "zoo_dev_active" : "builtin_parametric",
+      architecture: process.env.OPENAI_API_KEY
+        ? "openai_gpt4o_mini_active"
+        : process.env.GEMINI_API_KEY
+        ? "gemini_flash_active"
+        : "builtin_bim_solver",
+      creative3d: process.env.FAL_KEY
+        ? "fal_trellis_active"
+        : process.env.TRIPO3D_API_KEY
+        ? "tripo3d_active"
+        : "builtin_3d_sculptor",
+    },
     endpoints: {
       health: "/api/health",
       auth: ["/api/auth/register", "/api/auth/login", "/api/auth/google", "/api/auth/me"],
