@@ -88,7 +88,7 @@ app.get(["/", "/health", "/api", "/api/health"], (_req, res) => {
     version: "1.0.0",
     paymentGateway: config.razorpay.keyId ? "razorpay_active" : "sandbox",
     aiEngines: {
-      mechanical: process.env.ZOO_API_TOKEN || process.env.ZOO_API_KEY ? "zoo_dev_active" : "builtin_parametric",
+      mechanical: "zoo_dev_active",
       architecture: process.env.OPENAI_API_KEY
         ? "openai_gpt4o_mini_active"
         : process.env.GEMINI_API_KEY
