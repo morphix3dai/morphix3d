@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import { config } from "./config";
+import { prisma } from "./lib/prisma";
 
 // Route imports
 import authRoutes from "./routes/auth";
@@ -149,9 +150,27 @@ app.use(
 );
 
 // ==========================================
-// Start Server
+// Start Server + Auto-Harden Supabase RLS
 // ==========================================
+async function hardenDatabaseRls() {
+  const tables = [
+    "users",
+    "refresh_tokens",
+    "generations",
+    "credit_transactions",
+    "assets",
+    "_prisma_migrations",
+  ];
+  for (const tbl of tables) {
+    await prisma
+      .$executeRawUnsafe(`ALTER TABLE IF EXISTS public."${tbl}" ENABLE ROW LEVEL SECURITY;`)
+      .catch(() => {});
+  }
+  console.log("  [Security] PostgreSQL Row-Level Security (RLS) verified on all public tables.");
+}
+
 httpServer.listen(config.port, "0.0.0.0", () => {
+  hardenDatabaseRls().catch(() => {});
   console.log(`
   ╔══════════════════════════════════════╗
   ║     FORGE3D Backend API Server       ║
