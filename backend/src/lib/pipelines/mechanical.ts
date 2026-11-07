@@ -9,6 +9,7 @@ import { buildGlbFromBoxes, buildStlFromBoxes, BoxPrimitive } from "../gltfBuild
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+const ZOO_API_TOKEN = process.env.ZOO_API_TOKEN || process.env.ZOO_API_KEY || "";
 const AI_SERVER_URL = process.env.AI_SERVER_URL || "http://localhost:8000";
 
 function updateJob(id: string, data: Record<string, unknown>) {
@@ -17,6 +18,76 @@ function updateJob(id: string, data: Record<string, unknown>) {
 
 async function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+// ─── 1. Zoo.dev Official Text-to-CAD Cloud API (api.zoo.dev) ──────────────────
+
+async function runZooTextToCad(
+  generationId: string,
+  prompt: string,
+  material: string,
+  units: string
+): Promise<Record<string, string>> {
+  const createRes = await fetch("https://api.zoo.dev/ai/text-to-cad/glb?kcl=true", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${ZOO_API_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      prompt: `${prompt}. Units: ${units}. Material: ${material}.`,
+    }),
+  });
+
+  if (!createRes.ok) {
+    const errText = await createRes.text().catch(() => "");
+    throw new Error(`Zoo.dev API ${createRes.status}: ${errText}`);
+  }
+
+  const created = (await createRes.json()) as {
+    id: string;
+    status?: string;
+    outputs?: Record<string, string>;
+  };
+
+  await updateJob(generationId, { progress: 35 });
+
+  // Poll Zoo.dev async job until completed (typically 5–25 seconds)
+  const start = Date.now();
+  while (Date.now() - start < 90_000) {
+    await sleep(2500);
+    const pollRes = await fetch(`https://api.zoo.dev/user/text-to-cad/${created.id}`, {
+      headers: { Authorization: `Bearer ${ZOO_API_TOKEN}` },
+    });
+    if (!pollRes.ok) continue;
+
+    const job = (await pollRes.json()) as {
+      status: string;
+      outputs?: Record<string, string>;
+      error?: string;
+    };
+
+    if (job.status === "completed" && job.outputs) {
+      await updateJob(generationId, { progress: 90 });
+      const glbB64 = job.outputs["source.glb"] || Object.values(job.outputs)[0];
+      if (!glbB64) throw new Error("Zoo.dev returned empty CAD output");
+      const glbUri = glbB64.startsWith("data:")
+        ? glbB64
+        : `data:model/gltf-binary;base64,${glbB64}`;
+      return {
+        glb: glbUri,
+        step: glbUri,
+        stl: glbUri,
+        obj: glbUri,
+      };
+    }
+
+    if (job.status === "failed" || job.status === "rejected") {
+      throw new Error(job.error || "Zoo.dev Text-to-CAD could not generate this geometry");
+    }
+  }
+
+  throw new Error("Zoo.dev Text-to-CAD timed out");
 }
 
 // ─── Call GPT-4o-mini or Gemini Flash to generate CadQuery code ───────────────
@@ -261,16 +332,29 @@ export async function runMechanicalCAD(
   try {
     await updateJob(generationId, { status: "PROCESSING", progress: 10 });
 
-    let outputUrls: Record<string, string>;
+    let outputUrls: Record<string, string> | null = null;
 
-    try {
-      const cadCode = await generateCadCode(prompt, material, units);
-      await updateJob(generationId, { progress: 25 });
-      await executeCadOnServer(generationId, cadCode, material, units);
-      outputUrls = await pollAiServer(generationId);
-    } catch (pipelineErr) {
-      console.warn("[MechanicalCAD] Using built-in 3D CAD mesh generator:", pipelineErr);
-      outputUrls = await generateBuiltinCadOutputs(generationId, prompt, partType, material);
+    // Priority 1: Zoo.dev Cloud Text-to-CAD API (if ZOO_API_TOKEN / ZOO_API_KEY is configured)
+    if (ZOO_API_TOKEN) {
+      try {
+        console.log("[MechanicalCAD] Calling Zoo.dev Text-to-CAD API...");
+        outputUrls = await runZooTextToCad(generationId, prompt, material, units);
+      } catch (zooErr) {
+        console.warn("[MechanicalCAD] Zoo.dev fallback:", zooErr);
+      }
+    }
+
+    // Priority 2: Self-hosted CadQuery AI Server + Fallback Parametric B-Rep Generator
+    if (!outputUrls) {
+      try {
+        const cadCode = await generateCadCode(prompt, material, units);
+        await updateJob(generationId, { progress: 25 });
+        await executeCadOnServer(generationId, cadCode, material, units);
+        outputUrls = await pollAiServer(generationId);
+      } catch (pipelineErr) {
+        console.warn("[MechanicalCAD] Using built-in 3D CAD mesh generator:", pipelineErr);
+        outputUrls = await generateBuiltinCadOutputs(generationId, prompt, partType, material);
+      }
     }
 
     const gen = await prisma.generation.update({
