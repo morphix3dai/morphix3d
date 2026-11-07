@@ -7,11 +7,10 @@ import Sidebar from "@/components/Sidebar";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // Dedicated standalone Create Design Studios for each of the 3 engines
+  // Dedicated standalone Create Design Studios for Mechanical CAD & Architecture
   const isDedicatedStudio =
     pathname === "/workspace/mechanical" ||
-    pathname === "/workspace/architecture" ||
-    pathname === "/workspace/text-to-3d";
+    pathname === "/workspace/architecture";
 
   if (isDedicatedStudio) {
     return <div className="min-h-screen w-full bg-[#F4F1E6] text-[#141413]">{children}</div>;

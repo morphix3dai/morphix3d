@@ -5,7 +5,6 @@ import React, { useEffect, useRef, useState } from "react";
 const ENGINE_SECTION_URLS = [
   "/mechanical_cad_section.html",
   "/architecture_studio_section.html",
-  "/creative_3d_darkroom.html",
 ];
 
 const THEMES = [
@@ -17,27 +16,20 @@ const THEMES = [
     accent: "#2F5BFF",
     shadow: "8px 8px 0px #2F5BFF",
   },
-  {
-    accent: "#6D4AFF",
-    shadow: "8px 8px 0px #6D4AFF",
-  },
 ];
 
 export default function Orbital3DHero() {
-  const [activeIndex, setActiveIndex] = useState<number>(1);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const canvasMechRef = useRef<HTMLCanvasElement | null>(null);
   const canvasArchRef = useRef<HTMLCanvasElement | null>(null);
-  const canvasGenRef = useRef<HTMLCanvasElement | null>(null);
   const wheelCooldownRef = useRef<boolean>(false);
   const pointerStartXRef = useRef<number | null>(null);
 
-  const mod = ((activeIndex % 3) + 3) % 3;
-  const rightIdx = (mod + 1) % 3;
-  const leftIdx = (mod + 2) % 3;
+  const mod = ((activeIndex % 2) + 2) % 2;
 
   const stepCarousel = (dir: number) => {
-    setActiveIndex((prev) => (prev + dir + 3) % 3);
+    setActiveIndex((prev) => (prev + dir + 2) % 2);
   };
 
   const goToCard = (targetIdx: number) => {
@@ -221,77 +213,10 @@ export default function Orbital3DHero() {
       ctx.fill();
     }
 
-    function drawGen(t: number) {
-      const info = resizeCanvas(canvasGenRef.current);
-      if (!info) return;
-      const { ctx, w, h } = info;
-      ctx.clearRect(0, 0, w, h);
-      const ry = t * 0.75,
-        rx = 0.35 + Math.sin(t * 0.8) * 0.15;
-      const rings = 9,
-        segs = 14;
-      const grid: Array<Array<{ x: number; y: number; z: number }>> = [];
-      for (let r = 0; r <= rings; r++) {
-        const phi = (r / rings - 0.5) * Math.PI;
-        const row = [];
-        for (let s = 0; s < segs; s++) {
-          const theta = (s / segs) * Math.PI * 2;
-          const rad = 84 * (1 + 0.25 * Math.sin(theta * 3 + t * 2) * Math.cos(phi * 2));
-          row.push(
-            proj3D(
-              Math.cos(phi) * Math.cos(theta) * rad,
-              Math.sin(phi) * rad * 1.12,
-              Math.cos(phi) * Math.sin(theta) * rad,
-              w,
-              h,
-              ry,
-              rx
-            )
-          );
-        }
-        grid.push(row);
-      }
-      const quads: Array<{
-        p0: { x: number; y: number; z: number };
-        p1: { x: number; y: number; z: number };
-        p2: { x: number; y: number; z: number };
-        p3: { x: number; y: number; z: number };
-        avgZ: number;
-      }> = [];
-      for (let r = 0; r < rings; r++) {
-        for (let s = 0; s < segs; s++) {
-          const ns = (s + 1) % segs;
-          const p0 = grid[r][s],
-            p1 = grid[r][ns],
-            p2 = grid[r + 1][ns],
-            p3 = grid[r + 1][s];
-          quads.push({ p0, p1, p2, p3, avgZ: (p0.z + p1.z + p2.z + p3.z) * 0.25 });
-        }
-      }
-      quads.sort((a, b) => b.avgZ - a.avgZ);
-      const scanY = h / 2 + Math.sin(t * 2.2) * 70;
-      quads.forEach((q) => {
-        const cy = (q.p0.y + q.p2.y) * 0.5;
-        const nearScan = Math.abs(cy - scanY) < 16;
-        ctx.beginPath();
-        ctx.moveTo(q.p0.x, q.p0.y);
-        ctx.lineTo(q.p1.x, q.p1.y);
-        ctx.lineTo(q.p2.x, q.p2.y);
-        ctx.lineTo(q.p3.x, q.p3.y);
-        ctx.closePath();
-        ctx.fillStyle = nearScan ? "rgba(255, 106, 26, 0.28)" : "rgba(255, 255, 255, 0.85)";
-        ctx.fill();
-        ctx.strokeStyle = nearScan ? "#FF6A1A" : "#6D4AFF";
-        ctx.lineWidth = nearScan ? 1.6 : 0.9;
-        ctx.stroke();
-      });
-    }
-
     function animate() {
       const t = performance.now() * 0.0012;
       drawMech(t);
       drawArch(t);
-      drawGen(t);
       animId = requestAnimationFrame(animate);
     }
 
@@ -301,9 +226,7 @@ export default function Orbital3DHero() {
 
   const getCardPositionClass = (idx: number) => {
     if (idx === mod) return "pos-front";
-    if (idx === rightIdx) return "pos-right";
-    if (idx === leftIdx) return "pos-left";
-    return "";
+    return idx === 0 ? "pos-left" : "pos-right";
   };
 
   return (
@@ -701,22 +624,22 @@ export default function Orbital3DHero() {
 
       <div className="hero-top-meta">
         <span>DWG // MPX-2026-UNIFIED · SCALE 1:1</span>
-        <span>TRI-ENGINE SPATIAL SYNTHESIS — CAD · BIM · MESH</span>
+        <span>DUAL-ENGINE SPATIAL SYNTHESIS — B-REP CAD · ARCHITECTURE BIM</span>
         <span>TOLERANCE: ISO 2768-fH (±0.02 mm)</span>
       </div>
 
       <div className="header-box">
         <div className="eyebrow">
           <span className="eyebrow-dot" />
-          <span>UNIFIED AI 3D ENGINE · MECHANICAL CAD · ARCHITECTURE · CREATIVE 3D</span>
+          <span>UNIFIED AI ENGINEERING ENGINE · MECHANICAL CAD · ARCHITECTURE BIM</span>
         </div>
         <h1 className="hero-mega-slogan">
           Type it <span className="slogan-slash">/</span> See it —{" "}
           <span className="slogan-highlight">Just Morphix it</span>
         </h1>
         <p className="header-sub">
-          One unified drafting table for precision Mechanical CAD, Architectural floor-to-3D massing, and rigged 4K PBR
-          meshes — click any card to open its studio.
+          One unified drafting table for precision Mechanical B-Rep CAD and Architectural floor-to-3D BIM massing — click
+          either card to open its studio.
         </p>
       </div>
 
@@ -734,13 +657,6 @@ export default function Orbital3DHero() {
           onClick={() => (mod === 1 ? openEngineSection(1) : goToCard(1))}
         >
           <span>02 · Architecture Studio</span>
-        </button>
-        <button
-          type="button"
-          className={`swipe-pill ${mod === 2 ? "active-2" : ""}`}
-          onClick={() => (mod === 2 ? openEngineSection(2) : goToCard(2))}
-        >
-          <span>03 · Creative 3D Atelier</span>
         </button>
       </div>
 
@@ -862,58 +778,6 @@ export default function Orbital3DHero() {
                 className="cta-link"
               >
                 <span>Open Architecture Studio</span> <span>→</span>
-              </a>
-            </div>
-          </div>
-
-          {/* CARD 2: CREATIVE 3D ATELIER */}
-          <div
-            className={`orbital-card ${getCardPositionClass(2)}`}
-            onClick={() => handleCardClick(2)}
-            style={{
-              boxShadow: mod === 2 ? `10px 10px 0px #141413` : undefined,
-            }}
-          >
-            <div className="back-focus-hint">
-              {mod === 2 ? "Click to Open Creative 3D Atelier" : "Click or Swipe to Focus"}
-            </div>
-            <div className="card-top">
-              <span>ENGINE 03 // MESH ATELIER</span>
-              <span className="badge-tag" style={{ background: "#6D4AFF" }}>
-                4K PBR + RIG
-              </span>
-            </div>
-
-            <div className="mini-3d-stage" style={{ backgroundColor: "#F2EFE9" }}>
-              <div className="mini-hud-top">
-                <span>PBR SCULPTURE + LASER SCAN</span>
-                <span style={{ color: "#6D4AFF" }}>WATERTIGHT MESH</span>
-              </div>
-              <canvas ref={canvasGenRef} />
-              <div className="mini-hud">
-                <span style={{ color: "#FF6A1A" }}>● 65-BONE AUTO-RIG</span>
-                <span>48.2K QUADS · 4K PBR</span>
-              </div>
-            </div>
-
-            <div>
-              <div className="card-title">Creative 3D Atelier</div>
-              <div className="card-sub">Assets &amp; Characters</div>
-              <p className="card-desc">
-                Create game assets, rigged characters, and shaded 4K PBR sculptures on a daylight sculpture turntable.
-              </p>
-              <div className="tag-row">
-                <span className="tag-chip">.GLB</span>
-                <span className="tag-chip">.FBX</span>
-                <span className="tag-chip">.OBJ</span>
-                <span className="tag-chip">.USDZ</span>
-              </div>
-              <a
-                href="/creative_3d_darkroom.html"
-                onClick={(e) => e.stopPropagation()}
-                className="cta-link"
-              >
-                <span>Open Creative 3D Studio</span> <span>→</span>
               </a>
             </div>
           </div>

@@ -301,39 +301,9 @@ function logout() {
 }
 
 // ==========================================
-// Generation API
+// Generation API (Mechanical CAD & Architecture BIM)
 // ==========================================
 export const generate = {
-  textTo3d: (data: { prompt: string; style?: string; pose?: string; modelType?: string }) =>
-    apiFetch<{ jobId: string; status: string; creditsUsed: number }>(
-      "/generate/text-to-3d",
-      { method: "POST", body: JSON.stringify(data) }
-    ),
-
-  imageTo3d: (data: { imageUrl?: string; mode?: string }) =>
-    apiFetch<{ jobId: string; status: string; creditsUsed: number }>(
-      "/generate/image-to-3d",
-      { method: "POST", body: JSON.stringify(data) }
-    ),
-
-  texture: (data: { prompt: string; style?: string; modelUrl?: string }) =>
-    apiFetch<{ jobId: string; status: string; creditsUsed: number }>(
-      "/generate/texture",
-      { method: "POST", body: JSON.stringify(data) }
-    ),
-
-  remesh: (data: { modelUrl: string; polyCount?: number; topology?: string; autoFix?: boolean; printCheck?: boolean }) =>
-    apiFetch<{ jobId: string; status: string; creditsUsed: number }>(
-      "/generate/remesh",
-      { method: "POST", body: JSON.stringify(data) }
-    ),
-
-  rig: (data: { modelUrl: string; charType?: string; animations?: string[] }) =>
-    apiFetch<{ jobId: string; status: string; creditsUsed: number }>(
-      "/generate/rig",
-      { method: "POST", body: JSON.stringify(data) }
-    ),
-
   mechanical: (data: { prompt: string; partType?: string; material?: string; units?: string }) =>
     apiFetch<{ jobId: string; status: string; creditsUsed: number }>(
       "/generate/mechanical",

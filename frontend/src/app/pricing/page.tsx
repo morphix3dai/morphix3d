@@ -20,8 +20,8 @@ const plans = [
     planId: null,
     features: [
       "200 one-time credits",
-      "All 7 AI engines",
-      "GLB & OBJ export",
+      "Both Mechanical CAD & Architecture engines",
+      "GLB, STL & SVG export",
       "Community gallery",
       "Basic support",
     ],
@@ -36,7 +36,7 @@ const plans = [
     planId: "pro_monthly",
     features: [
       "2,000 credits per month",
-      "All 7 export formats",
+      "All native CAD & BIM export formats (STEP, DXF, STL, GLB)",
       "Priority queue",
       "No watermark",
       "Private models",
@@ -68,14 +68,10 @@ const plans = [
 ];
 
 const creditCosts = [
-  { feature: "Text to 3D", credits: 10, icon: "✨" },
-  { feature: "Image to 3D", credits: 10, icon: "🖼️" },
-  { feature: "AI Texturing", credits: 5, icon: "🎨" },
-  { feature: "Smart Remesh", credits: 3, icon: "⬡" },
-  { feature: "Auto Rigging", credits: 8, icon: "🦴" },
-  { feature: "Mechanical CAD", credits: 5, icon: "⚙️" },
-  { feature: "Architecture", credits: 8, icon: "🏛️" },
-  { feature: "3D Viewer", credits: 0, icon: "👁️" },
+  { feature: "Mechanical CAD (B-Rep)", credits: 5, icon: "⚙️" },
+  { feature: "Architecture & Floor Plan AI", credits: 8, icon: "🏛️" },
+  { feature: "STEP / STL / DXF Export", credits: 0, icon: "📐" },
+  { feature: "Interactive 3D Viewer", credits: 0, icon: "👁️" },
 ];
 
 export default function PricingPage() {

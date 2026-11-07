@@ -94,17 +94,12 @@ app.get(["/", "/health", "/api", "/api/health"], (_req, res) => {
         : process.env.GEMINI_API_KEY
         ? "gemini_flash_active"
         : "builtin_bim_solver",
-      creative3d: process.env.FAL_KEY
-        ? "fal_trellis_active"
-        : process.env.TRIPO3D_API_KEY
-        ? "tripo3d_active"
-        : "builtin_3d_sculptor",
     },
     endpoints: {
       health: "/api/health",
       auth: ["/api/auth/register", "/api/auth/login", "/api/auth/google", "/api/auth/me"],
       credits: ["/api/credits/balance", "/api/credits/history", "/api/credits/purchase", "/api/credits/verify", "/api/credits/webhook"],
-      generate: ["/api/generate/mechanical", "/api/generate/architecture", "/api/generate/text-to-3d", "/api/generate/image-to-3d", "/api/generate/texture", "/api/generate/remesh", "/api/generate/rig"],
+      generate: ["/api/generate/mechanical", "/api/generate/architecture", "/api/generate/status/:id", "/api/generate/history"],
       assets: ["/api/assets", "/api/assets/community/gallery"],
     },
     timestamp: new Date().toISOString(),
@@ -198,11 +193,8 @@ httpServer.listen(config.port, "0.0.0.0", () => {
   console.log("  POST /api/auth/login");
   console.log("  POST /api/auth/refresh");
   console.log("  GET  /api/auth/me");
-  console.log("  POST /api/generate/text-to-3d");
-  console.log("  POST /api/generate/image-to-3d");
-  console.log("  POST /api/generate/texture");
-  console.log("  POST /api/generate/remesh");
-  console.log("  POST /api/generate/rig");
+  console.log("  POST /api/generate/mechanical");
+  console.log("  POST /api/generate/architecture");
   console.log("  GET  /api/generate/status/:id");
   console.log("  GET  /api/generate/history");
   console.log("  GET  /api/credits/balance");

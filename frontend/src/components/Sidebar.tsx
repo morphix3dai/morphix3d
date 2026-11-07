@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import {
   Cog,
   Building2,
-  Palette,
   FolderOpen,
   Users,
   Settings,
@@ -14,10 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Coins,
-  ImageIcon,
-  Paintbrush,
-  Hexagon,
-  Bone,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -39,16 +34,6 @@ const menuItems = [
     section: "🏠 Architecture",
     items: [
       { href: "/workspace/architecture", icon: Building2, label: "Floor Plan AI", badge: "ARCH" },
-    ],
-  },
-  {
-    section: "🎨 Creative 3D",
-    items: [
-      { href: "/workspace/text-to-3d", icon: Palette, label: "Text to 3D", badge: "AI" },
-      { href: "/workspace/image-to-3d", icon: ImageIcon, label: "Image to 3D", badge: "AI" },
-      { href: "/workspace/texture", icon: Paintbrush, label: "AI Texture", badge: "AI" },
-      { href: "/workspace/remesh", icon: Hexagon, label: "Smart Remesh" },
-      { href: "/workspace/rig", icon: Bone, label: "Auto Rigging" },
     ],
   },
   {

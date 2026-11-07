@@ -267,7 +267,7 @@ export default function PhyloFooter() {
               <span>→</span>
             </Link>
             <Link
-              href="/workspace/text-to-3d"
+              href="/workspace/mechanical"
               className="inline-flex items-center gap-2.5 h-12 px-6 rounded-full bg-[#0F0F0E] text-[#F6F4EC] text-base hover:bg-[#252522] transition-all shadow-md"
               style={{ fontFamily: "'Newsreader', Georgia, serif" }}
             >
@@ -354,11 +354,6 @@ export default function PhyloFooter() {
               <li>
                 <a href="/architecture_studio_section.html" className="hover:text-[#141413] transition-colors">
                   Architecture 3D
-                </a>
-              </li>
-              <li>
-                <a href="/creative_3d_darkroom.html" className="hover:text-[#141413] transition-colors">
-                  Creative Studio
                 </a>
               </li>
               <li>

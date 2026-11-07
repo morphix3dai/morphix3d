@@ -49,19 +49,19 @@ const CURATED_SHOWCASE: (Asset & { category?: string; author?: string; prompt?: 
     prompt: "3-bedroom modern courtyard villa, 1800 sq ft, 2 floors, north-facing living room & MEP stack",
   },
   {
-    id: "showcase-cyber-valkyrie",
-    name: "Armored Cyber-Valkyrie Guardian (4K PBR Quad Mesh)",
-    fileFormat: "GLB / OBJ",
-    fileUrl: "/samples/dragon.glb",
-    fileSize: 6840000,
+    id: "showcase-flange-bracket",
+    name: "Heavy-Duty 90° CNC Gusset L-Bracket (Ti-6Al-4V)",
+    fileFormat: "STEP / GLB",
+    fileUrl: "/samples/gear.glb",
+    fileSize: 2140000,
     thumbnailUrl: null,
     isPublic: true,
     likes: 276,
     downloads: 165,
     createdAt: "2026-10-26T09:15:00.000Z",
-    category: "CREATIVE 3D",
-    author: "Atelier Morphix",
-    prompt: "Armored cyber-valkyrie guardian with glowing wings, clean quad topology, 4K PBR metallic armor",
+    category: "MECHANICAL CAD",
+    author: "Atelier Morphix CAD",
+    prompt: "Heavy-duty 90-degree CNC L-bracket mount, 80x50x12mm flange, dual triangular gusset ribs, 4x M8 counterbored holes",
   },
   {
     id: "showcase-planetary-carrier",
@@ -79,19 +79,19 @@ const CURATED_SHOWCASE: (Asset & { category?: string; author?: string; prompt?: 
     prompt: "6-bolt planetary gearbox flange housing, 110mm OD, M8 bolt circle, 6061-T6 aluminum",
   },
   {
-    id: "showcase-relic-longsword",
-    name: "Runed Obsidian Relic Greatsword (Game-Ready Low Poly)",
-    fileFormat: "GLB / FBX",
-    fileUrl: "/samples/sword.glb",
-    fileSize: 1950000,
+    id: "showcase-duplex-residence",
+    name: "20×42 ft Urban Duplex Floor Plan & 3D BIM Cutaway",
+    fileFormat: "DXF / GLB",
+    fileUrl: "/samples/castle.glb",
+    fileSize: 2950000,
     thumbnailUrl: null,
     isPublic: true,
     likes: 164,
     downloads: 112,
     createdAt: "2026-10-28T16:45:00.000Z",
-    category: "CREATIVE 3D",
-    author: "Forge & Rune",
-    prompt: "Runed obsidian greatsword with weathered bronze crossguard and emissive runes",
+    category: "ARCHITECTURE",
+    author: "Morphix BIM Studio",
+    prompt: "20x42 ft modern 2-floor residential duplex, front living room 14x12 ft, central staircase, wet areas aligned on east wall",
   },
   {
     id: "showcase-brutalist-pavilion",
@@ -218,7 +218,7 @@ export default function CommunityPage() {
       item.name.toLowerCase().includes(search.toLowerCase()) ||
       (item.prompt || "").toLowerCase().includes(search.toLowerCase());
     const matchesCategory =
-      categoryFilter === "ALL" || (item.category || "CREATIVE 3D") === categoryFilter;
+      categoryFilter === "ALL" || (item.category || "MECHANICAL CAD") === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
@@ -233,11 +233,11 @@ export default function CommunityPage() {
             <Users className="w-6 h-6 text-[#FF6A1A]" /> Community Gallery
           </h1>
           <p className="text-sm text-[#4A4945] mt-1">
-            Explore 3D models, parametric CAD assemblies, and architectural blueprints created with Morphix 3D
+            Explore parametric B-Rep CAD parts and architectural 3D blueprints created with Morphix 3D
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {["ALL", "MECHANICAL CAD", "ARCHITECTURE", "CREATIVE 3D"].map((cat) => (
+          {["ALL", "MECHANICAL CAD", "ARCHITECTURE"].map((cat) => (
             <button
               key={cat}
               onClick={() => setCategoryFilter(cat)}
@@ -260,7 +260,7 @@ export default function CommunityPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search CAD gears, villas, characters..."
+            placeholder="Search CAD gears, brackets, villas, floor plans..."
             className="input-field pl-10 py-2.5 text-sm"
           />
         </div>
@@ -299,15 +299,12 @@ export default function CommunityPage() {
       {!isLoading && filtered.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((item, i) => {
-            const cat = item.category || "CREATIVE 3D";
-            const CategoryIcon =
-              cat === "MECHANICAL CAD" ? Cog : cat === "ARCHITECTURE" ? Building2 : Palette;
+            const cat = item.category || "MECHANICAL CAD";
+            const CategoryIcon = cat === "ARCHITECTURE" ? Building2 : Cog;
             const badgeColor =
-              cat === "MECHANICAL CAD"
-                ? "bg-[#FF6A1A] text-white"
-                : cat === "ARCHITECTURE"
+              cat === "ARCHITECTURE"
                 ? "bg-[#2F5BFF] text-white"
-                : "bg-[#6D4AFF] text-white";
+                : "bg-[#FF6A1A] text-white";
 
             return (
               <motion.div

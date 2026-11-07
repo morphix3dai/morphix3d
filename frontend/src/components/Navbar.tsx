@@ -21,7 +21,6 @@ import { useAuth } from "@/context/AuthContext";
 const navLinks = [
   { href: "/mechanical_cad_section.html", label: "Mechanical CAD" },
   { href: "/architecture_studio_section.html", label: "Architecture" },
-  { href: "/creative_3d_darkroom.html", label: "Creative 3D" },
   { href: "/community", label: "Gallery" },
   { href: "/pricing", label: "Pricing" },
 ];
@@ -30,11 +29,6 @@ const mobileStudioLinks = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/workspace/mechanical", label: "⚙️ Text to CAD Studio" },
   { href: "/workspace/architecture", label: "🏛️ Floor Plan AI Studio" },
-  { href: "/workspace/text-to-3d", label: "🎨 Text to 3D Studio" },
-  { href: "/workspace/image-to-3d", label: "🖼️ Image to 3D" },
-  { href: "/workspace/texture", label: "🖌️ AI Texturing" },
-  { href: "/workspace/remesh", label: "⬡ Smart Remesh" },
-  { href: "/workspace/rig", label: "🦴 Auto Rigging" },
   { href: "/assets", label: "📁 My Assets" },
   { href: "/settings", label: "⚙️ Account Settings" },
 ];

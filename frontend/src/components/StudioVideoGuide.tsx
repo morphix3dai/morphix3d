@@ -4,14 +4,7 @@ import { useState } from "react";
 import { PlayCircle, X, Copy, Check, Sparkles, Download } from "lucide-react";
 import toast from "react-hot-toast";
 
-export type StudioGuideId =
-  | "mechanical"
-  | "architecture"
-  | "text-to-3d"
-  | "image-to-3d"
-  | "texture"
-  | "remesh"
-  | "rig";
+export type StudioGuideId = "mechanical" | "architecture";
 
 interface StudioGuideConfig {
   title: string;
@@ -33,7 +26,7 @@ const STUDIO_GUIDES: Record<StudioGuideId, StudioGuideConfig> = {
     formula: "[Part Type] + [Overall Dimensions (mm/in)] + [Teeth / Bore Ø / Fasteners] + [Material & Tolerance]",
     tips: [
       "Specify exact teeth count (e.g. '24-tooth'), bore diameter ('16mm bore'), and thickness ('18mm thick') to auto-sync the B-Rep parametric sliders.",
-      "Include machining callouts like 'M6 counterbored holes', '2mm chamfer', or '3mm fillet' for CadQuery Python code generation.",
+      "Include machining callouts like 'M6 counterbored holes', '2mm chamfer', or '3mm fillet' for Zoo.dev & CadQuery B-Rep generation.",
       "Switch between Shaded, Wireframe, and Exploded views before exporting to .STEP, .STL, .DXF, or .GLB.",
     ],
     bestPrompts: [
@@ -79,125 +72,6 @@ const STUDIO_GUIDES: Record<StudioGuideId, StudioGuideConfig> = {
         label: "35×50 ft Studio Office",
         prompt:
           "35x50 ft open-plan architectural studio office, 1750 sq ft, south reception lobby, 12-seat glass conference room, 2 executive cabins, pantry and restrooms on north wall",
-      },
-    ],
-  },
-  "text-to-3d": {
-    title: "Creative 3D (Text to 3D) — Video & Prompt Guide",
-    accentColor: "#6D4AFF",
-    videoUrl: "/videos/text-to-3d-demo.webm",
-    formula: "[Single Isolated Hero Subject] + [Silhouette & Pose] + [Surface Materials & Wear] + [4K PBR Art Style]",
-    tips: [
-      "Describe a single standalone object or character rather than a multi-object background scene.",
-      "Include material contrast (e.g. 'matte carbon fiber', 'glowing magma cracks', 'brushed anodized titanium') for richer 4K PBR maps.",
-      "Toggle the 65-Bone Auto-Rig Skeleton Overlay to verify joint placement in Idle, T-Pose, and Action stances.",
-    ],
-    bestPrompts: [
-      {
-        label: "Obsidian Guardian Mech",
-        prompt:
-          "Armored obsidian guardian mech with glowing magma cracks between plates, weathered titanium joints, symmetrical front stance, isolated 4K PBR game asset",
-      },
-      {
-        label: "Cyberpunk Recon Drone",
-        prompt:
-          "Cyberpunk tactical recon drone with dual folding rotors, matte carbon-fiber chassis, safety-orange hydraulic struts, emissive blue optical lens, 4K PBR prop",
-      },
-      {
-        label: "Dark Fantasy Runeblade",
-        prompt:
-          "Ancient Valyrian steel greatsword with glowing blue rune engravings on the fuller, leather-wrapped grip, wolf-head bronze pommel, stylized PBR weapon prop",
-      },
-    ],
-  },
-  "image-to-3d": {
-    title: "Image to 3D Reconstruction — Video & Prompt Guide",
-    accentColor: "#6D4AFF",
-    videoUrl: "/videos/image-to-3d-demo.webm",
-    formula: "[Crisp 3/4 Isometric Reference Photo] + [Auto-Remove Background ON] + [High 50K Faces + 4K PBR]",
-    tips: [
-      "Use a well-lit 3/4 front-isometric photo where the entire object silhouette is visible without cropped edges.",
-      "Use Multi-View mode (2–4 angles: Front, Side, Back) when reconstructing complex asymmetrical characters or industrial products.",
-      "Enable Auto-Remove Background and High (50K Faces) for watertight quad/triangle geometry.",
-    ],
-    bestPrompts: [
-      {
-        label: "Single Photo Best Practice",
-        prompt: "Upload a front-3/4 studio product or character photo on a clean background with Auto-Remove Background enabled.",
-      },
-      {
-        label: "Multi-View (Front + Left + Right + Back)",
-        prompt: "Switch to Multi-View mode and drop 2–4 orthographic or turntable shots for full 360° volumetric fidelity.",
-      },
-    ],
-  },
-  texture: {
-    title: "AI PBR Texturing — Video & Prompt Guide",
-    accentColor: "#FF6A1A",
-    videoUrl: "/videos/texture-demo.webm",
-    formula: "[Primary Base Material] + [Secondary Trim/Accents] + [Roughness/Metallic Finish] + [Edge Wear & Patina]",
-    tips: [
-      "Focus your prompt 100% on surface materials, micro-roughness, metallic reflectance, and weathering rather than object geometry.",
-      "Specify contrast between base surfaces and edges (e.g. 'chipped orange paint on sharp edges', 'green verdigris patina in crevices').",
-      "Choose 4K resolution to generate crisp Albedo, Normal, Metallic, and Roughness maps.",
-    ],
-    bestPrompts: [
-      {
-        label: "Weathered Mecha Titanium",
-        prompt:
-          "Weathered gunmetal titanium armor plating, brushed metallic finish, chipped safety-orange paint on sharp edges, subtle oil smudges in recessed panel lines, 4K PBR",
-      },
-      {
-        label: "Kintsugi Jade & Gold",
-        prompt:
-          "Ancient carved imperial jade stone with luminous gold kintsugi veins filling the cracks, polished semi-translucent surface with mossy crevices, high normal depth",
-      },
-      {
-        label: "Aged Bronze & Verdigris",
-        prompt:
-          "Hammered antique bronze with turquoise green verdigris patina in deep recesses, polished golden highlights on raised edges, realistic metallic roughness maps",
-      },
-    ],
-  },
-  remesh: {
-    title: "Smart Remesh & Retopology — Video & Prompt Guide",
-    accentColor: "#16A34A",
-    videoUrl: "/videos/remesh-demo.webm",
-    formula: "[Quad Dominant (10K–25K) for Animation] OR [Uniform Tri (2.5K–10K) for Real-Time Engines] + [Auto-Fix Non-Manifold]",
-    tips: [
-      "Select Quad Dominant topology (10K–25K target polygons) when preparing characters for subdivision or skeletal deformation in Blender/Maya.",
-      "Select Uniform Triangulated or Adaptive topology (2.5K–10K) when optimizing high-poly scans for WebGL, Unity, or mobile AR.",
-      "Keep Auto-Fix Non-Manifold and 3D Print Watertight Check enabled to close holes and repair flipped normals.",
-    ],
-    bestPrompts: [
-      {
-        label: "Animation-Ready Quads (15K)",
-        prompt: "Topology: Quad Dominant · Target Polygons: 15,000 · Auto-Fix Non-Manifold: ON",
-      },
-      {
-        label: "Game Engine LOD (5K Triangles)",
-        prompt: "Topology: Uniform Tri · Target Polygons: 5,000 · Auto-Fix Non-Manifold: ON",
-      },
-    ],
-  },
-  rig: {
-    title: "Auto Rigging & Skinning — Video & Prompt Guide",
-    accentColor: "#FF6A1A",
-    videoUrl: "/videos/rig-demo.webm",
-    formula: "[Symmetrical A-Pose / T-Pose Mesh] + [Humanoid 65-Bone or Quadruped 48-Bone Preset] + [Motion Cycles]",
-    tips: [
-      "Upload character meshes in a symmetrical A-Pose or T-Pose facing forward (+Z) with arms and fingers slightly separated.",
-      "Choose Humanoid (65 Bones) for full Unity Humanoid, Unreal Mannequin, and Mixamo compatibility (includes 30 finger bones).",
-      "Choose Quadruped (48 Bones) for 4-legged animals and creatures, or Custom (18 Bones) for mechanical props.",
-    ],
-    bestPrompts: [
-      {
-        label: "Biped Game Character (65 Bones)",
-        prompt: "Character Type: Humanoid · Animations: Idle, Walk, Run, Jump, Attack",
-      },
-      {
-        label: "Creature / Animal (48 Bones)",
-        prompt: "Character Type: Quadruped · Animations: Idle, Walk, Run",
       },
     ],
   },

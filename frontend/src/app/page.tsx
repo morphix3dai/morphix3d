@@ -62,26 +62,9 @@ const capabilities = [
     accent: "#2F5BFF",
     accentBg: "rgba(47, 91, 255, 0.10)",
   },
-  {
-    code: "03 // CREATIVE 3D ATELIER",
-    icon: Palette,
-    title: "Characters & Props",
-    description:
-      "Daylight sculpture atelier. Step through Prompt → Image → Quad Mesh → 4K PBR Texture with 65-bone auto-rigging.",
-    href: "/creative_3d_darkroom.html",
-    studioHref: "/workspace/text-to-3d",
-    items: [
-      "4-stage transparent mesh synthesis pipeline",
-      "Live 65-bone skeleton & T-Pose / Action toggle",
-      "Watertight quad topology for Unity & Unreal",
-      "Export GLB, FBX, OBJ & Apple USDZ",
-    ],
-    accent: "#6D4AFF",
-    accentBg: "rgba(109, 74, 255, 0.10)",
-  },
 ];
 
-const exportFormats = ["STEP", "STL", "DXF", "PDF", "GLB", "FBX", "OBJ", "USDZ", "3MF", "BLEND"];
+const exportFormats = ["STEP", "STL", "DXF", "PDF", "GLB", "OBJ", "USDZ", "IGES"];
 
 const useCases = [
   {
@@ -104,20 +87,20 @@ const useCases = [
   },
   {
     code: "SPEC // IND-04",
-    title: "Game Development",
-    description: "Clean quad-remeshed assets with 4K PBR textures and 65-bone rigs for Unity, Unreal, and Godot.",
+    title: "Commercial BIM & MEP",
+    description: "Automated room zoning, wet-wall plumbing stack alignment, and electrical layout blueprints.",
     icon: Sparkles,
   },
   {
     code: "SPEC // IND-05",
-    title: "AR / E-Commerce",
-    description: "Apple Vision Pro USDZ and web-ready GLB product configurators from a single photo or prompt.",
+    title: "Industrial Enclosures",
+    description: "IP65 electronics housings, mounting flanges, and sheet-metal brackets from text specifications.",
     icon: Globe,
   },
   {
     code: "SPEC // IND-06",
-    title: "STEM & Education",
-    description: "Interactive exploded assemblies and cross-sections for engineering labs and classrooms.",
+    title: "STEM & Engineering Labs",
+    description: "Interactive exploded assemblies and architectural cross-sections for engineering classrooms.",
     icon: Star,
   },
 ];
@@ -130,7 +113,7 @@ const pricingPlans = [
     period: "/ forever",
     features: [
       "200 one-time signup credits",
-      "All 3 AI 3D Studio engines",
+      "Both Mechanical CAD & Architecture engines",
       "GLB, OBJ, STL & SVG export",
       "Public community gallery",
       "Standard generation queue",
@@ -211,7 +194,7 @@ export default function LandingPage() {
                 custom={0}
                 className="text-xs font-mono font-bold text-[#FF6A1A] mb-2 tracking-widest uppercase"
               >
-                // 01 · THREE ENGINES, ONE DRAFTING TABLE
+                // 01 · TWO PRECISION ENGINES, ONE DRAFTING TABLE
               </motion.p>
               <motion.h2
                 variants={fadeUp}
@@ -219,16 +202,16 @@ export default function LandingPage() {
                 className="text-4xl sm:text-5xl font-normal text-[#141413]"
                 style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
               >
-                Every 3D Workflow, Unified.
+                Mechanical CAD &amp; Architecture, Unified.
               </motion.h2>
             </div>
             <motion.p variants={fadeUp} custom={2} className="text-sm text-[#575652] max-w-md">
-              Crafted with the tactile clarity of architectural vellum and industrial catalog blueprints. Click any
+              Crafted with the tactile clarity of architectural vellum and industrial catalog blueprints. Click either
               engine to launch its dedicated studio.
             </motion.p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-7">
+          <div className="grid md:grid-cols-2 gap-7">
             {capabilities.map((cap, i) => (
               <motion.div
                 key={cap.title}

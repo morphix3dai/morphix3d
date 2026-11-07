@@ -202,11 +202,8 @@ export default function AssetsPage() {
         </div>
         <select aria-label="Filter assets by type" value={filter} onChange={(e) => setFilter(e.target.value)} className="input-field w-auto py-2.5 text-sm pr-8 appearance-none cursor-pointer">
           <option value="all">All Types</option>
-          <option value="text">Text to 3D</option>
-          <option value="image">Image to 3D</option>
-          <option value="texture">AI Texture</option>
-          <option value="remesh">Remesh</option>
-          <option value="rig">Rigging</option>
+          <option value="mechanical">Mechanical CAD</option>
+          <option value="architecture">Architecture</option>
         </select>
         <div className="flex border-[1.5px] border-[#141413] rounded-lg overflow-hidden ml-auto bg-[#FAF8F2]">
           <button aria-label="Grid view" onClick={() => setView("grid")} className={`p-2.5 cursor-pointer ${view === "grid" ? "bg-[#141413] text-[#FAF8F2]" : "text-[#4A4945] hover:text-[#141413]"}`}>
@@ -224,8 +221,8 @@ export default function AssetsPage() {
           <Sparkles className="w-12 h-12 text-[#FF6A1A] mx-auto mb-4" />
           <h3 className="text-xl font-bold mb-1 text-[#141413]">No models yet</h3>
           <p className="text-sm text-[#4A4945] mb-5">Generate your first 3D model to see it in your studio vault</p>
-          <a href="/workspace/text-to-3d" className="btn-primary text-sm inline-flex items-center gap-2">
-            <Sparkles className="w-4 h-4" /> Create Your First Model
+          <a href="/workspace/mechanical" className="btn-primary text-sm inline-flex items-center gap-2">
+            <Sparkles className="w-4 h-4" /> Create Your First CAD / BIM Model
           </a>
         </div>
       )}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import MorphixLogo from "@/components/MorphixLogo";
-import { ArrowRight, Cog, Building2, Palette, Home, Users } from "lucide-react";
+import { ArrowRight, Cog, Building2, Home, Users } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -35,7 +35,7 @@ export default function NotFound() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-left">
           <Link
             href="/workspace/mechanical"
             className="p-3.5 bg-[#F4F1E6] border-[1.5px] border-[#141413] hover:bg-[#141413] hover:text-[#FAF8F2] transition-colors group"
@@ -51,14 +51,6 @@ export default function NotFound() {
             <Building2 className="w-4 h-4 text-[#2F5BFF] mb-1.5" />
             <div className="font-mono text-xs font-bold">Architecture</div>
             <div className="text-[11px] opacity-75">2D Plans to 3D BIM</div>
-          </Link>
-          <Link
-            href="/workspace/text-to-3d"
-            className="p-3.5 bg-[#F4F1E6] border-[1.5px] border-[#141413] hover:bg-[#141413] hover:text-[#FAF8F2] transition-colors group"
-          >
-            <Palette className="w-4 h-4 text-[#6D4AFF] mb-1.5" />
-            <div className="font-mono text-xs font-bold">Creative 3D</div>
-            <div className="text-[11px] opacity-75">4K PBR &amp; Rigging</div>
           </Link>
         </div>
 

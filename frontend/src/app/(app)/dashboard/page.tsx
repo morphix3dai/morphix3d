@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
-  Sparkles, Cog, Building2, Palette, ImageIcon, Paintbrush,
-  Zap, FolderOpen, Clock, TrendingUp, ArrowRight, Loader2,
+  Sparkles, Cog, Building2,
+  Zap, FolderOpen, Clock, TrendingUp, ArrowRight,
 } from "lucide-react";
-import { generate, getAccessToken } from "@/lib/api";
+import { generate } from "@/lib/api";
 import type { GenerationJob } from "@/lib/api";
 import CategorySelector from "@/components/CategorySelector";
 import { useAuth } from "@/context/AuthContext";
@@ -15,9 +15,6 @@ import { useAuth } from "@/context/AuthContext";
 const quickActions = [
   { icon: Cog, label: "Mechanical CAD", href: "/workspace/mechanical", accent: "bg-[#FF6A1A] text-white", credits: 5, badge: "CAD" },
   { icon: Building2, label: "Architecture", href: "/workspace/architecture", accent: "bg-[#2F5BFF] text-white", credits: 8, badge: "ARCH" },
-  { icon: Palette, label: "Creative 3D", href: "/workspace/text-to-3d", accent: "bg-[#6D4AFF] text-white", credits: 10, badge: "3D" },
-  { icon: ImageIcon, label: "Image to 3D", href: "/workspace/image-to-3d", accent: "bg-[#141413] text-[#FAF8F2]", credits: 10 },
-  { icon: Paintbrush, label: "AI Texture", href: "/workspace/texture", accent: "bg-[#FF6A1A] text-white", credits: 5 },
 ];
 
 function timeAgo(dateStr: string): string {
@@ -89,7 +86,7 @@ export default function DashboardPage() {
         >
           Quick Actions
         </h2>
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {quickActions.map((action, i) => (
             <motion.div key={action.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
               <Link

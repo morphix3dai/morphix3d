@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Cog, Building2, Palette, ArrowRight } from "lucide-react";
+import { Cog, Building2, ArrowRight } from "lucide-react";
 
 const categories = [
   {
@@ -27,17 +27,6 @@ const categories = [
     features: ["Floor Plans", "3D Cutaway", "PDF/DXF Export"],
     badge: "02 · ARCH",
   },
-  {
-    id: "creative",
-    title: "Creative 3D",
-    subtitle: "Assets & Characters",
-    description: "Synthesize game assets, characters, props, and 4K PBR quad meshes from text prompts or images.",
-    icon: Palette,
-    href: "/workspace/text-to-3d",
-    accentBg: "bg-[#6D4AFF] text-white",
-    features: ["Text to 3D", "Image to 3D", "4K PBR Texture"],
-    badge: "03 · 3D",
-  },
 ];
 
 interface CategorySelectorProps {
@@ -49,7 +38,7 @@ export default function CategorySelector({ size = "lg", className = "" }: Catego
   const isLarge = size === "lg";
 
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-3 gap-5 ${className}`}>
+    <div className={`grid grid-cols-1 md:grid-cols-2 gap-5 ${className}`}>
       {categories.map((cat, i) => (
         <motion.div
           key={cat.id}

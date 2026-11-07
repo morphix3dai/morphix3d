@@ -21,24 +21,20 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Morphix 3D — AI-Powered 3D Model Generation",
+    default: "Morphix 3D — AI Mechanical CAD & Architecture BIM Platform",
     template: "%s | Morphix 3D",
   },
   description:
-    "Generate stunning 3D models from text or images using AI. Text-to-3D, Image-to-3D, AI Texturing, Smart Remesh, Auto-Rigging, Architecture & Mechanical CAD — all in one platform.",
+    "Generate CNC-ready Mechanical B-Rep CAD parts and 3D Architectural floor plans from text prompts using AI. Export STEP, STL, DXF, GLB & OBJ in one unified drafting studio.",
   keywords: [
-    "AI 3D model generator",
-    "text to 3D",
-    "image to 3D",
-    "AI texturing",
-    "3D model generation",
-    "meshy alternative",
-    "free 3D AI",
-    "GLB FBX OBJ STL",
-    "auto rigging",
-    "architecture AI",
-    "mechanical CAD AI",
-    "3D printing models",
+    "AI mechanical CAD generator",
+    "text to CAD",
+    "AI floor plan to 3D",
+    "architecture BIM AI",
+    "STEP STL DXF GLB OBJ",
+    "CNC ready 3D parts",
+    "parametric gear generator",
+    "3D printing CAD models",
   ],
   authors: [{ name: "Morphix 3D", url: SITE_URL }],
   creator: "Morphix 3D",
@@ -47,9 +43,9 @@ export const metadata: Metadata = {
     locale: "en_IN",
     url: SITE_URL,
     siteName: "Morphix 3D",
-    title: "Morphix 3D — AI-Powered 3D Model Generation",
+    title: "Morphix 3D — AI Mechanical CAD & Architecture BIM Platform",
     description:
-      "Generate stunning 3D models from text or images. Free 200 credits on signup. No credit card required.",
+      "Generate CNC-ready Mechanical CAD parts and 3D Architectural floor plans with AI. Free 200 credits on signup.",
     images: [
       {
         url: "/opengraph-image",
@@ -61,9 +57,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Morphix 3D — AI-Powered 3D Model Generation",
+    title: "Morphix 3D — AI Mechanical CAD & Architecture BIM Platform",
     description:
-      "Generate stunning 3D models from text or images. Free 200 credits on signup.",
+      "Generate CNC-ready Mechanical CAD parts and 3D Architectural floor plans with AI. Free 200 credits on signup.",
     images: ["/opengraph-image"],
     creator: "@morphix3d",
   },

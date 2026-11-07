@@ -50,11 +50,6 @@ export const config = {
 
   // Credit costs
   credits: {
-    TEXT_TO_3D: 10,
-    IMAGE_TO_3D: 10,
-    TEXTURE: 5,
-    REMESH: 3,
-    RIG: 8,
     MECHANICAL_CAD: 5,
     ARCHITECTURE: 8,
     SIGNUP_BONUS: 200,

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Morphix 3D — Unified AI 3D Engine for Mechanical CAD, Architecture & Creative 3D";
+export const alt = "Morphix 3D — Unified AI 3D Engine for Mechanical CAD & Architecture BIM";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -94,11 +94,11 @@ export default async function Image() {
             Type it / See it — Just Morphix it.
           </div>
           <div style={{ fontSize: "24px", color: "#575652", maxWidth: "960px", lineHeight: 1.4 }}>
-            One unified drafting table for precision Mechanical B-Rep CAD, Architectural Floor-to-3D BIM, and 4K PBR Rigged Meshes.
+            One unified drafting table for precision Mechanical B-Rep CAD and Architectural Floor-to-3D BIM.
           </div>
         </div>
 
-        {/* Bottom 3 Engine Cards */}
+        {/* Bottom 2 Engine Cards */}
         <div style={{ display: "flex", gap: "20px", width: "100%" }}>
           <div
             style={{
@@ -131,22 +131,6 @@ export default async function Image() {
               02 // ARCHITECTURE BIM
             </span>
             <span style={{ fontSize: "20px", fontWeight: 800 }}>2D Floor Plan → 3D Cutaway</span>
-          </div>
-          <div
-            style={{
-              flex: 1,
-              backgroundColor: "#FAF8F2",
-              border: "2px solid #141413",
-              padding: "18px 22px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "6px",
-            }}
-          >
-            <span style={{ fontSize: "13px", fontWeight: 700, color: "#6D4AFF" }}>
-              03 // CREATIVE 3D ATELIER
-            </span>
-            <span style={{ fontSize: "20px", fontWeight: 800 }}>4K PBR Mesh + 65-Bone Rig</span>
           </div>
         </div>
       </div>

@@ -87,7 +87,7 @@ export default function CommunityAssetDetailPage() {
       asset.fileUrl.startsWith("data:") ||
       asset.fileUrl.startsWith("/"))
       ? asset.fileUrl
-      : asset?.outputUrls?.glb || asset?.generation?.outputUrls?.glb || "/samples/dragon.glb";
+      : asset?.outputUrls?.glb || asset?.generation?.outputUrls?.glb || "/samples/gear.glb";
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6 text-[#141413]">
@@ -131,10 +131,10 @@ export default function CommunityAssetDetailPage() {
             </h1>
           </div>
           <Link
-            href="/workspace/text-to-3d"
+            href="/workspace/mechanical"
             className="px-3.5 py-2 rounded-lg border border-[#141413] bg-[#FAF8F2] hover:bg-[#141413] hover:text-[#FAF8F2] text-xs font-bold flex items-center gap-1.5 transition-colors"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#FF6A1A]" /> Remix in Studio <ExternalLink className="w-3 h-3" />
+            <Sparkles className="w-3.5 h-3.5 text-[#FF6A1A]" /> Open in Studio <ExternalLink className="w-3 h-3" />
           </Link>
         </div>
 
