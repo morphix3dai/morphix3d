@@ -101,11 +101,22 @@ export default function Navbar() {
                   <button
                     onClick={() => setProfileOpen(!profileOpen)}
                     aria-label="Open account menu"
-                    className="flex items-center gap-2 px-3 py-1.5 bg-[#FAF8F2] border-[1.5px] border-[#141413] hover:bg-[#EFECE0] transition-colors"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-[#FAF8F2] border-[1.5px] border-[#141413] hover:bg-[#EFECE0] transition-colors cursor-pointer"
                   >
-                    <div className="w-7 h-7 bg-[#141413] text-[#F4F1E6] flex items-center justify-center text-xs font-mono font-bold">
-                      {initial}
-                    </div>
+                    {user?.avatarUrl ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt={displayName}
+                        className="w-7 h-7 object-cover border border-[#141413]"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 bg-[#141413] text-[#F4F1E6] flex items-center justify-center text-xs font-mono font-bold">
+                        {initial}
+                      </div>
+                    )}
+                    <span className="text-xs font-mono font-bold text-[#141413] max-w-[110px] truncate hidden lg:inline">
+                      {displayName}
+                    </span>
                     <ChevronDown className="w-4 h-4 text-[#141413]" />
                   </button>
 

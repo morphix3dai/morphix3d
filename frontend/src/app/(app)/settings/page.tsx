@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { auth, credits, type CreditTransaction } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import RazorpayCheckout from "@/components/RazorpayCheckout";
 
 const tabs = [
@@ -39,6 +40,7 @@ const NOTIFICATION_ITEMS = [
 ];
 
 export default function SettingsPage() {
+  const { refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -129,6 +131,7 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     try {
       await auth.updateProfile({ name, avatarUrl: avatarUrl || undefined });
+      await refreshUser();
       toast.success("Profile updated!");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to update profile";

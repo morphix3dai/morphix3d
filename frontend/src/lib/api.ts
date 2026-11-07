@@ -60,12 +60,33 @@ function getRefreshToken(): string | null {
 }
 
 // ==========================================
-// Automatic Studio Guest Session Provisioner
+// Automatic Studio Guest Session Provisioner (Isolated from User Profile Token)
 // ==========================================
-let studioAuthPromise: Promise<boolean> | null = null;
+let studioAuthPromise: Promise<string | null> | null = null;
 
-async function ensureStudioSession(baseUrl: string, rotateAccount = false): Promise<boolean> {
-  if (typeof window === "undefined") return false;
+function getGuestToken(): string | null {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("forge3d_guest_token");
+  }
+  return null;
+}
+
+function setGuestToken(token: string | null) {
+  if (typeof window !== "undefined") {
+    if (token) {
+      localStorage.setItem("forge3d_guest_token", token);
+    } else {
+      localStorage.removeItem("forge3d_guest_token");
+    }
+  }
+}
+
+async function ensureStudioSession(baseUrl: string, rotateAccount = false): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  if (!rotateAccount) {
+    const existingGuest = getGuestToken();
+    if (existingGuest) return existingGuest;
+  }
   if (studioAuthPromise) return studioAuthPromise;
 
   studioAuthPromise = (async () => {
@@ -86,16 +107,15 @@ async function ensureStudioSession(baseUrl: string, rotateAccount = false): Prom
         }),
       });
 
-      if (!res.ok) return false;
+      if (!res.ok) return null;
       const data = await res.json();
       if (data.accessToken) {
-        setAccessToken(data.accessToken);
-        if (data.refreshToken) setRefreshToken(data.refreshToken);
-        return true;
+        setGuestToken(data.accessToken);
+        return data.accessToken as string;
       }
-      return false;
+      return null;
     } catch {
-      return false;
+      return null;
     } finally {
       studioAuthPromise = null;
     }
@@ -120,7 +140,8 @@ async function fetchWithFallback(endpoint: string, init: RequestInit): Promise<{
 
 export async function ensureGuestSession(): Promise<boolean> {
   if (getAccessToken()) return true;
-  return ensureStudioSession(resolveApiBase(), false);
+  const gToken = await ensureStudioSession(resolveApiBase(), false);
+  return Boolean(gToken);
 }
 
 // ==========================================
@@ -139,10 +160,14 @@ async function apiFetch<T = unknown>(
     endpoint.startsWith("/auth/reset-password") ||
     endpoint.startsWith("/auth/google");
 
-  // Auto-provision studio guest session if calling protected studio/app endpoints without a token
-  if (!token && !isAuthAttempt) {
-    await ensureStudioSession(resolveApiBase(), false);
-    token = getAccessToken();
+  const isGuestAllowedEndpoint =
+    endpoint.startsWith("/generate") ||
+    endpoint.startsWith("/assets") ||
+    endpoint.startsWith("/credits");
+
+  // Only use isolated guest token for studio generation/assets when user is not signed into a real profile
+  if (!token && !isAuthAttempt && isGuestAllowedEndpoint) {
+    token = await ensureStudioSession(resolveApiBase(), false);
   }
 
   const headers: Record<string, string> = {
@@ -161,15 +186,16 @@ async function apiFetch<T = unknown>(
 
   // Try token refresh or studio session provisioning on 401
   if (res.status === 401 && !isAuthAttempt) {
-    let recovered = false;
-    if (getRefreshToken()) {
-      recovered = await refreshAccessToken(usedBase);
+    let retryToken: string | null = null;
+    if (getAccessToken() && getRefreshToken()) {
+      const refreshed = await refreshAccessToken(usedBase);
+      if (refreshed) retryToken = getAccessToken();
     }
-    if (!recovered) {
-      recovered = await ensureStudioSession(usedBase, false);
+    if (!retryToken && isGuestAllowedEndpoint) {
+      retryToken = await ensureStudioSession(usedBase, true);
     }
-    if (recovered) {
-      headers["Authorization"] = `Bearer ${getAccessToken()}`;
+    if (retryToken) {
+      headers["Authorization"] = `Bearer ${retryToken}`;
       const retryRes = await fetch(`${usedBase}${endpoint}`, {
         ...options,
         headers,
@@ -183,10 +209,10 @@ async function apiFetch<T = unknown>(
   }
 
   // If studio guest runs out of free demo credits (402) on /generate/*, rotate studio guest token once
-  if (res.status === 402 && endpoint.startsWith("/generate")) {
-    const rotated = await ensureStudioSession(usedBase, true);
-    if (rotated) {
-      headers["Authorization"] = `Bearer ${getAccessToken()}`;
+  if (res.status === 402 && endpoint.startsWith("/generate") && !getAccessToken()) {
+    const rotatedToken = await ensureStudioSession(usedBase, true);
+    if (rotatedToken) {
+      headers["Authorization"] = `Bearer ${rotatedToken}`;
       const retryRes = await fetch(`${usedBase}${endpoint}`, {
         ...options,
         headers,

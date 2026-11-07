@@ -32,7 +32,7 @@ const sizeMap = {
 
 export default function MorphixLogo({
   size = "md",
-  showTagline = false,
+  showTagline = true,
   className = "",
   theme = "light",
 }: MorphixLogoProps) {

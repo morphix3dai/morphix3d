@@ -1,7 +1,14 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { auth as authApi, credits as creditsApi, getAccessToken, ensureGuestSession, type User as UserType } from "@/lib/api";
+import {
+  auth as authApi,
+  credits as creditsApi,
+  getAccessToken,
+  setAccessToken,
+  setRefreshToken,
+  type User as UserType,
+} from "@/lib/api";
 
 interface AuthContextType {
   user: UserType | null;
@@ -32,11 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const refreshUser = useCallback(async () => {
-    let token = getAccessToken();
-    if (!token) {
-      await ensureGuestSession();
-      token = getAccessToken();
-    }
+    const token = getAccessToken();
     if (!token) {
       setUser(null);
       setCredits(200);
@@ -49,12 +52,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         authApi.me().catch(() => null),
         creditsApi.balance().catch(() => null),
       ]);
-      if (meData?.user) {
-        setUser(meData.user);
-        setPlan(creditData?.plan || meData.user.plan || "FREE");
-        setCredits(creditData?.credits !== undefined ? creditData.credits : (meData.user.credits || 0));
+      const fetchedUser = meData?.user;
+      const isLegacyTestAccount =
+        fetchedUser &&
+        ((fetchedUser.email.startsWith("studio_") && fetchedUser.email.endsWith("@3dmorphix.com")) ||
+          fetchedUser.email.startsWith("google_user_") ||
+          fetchedUser.name === "Morphix Studio Creator");
+
+      if (fetchedUser && !isLegacyTestAccount) {
+        setUser(fetchedUser);
+        setPlan(creditData?.plan || fetchedUser.plan || "FREE");
+        setCredits(creditData?.credits !== undefined ? creditData.credits : (fetchedUser.credits || 0));
       } else {
+        if (isLegacyTestAccount) {
+          setAccessToken(null);
+          setRefreshToken(null);
+        }
         setUser(null);
+        setCredits(200);
+        setPlan("FREE");
       }
     } catch {
       setUser(null);

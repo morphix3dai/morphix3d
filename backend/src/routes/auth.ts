@@ -405,6 +405,17 @@ router.post("/google", async (req: Request, res: Response): Promise<void> => {
           },
         },
       });
+    } else if (
+      (name && name.trim() && name !== "Google User" && name !== "Morphix Studio Creator" && user.name !== name.trim()) ||
+      (userAvatar && user.avatarUrl !== userAvatar)
+    ) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          ...(name && name.trim() ? { name: name.trim() } : {}),
+          ...(userAvatar ? { avatarUrl: userAvatar } : {}),
+        },
+      });
     }
 
     // Generate tokens
