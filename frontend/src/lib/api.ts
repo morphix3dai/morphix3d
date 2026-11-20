@@ -1,19 +1,7 @@
-const RAILWAY_API_BASE = "https://morphix3d-backend-production-508e.up.railway.app/api";
-const RAW_ENV_API = process.env.NEXT_PUBLIC_API_URL || "";
+const VERCEL_SERVERLESS_API_BASE = "/api";
 
 function resolveApiBase(): string {
-  if (!RAW_ENV_API || RAW_ENV_API.includes("onrender.com")) {
-    return RAILWAY_API_BASE;
-  }
-  if (
-    typeof window !== "undefined" &&
-    window.location.hostname !== "localhost" &&
-    window.location.hostname !== "127.0.0.1" &&
-    RAW_ENV_API.includes("localhost")
-  ) {
-    return RAILWAY_API_BASE;
-  }
-  return RAW_ENV_API;
+  return VERCEL_SERVERLESS_API_BASE;
 }
 
 export const API_BASE = resolveApiBase();
@@ -126,16 +114,8 @@ async function ensureStudioSession(baseUrl: string, rotateAccount = false): Prom
 
 async function fetchWithFallback(endpoint: string, init: RequestInit): Promise<{ res: Response; usedBase: string }> {
   const primaryBase = resolveApiBase();
-  try {
-    const res = await fetch(`${primaryBase}${endpoint}`, init);
-    return { res, usedBase: primaryBase };
-  } catch (err) {
-    if (primaryBase !== RAILWAY_API_BASE) {
-      const res = await fetch(`${RAILWAY_API_BASE}${endpoint}`, init);
-      return { res, usedBase: RAILWAY_API_BASE };
-    }
-    throw err;
-  }
+  const res = await fetch(`${primaryBase}${endpoint}`, init);
+  return { res, usedBase: primaryBase };
 }
 
 export async function ensureGuestSession(): Promise<boolean> {
