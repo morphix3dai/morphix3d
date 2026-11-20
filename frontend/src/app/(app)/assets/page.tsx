@@ -103,13 +103,11 @@ export default function AssetsPage() {
   };
 
   const handleDownload = (asset: AssetItem) => {
-    const backendUrl = "https://morphix3d-backend-production-508e.up.railway.app";
     if (asset.outputUrls) {
       const fileUrl = asset.outputUrls.glb || asset.outputUrls.obj || asset.outputUrls.stl || Object.values(asset.outputUrls)[0];
       if (fileUrl) {
-        const fullUrl = fileUrl.startsWith("http") || fileUrl.startsWith("data:") ? fileUrl : `${backendUrl}${fileUrl}`;
         const a = document.createElement("a");
-        a.href = fullUrl;
+        a.href = fileUrl;
         a.download = `${asset.name.replace(/[^a-zA-Z0-9]/g, "_")}.glb`;
         document.body.appendChild(a);
         a.click();
